@@ -4,9 +4,15 @@ use crate::evolvement;
 
 pub trait EidState {
 
-    fn add() -> Result<(), EidError>;
+    type Evolvement: evolvement::Evolvement;
 
-    fn remove() -> Result<(), EidError>;
+    fn apply(&self, evolvement: Self::Evolvement) -> Result<(), EidError>;
+
+    fn verify(&self) -> Result(bool, EidError);
+
+    fn add(&self) -> Result<Self::Evolvement, EidError>;
+
+    fn remove(&self) -> Result<Self::Evolvement, EidError>;
 
     fn update(&self) -> Result<Self::Evolvement, EidError>;
 
