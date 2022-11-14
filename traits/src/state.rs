@@ -1,4 +1,6 @@
 use crate::types::EidError;
+use crate::types::Client;
+use crate::evolvement;
 
 pub trait EidState {
 
@@ -6,5 +8,8 @@ pub trait EidState {
 
     fn remove() -> Result<(), EidError>;
 
-    fn update() -> Result<(), EidError>;
+    fn update(&self) -> Result<Self::Evolvement, EidError>;
+
+    fn get_clients(&self) -> Result<Vec<Client>, EidError>;
+
 }
