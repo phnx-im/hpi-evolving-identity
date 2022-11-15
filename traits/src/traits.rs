@@ -4,7 +4,7 @@ pub mod state;
 pub mod key_store;
 pub mod types;
 pub mod evolvement;
-mod transcript;
+pub mod transcript;
 
 pub trait EidClient {
     type StateProvider: state::EidState;
