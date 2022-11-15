@@ -17,6 +17,6 @@ impl Display for EidError {
 
 impl Error for EidError {}
 
-pub struct Client {
+pub struct Member {
     pk: Vec<u8>,
 }

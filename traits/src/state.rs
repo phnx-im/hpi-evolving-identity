@@ -1,5 +1,5 @@
 use crate::types::EidError;
-use crate::types::Client;
+use crate::types::Member;
 use crate::evolvement;
 use crate::transcript::Transcript;
 
@@ -19,9 +19,9 @@ pub trait EidState {
     fn verify(&self) -> Result<bool, EidError>;
 
     /// Verify that a client is part of the EID.
-    fn verify_client(&self, client: Client) -> Result<bool, EidError>;
+    fn verify_client(&self, client: Member) -> Result<bool, EidError>;
 
     /// Get all clients which are members of the EID.
-    fn get_clients(&self) -> Result<Vec<Client>, EidError>;
+    fn get_clients(&self) -> Result<Vec<Member>, EidError>;
 
 }
