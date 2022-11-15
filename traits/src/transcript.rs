@@ -1,8 +1,19 @@
-
 use crate::evolvement::Evolvement;
 use crate::state::EidState;
 
 pub trait Transcript {
-    fn new(trusted_state: impl EidState, log: Vec<impl Evolvement>) -> Self;
-    fn verify() -> bool;
+    type StateProvider: EidState;
+    type EvolvementProvider: Evolvement;
+
+    /// creates a new log from a trusted [EidState] and a vector of evolvements that happened after the trusted [EidState].
+    fn new(trusted_state: Self::StateProvider, log: Vec<Self::EvolvementProvider>) -> Self;
+
+    /// Add a new entry on top of the existing [Evolvement]s in the transcript.
+    fn add_evolvement(evolvement: Self::EvolvementProvider);
+
+    /// Returns the trusted state.
+    fn trusted_state() -> StateProvider;
+
+    /// Return the [Evolvement]s that happened after the trusted [EidState].
+    fn log() -> Vec<EvolvementProvider>;
 }
