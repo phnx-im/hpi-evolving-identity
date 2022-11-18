@@ -22,5 +22,5 @@ pub trait EidClient {
     fn remove(&self, member: Member) -> Result<Self::EvolvementProvider, EidError>;
 
     /// Create an [Evolvement] to update your own key material.
-    fn update(&self) -> Result<Self::Evolvement, EidError>;
+    fn update(&self) -> Result<Self::EvolvementProvider, EidError>;
 }

@@ -12,8 +12,8 @@ pub trait Transcript {
     fn add_evolvement(evolvement: Self::EvolvementProvider);
 
     /// Returns the trusted state.
-    fn trusted_state() -> StateProvider;
+    fn trusted_state() -> Self::StateProvider;
 
     /// Return the [Evolvement]s that happened after the trusted [EidState].
-    fn log() -> Vec<EvolvementProvider>;
+    fn log() -> Vec<Self::EvolvementProvider>;
 }
