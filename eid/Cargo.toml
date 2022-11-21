@@ -1,0 +1,16 @@
+[package]
+name = "eid"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+eid_traits = { version = "0.1.0", path = "../traits" }
+eid_mls = { version = "0.1.0", path = "../eid_mls", optional = true }
+rstest = {version = "^0.15", optional = true}
+rstest_reuse = {version = "0.4", optional = true}
+
+[dev-dependencies]
+rstest = "^0.15"
+rstest_reuse = "0.4"
