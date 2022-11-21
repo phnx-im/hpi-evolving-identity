@@ -8,6 +8,9 @@ pub trait EidClient {
     type KeyStoreProvider: EidKeyStore;
     type EvolvementProvider: Evolvement;
 
+    /// Derive [Default].
+    fn default() -> Self;
+
     fn state(&self) -> &Self::StateProvider;
 
     fn key_store(&self) -> &Self::KeyStoreProvider;
