@@ -16,9 +16,10 @@ impl EidState for EidDummyState {
             .unwrap()
             .clone()
             .members;
-        EidDummyState{
+
+        Ok(EidDummyState{
             members
-        }
+        })
     }
     fn apply(&mut self, evolvement: EidDummyEvolvement) -> Result<(), EidError> {
         self.members = evolvement.members;
