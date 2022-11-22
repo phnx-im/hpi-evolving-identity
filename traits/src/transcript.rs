@@ -15,5 +15,5 @@ pub trait Transcript {
     fn trusted_state(&self) -> Self::StateProvider;
 
     /// Return the [Evolvement]s that happened after the trusted [EidState].
-    fn log() -> Vec<Self::EvolvementProvider>;
+    fn log(&self) -> Vec<Self::EvolvementProvider>;
 }

@@ -13,7 +13,7 @@ pub trait EidState {
 
     /// Apply an [evolvement::Evolvement], changing the [EidState]. If the [evolvement::Evolvement]
     /// is invalid, return an [EidError].
-    fn apply(&self, evolvement: Self::EvolvementProvider) -> Result<(), EidError>;
+    fn apply(&mut self, evolvement: Self::EvolvementProvider) -> Result<(), EidError>;
 
     /// Verify that the current EID state is valid.
     fn verify(&self) -> Result<bool, EidError>;
