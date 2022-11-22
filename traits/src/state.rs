@@ -9,7 +9,7 @@ pub trait EidState {
     type EvolvementProvider: evolvement::Evolvement;
 
     /// Create an [EidState] from a log of evolvements. Used to verify a slice of a transcript or to recover a state from a transcript.
-    fn apply_log(log: Vec<Self::EvolvementProvider>);
+    fn from_log(log: Vec<Self::EvolvementProvider>) -> Self;
 
     /// Apply an [evolvement::Evolvement], changing the [EidState]. If the [evolvement::Evolvement]
     /// is invalid, return an [EidError].

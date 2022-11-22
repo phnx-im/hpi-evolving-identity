@@ -17,6 +17,7 @@ impl Display for EidError {
 
 impl Error for EidError {}
 
+#[derive(Clone)]
 pub struct Member {
     pk: Vec<u8>,
 }
