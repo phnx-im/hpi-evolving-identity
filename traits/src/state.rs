@@ -3,13 +3,13 @@ use crate::types::Member;
 use crate::evolvement;
 use crate::transcript::Transcript;
 
-pub trait EidState {
+pub trait EidState: Sized {
 
     /// The type describing a step from one state to the next.
     type EvolvementProvider: evolvement::Evolvement;
 
     /// Create an [EidState] from a log of evolvements. Used to verify a slice of a transcript or to recover a state from a transcript.
-    fn from_log(log: Vec<Self::EvolvementProvider>) -> Self;
+    fn from_log(log: Vec<Self::EvolvementProvider>) -> Result<Self, EidError>;
 
     /// Apply an [evolvement::Evolvement], changing the [EidState]. If the [evolvement::Evolvement]
     /// is invalid, return an [EidError].
