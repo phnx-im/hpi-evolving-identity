@@ -26,9 +26,9 @@ impl EidClient for EidDummyClient {
         &self.key_store
     }
 
-    fn pk(&self) -> &Vec<u8> {
+    fn pk(&self) -> Vec<u8> {
         let keypair: KeyPair = self.key_store().read("some key".as_bytes()).unwrap();
-        &keypair.to_key_store_value().unwrap()
+        keypair.to_key_store_value().unwrap()
     }
 
     fn create_eid(key_store: EidDummyKeystore) -> Result<Self, EidError> {
@@ -58,7 +58,7 @@ impl EidClient for EidDummyClient {
     }
     fn update(&mut self) -> Result<EidDummyEvolvement, EidError> {
         let mut new_state = self.state.clone();
-        new_state.members.retain(|&m| self.pk() == m.pk());
+        new_state.members.retain(|m| self.pk() == m.pk());
 
         let evolvement = EidDummyEvolvement {
             members: new_state.members,

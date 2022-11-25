@@ -7,7 +7,7 @@ use std::fmt::{Debug, Display, Formatter};
 #[derive(Debug)]
 pub enum EidError {
     StateNotInitialized,
-    StateAlreadyInitialized
+    StateAlreadyInitialized,
 }
 
 impl Display for EidError {
@@ -24,7 +24,7 @@ pub struct Member {
 }
 
 impl Member {
-    pub fn pk(&self) -> &Vec<u8> {
-        &self.pk
+    pub fn pk(&self) -> Vec<u8> {
+        self.pk.clone()
     }
 }
