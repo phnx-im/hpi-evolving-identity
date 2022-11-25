@@ -8,22 +8,19 @@ pub trait EidClient: Sized {
     type KeyStoreProvider: EidKeyStore;
     type EvolvementProvider: Evolvement;
 
-    /// Derive [Default].
-    fn default() -> Self;
-
     fn state(&self) -> &Self::StateProvider;
 
     fn key_store(&self) -> &Self::KeyStoreProvider;
 
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
-    fn create(&self) -> Result<(), EidError>;
+    fn create_eid(keystore: impl EidKeyStore) -> Result<(), EidError>;
 
     /// Create an [Evolvement] to add a member to the EID.
-    fn add(&self, member: Member) -> Result<Self::EvolvementProvider, EidError>;
+    fn add(&mut self, member: Member) -> Result<Self::EvolvementProvider, EidError>;
 
     /// Create an [Evolvement] to remove a member from the EID.
-    fn remove(&self, member: Member) -> Result<Self::EvolvementProvider, EidError>;
+    fn remove(&mut self, member: Member) -> Result<Self::EvolvementProvider, EidError>;
 
     /// Create an [Evolvement] to update your own key material.
-    fn update(&self) -> Result<Self::EvolvementProvider, EidError>;
+    fn update(&mut self) -> Result<Self::EvolvementProvider, EidError>;
 }
