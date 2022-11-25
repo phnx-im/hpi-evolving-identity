@@ -8,7 +8,7 @@ use crate::eid_dummy_keystore::EidDummyKeystore;
 use crate::eid_dummy_state::EidDummyState;
 
 #[derive(Default)]
-struct EidDummyClient {
+pub struct EidDummyClient {
     state: EidDummyState,
     key_store: EidDummyKeystore,
 }

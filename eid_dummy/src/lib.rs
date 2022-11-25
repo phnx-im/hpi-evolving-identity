@@ -1,4 +1,4 @@
-mod eid_dummy_client;
+pub mod eid_dummy_client;
 mod eid_dummy_evolvement;
 mod eid_dummy_keypair;
 pub mod eid_dummy_keystore;
