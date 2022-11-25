@@ -1,6 +1,6 @@
+use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
-use crate::eid_dummy_evolvement::EidDummyEvolvement;
 
 #[derive(Default, Clone)]
 pub struct EidDummyState {
@@ -8,18 +8,12 @@ pub struct EidDummyState {
 }
 
 impl EidState for EidDummyState {
-
     type EvolvementProvider = EidDummyEvolvement;
 
     fn from_log(evolvements: Vec<EidDummyEvolvement>) -> Result<Self, EidError> {
-        let members = evolvements.last()
-            .unwrap()
-            .clone()
-            .members;
+        let members = evolvements.last().unwrap().clone().members;
 
-        Ok(EidDummyState{
-            members
-        })
+        Ok(EidDummyState { members })
     }
     fn apply(&mut self, evolvement: EidDummyEvolvement) -> Result<(), EidError> {
         self.members = evolvement.members;
