@@ -3,7 +3,7 @@ use crate::key_store::EidKeyStore;
 use crate::state::EidState;
 use crate::types::{Member, EidError};
 
-pub trait EidClient: Sized {
+pub trait EidClient {
     type StateProvider: EidState;
     type KeyStoreProvider: EidKeyStore;
     type EvolvementProvider: Evolvement;
@@ -11,6 +11,8 @@ pub trait EidClient: Sized {
     fn state(&self) -> &Self::StateProvider;
 
     fn key_store(&self) -> &Self::KeyStoreProvider;
+
+    fn pk(&self) -> &Vec<u8>;
 
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(keystore: impl EidKeyStore) -> Result<(), EidError>;
