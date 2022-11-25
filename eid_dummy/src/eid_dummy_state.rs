@@ -4,7 +4,7 @@ use crate::eid_dummy_evolvement::EidDummyEvolvement;
 
 #[derive(Default, Clone)]
 pub struct EidDummyState {
-    members: Vec<Member>,
+    pub(crate) members: Vec<Member>,
 }
 
 impl EidState for EidDummyState {

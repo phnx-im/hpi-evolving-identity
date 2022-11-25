@@ -3,7 +3,7 @@ use crate::key_store::EidKeyStore;
 use crate::state::EidState;
 use crate::types::{Member, EidError};
 
-pub trait EidClient {
+pub trait EidClient: Sized {
     type StateProvider: EidState;
     type KeyStoreProvider: EidKeyStore;
     type EvolvementProvider: Evolvement;

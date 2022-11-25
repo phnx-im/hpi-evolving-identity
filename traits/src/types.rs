@@ -6,7 +6,8 @@ use std::fmt::{Debug, Display, Formatter};
 /// Errors related to EID
 #[derive(Debug)]
 pub enum EidError {
-
+    StateNotInitialized,
+    StateAlreadyInitialized
 }
 
 impl Display for EidError {
@@ -17,7 +18,13 @@ impl Display for EidError {
 
 impl Error for EidError {}
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Member {
     pk: Vec<u8>,
+}
+
+impl Member {
+    pub fn pk(&self) -> &Vec<u8> {
+        &self.pk
+    }
 }
