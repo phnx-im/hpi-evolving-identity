@@ -1,3 +1,4 @@
+use eid_traits::evolvement::Evolvement;
 use eid_traits::transcript::Transcript;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_state::EidDummyState;
@@ -16,7 +17,7 @@ impl Transcript for EidDummyTranscript {
         EidDummyTranscript {trusted_state, log}
     }
 
-    fn add_evolvement(&self, evolvement: Self::EvolvementProvider) {
+    fn add_evolvement(&self, evolvement: EidDummyEvolvement) {
 
     }
 
