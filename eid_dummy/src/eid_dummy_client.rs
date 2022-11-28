@@ -36,7 +36,7 @@ impl EidClient for EidDummyClient {
         let state = EidDummyState { members };
         Ok(EidDummyClient { state, key_store })
     }
-    fn add(&mut self, member: Member) -> Result<EidDummyEvolvement, EidError> {
+    fn add(&self, member: Member) -> Result<EidDummyEvolvement, EidError> {
         let mut new_state = self.state.clone();
         new_state.members.push(member);
         let evolvement = EidDummyEvolvement {
@@ -44,7 +44,7 @@ impl EidClient for EidDummyClient {
         };
         Ok(evolvement)
     }
-    fn remove(&mut self, member: Member) -> Result<EidDummyEvolvement, EidError> {
+    fn remove(&self, member: Member) -> Result<EidDummyEvolvement, EidError> {
         let mut new_state = self.state.clone();
 
         if let Some(pos) = new_state.members.iter().position(|x| x.pk() == member.pk()) {
@@ -56,7 +56,7 @@ impl EidClient for EidDummyClient {
         };
         Ok(evolvement)
     }
-    fn update(&mut self) -> Result<EidDummyEvolvement, EidError> {
+    fn update(&self) -> Result<EidDummyEvolvement, EidError> {
         let mut new_state = self.state.clone();
         new_state.members.retain(|m| self.pk() == m.pk());
 

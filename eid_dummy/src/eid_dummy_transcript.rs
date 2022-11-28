@@ -13,7 +13,7 @@ impl Transcript for EidDummyTranscript {
     type StateProvider = EidDummyState;
     type EvolvementProvider = EidDummyEvolvement;
 
-    fn new(trusted_state: Self::StateProvider, log: Vec<Self::EvolvementProvider>) -> Self {
+    fn new(trusted_state: Self::StateProvider, log: Vec<EidDummyEvolvement>) -> Self {
         EidDummyTranscript {trusted_state, log}
     }
 
@@ -25,7 +25,7 @@ impl Transcript for EidDummyTranscript {
         self.trusted_state.clone()
     }
 
-    fn log(&self) -> Vec<Self::EvolvementProvider> {
+    fn log(&self) -> Vec<EidDummyEvolvement> {
         self.log.clone()
     }
 }

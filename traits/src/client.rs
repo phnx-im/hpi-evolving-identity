@@ -4,9 +4,9 @@ use crate::state::EidState;
 use crate::types::{EidError, Member};
 
 pub trait EidClient {
-    type StateProvider: EidState;
     type KeyStoreProvider: EidKeyStore + Default;
     type EvolvementProvider: Evolvement;
+    type StateProvider: EidState<Self::EvolvementProvider>;
 
     fn state(&self) -> &Self::StateProvider;
 
@@ -20,15 +20,15 @@ pub trait EidClient {
         Self: Sized;
 
     /// Create an [Evolvement] to add a member to the EID.
-    fn add(&mut self, member: Member) -> Result<Self::EvolvementProvider, EidError>
+    fn add(&self, member: Member) -> Result<Self::EvolvementProvider, EidError>
     where
         Self: Sized;
 
     /// Create an [Evolvement] to remove a member from the EID.
-    fn remove(&mut self, member: Member) -> Result<Self::EvolvementProvider, EidError>
+    fn remove(&self, member: Member) -> Result<Self::EvolvementProvider, EidError>
     where
         Self: Sized;
 
     /// Create an [Evolvement] to update your own key material.
-    fn update(&mut self) -> Result<Self::EvolvementProvider, EidError>;
+    fn update(&self) -> Result<Self::EvolvementProvider, EidError>;
 }

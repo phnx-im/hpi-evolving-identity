@@ -8,8 +8,7 @@ pub struct EidDummyState {
     pub(crate) members: Vec<Member>,
 }
 
-impl EidState for EidDummyState {
-    type EvolvementProvider = EidDummyEvolvement;
+impl EidState<EidDummyEvolvement> for EidDummyState {
 
     fn from_log(evolvements: Vec<EidDummyEvolvement>) -> Result<Self, EidError> {
         let members = evolvements.last().unwrap().clone().members;
