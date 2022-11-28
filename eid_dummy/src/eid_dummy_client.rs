@@ -18,8 +18,8 @@ impl EidClient for EidDummyClient {
     type KeyStoreProvider = EidDummyKeystore;
     type EvolvementProvider = EidDummyEvolvement;
 
-    fn state(&self) -> &EidDummyState {
-        &self.state
+    fn state(&mut self) -> &mut EidDummyState {
+        &mut self.state
     }
 
     fn key_store(&self) -> &EidDummyKeystore {

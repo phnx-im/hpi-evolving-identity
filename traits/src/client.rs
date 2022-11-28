@@ -8,7 +8,7 @@ pub trait EidClient {
     type EvolvementProvider: Evolvement;
     type StateProvider: EidState<Self::EvolvementProvider>;
 
-    fn state(&self) -> &Self::StateProvider;
+    fn state(&mut self) -> &mut Self::StateProvider;
 
     fn key_store(&self) -> &Self::KeyStoreProvider;
 

@@ -3,17 +3,20 @@ use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
+use eid_traits::types::Member;
 
 #[template]
-#[rstest(client, case::EIDDummy(&EidDummyClient::default()),)]
-pub fn eid_clients(client: &impl EidClient) {}
+#[rstest(client, case::EIDDummy(&mut EidDummyClient::default()),)]
+#[allow(non_snake_case)]
+pub fn eid_clients(client: &mut impl EidClient) {}
 
 #[apply(eid_clients)]
-fn create<T: EidClient>(client: &T) {
+fn create<T: EidClient>(client: &mut T) {
     let keystore = T::KeyStoreProvider::default();
-    let client = T::create_eid(keystore).expect("creation failed");
-    let client_vector = client.state().get_clients().expect("failed to get clients");
-    assert_eq!(client_vector.len(), 1)
+    let mut client = T::create_eid(keystore).expect("creation failed");
+    let client_vector = client.state().get_members().expect("failed to get members");
+    assert_eq!(client_vector.len(), 1);
+    assert!(client.state().verify().unwrap());
 }
 
 #[apply(eid_clients)]
