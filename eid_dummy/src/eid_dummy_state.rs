@@ -25,7 +25,7 @@ impl EidState for EidDummyState {
     fn verify_client(&self, _: Member) -> Result<bool, EidError> {
         Ok(true)
     }
-    fn get_clients(&self) -> Result<Vec<Member>, EidError> {
+    fn get_members(&self) -> Result<Vec<Member>, EidError> {
         Ok(self.members.clone())
     }
 }
