@@ -57,9 +57,14 @@ impl EidClient for EidDummyClient {
         Ok(evolvement)
     }
     fn update(&self) -> Result<EidDummyEvolvement, EidError> {
-        let mut new_state = self.state.clone();
-        new_state.members.retain(|m| self.pk() == m.pk());
+        let mut new_members = self.state.members.clone();
+        new_members.retain(|m| self.pk() != m.pk());
 
+        let mut new_pk = self.pk().clone();
+        new_pk[0] = new_pk[0] + 1;
+        let member = Member::new(new_pk);
+
+        new_members.push(member);
         let evolvement = EidDummyEvolvement {
             members: new_state.members,
         };
