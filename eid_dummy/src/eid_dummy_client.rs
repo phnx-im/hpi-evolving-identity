@@ -66,7 +66,7 @@ impl EidClient for EidDummyClient {
 
         new_members.push(member);
         let evolvement = EidDummyEvolvement {
-            members: new_state.members,
+            members: new_members,
         };
         Ok(evolvement)
     }
