@@ -1,9 +1,9 @@
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
+use eid_traits::types::Member;
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
-use eid_traits::types::Member;
 
 #[template]
 #[rstest(client, case::EIDDummy(&mut EidDummyClient::default()),)]
@@ -20,11 +20,14 @@ fn create<T: EidClient>(client: &mut T) {
 }
 
 #[apply(eid_clients)]
-fn add<T: EidClient>(client: &mut T) {
+fn add(client: &mut impl EidClient) {
     let member = Member::default();
     let member_clone = member.clone();
     let evolvement = client.add(member).expect("failed to add member");
-    client.state().apply(evolvement).expect("Failed to apply state");
+    client
+        .state()
+        .apply(evolvement)
+        .expect("Failed to apply state");
 
     let state = client.state();
     let members = state.get_members().expect("failed to get members");
@@ -34,16 +37,24 @@ fn add<T: EidClient>(client: &mut T) {
 }
 
 #[apply(eid_clients)]
-fn remove<T: EidClient>(client: &mut T) {
+fn remove(client: &mut impl EidClient) {
     let member = Member::default();
     let member_to_remove = member.clone();
     let member_clone = member.clone();
     let evolvement_add = client.add(member).expect("failed to add member");
-    client.state().apply(evolvement_add).expect("Failed to apply state");
+    client
+        .state()
+        .apply(evolvement_add)
+        .expect("Failed to apply state");
     assert!(client.state().verify().unwrap());
 
-    let evolvement_remove = client.remove(member_to_remove).expect("failed to remove member");
-    client.state().apply(evolvement_remove).expect("Failed to apply state");
+    let evolvement_remove = client
+        .remove(member_to_remove)
+        .expect("failed to remove member");
+    client
+        .state()
+        .apply(evolvement_remove)
+        .expect("Failed to apply state");
     let state = client.state();
     let members = state.get_members().expect("failed to get members");
     assert!(state.verify().unwrap());
