@@ -12,7 +12,7 @@ pub trait EidClient {
 
     fn key_store(&self) -> &Self::KeyStoreProvider;
 
-    fn pk(&self) -> Vec<u8>;
+    fn pk(&self) -> &Vec<u8>;
 
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(keystore: Self::KeyStoreProvider) -> Result<Self, EidError>

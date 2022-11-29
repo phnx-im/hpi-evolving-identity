@@ -3,8 +3,8 @@ use eid_traits::key_store::{FromKeyStoreValue, ToKeyStoreValue};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct KeyPair {
-    sk: Vec<u8>,
-    pk: Vec<u8>,
+    pub(crate) sk: Vec<u8>,
+    pub(crate) pk: Vec<u8>,
 }
 
 impl FromKeyStoreValue for KeyPair {
