@@ -7,7 +7,7 @@ pub trait Transcript<E: Evolvement, S: EidState<E>> {
     fn new(trusted_state: S, log: Vec<E>) -> Self;
 
     /// Add a new entry on top of the existing [Evolvement]s in the transcript.
-    fn add_evolvement(&self, evolvement: Self::EvolvementProvider);
+    fn add_evolvement(&mut self, evolvement: E);
 
     /// Returns the trusted state.
     fn trusted_state(&self) -> S;
