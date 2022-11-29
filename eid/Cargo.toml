@@ -11,7 +11,9 @@ eid_mls = { version = "0.1.0", path = "../eid_mls", optional = true }
 eid_dummy = { version = "0.1.0", path = "../eid_dummy" } # todo, optional = true }
 rstest = {version = "^0.15"} # todo , optional = true}
 rstest_reuse = {version = "0.4"} # todo , optional = true}
+rand = "0.8.5"
 
 [dev-dependencies]
 rstest = "^0.15"
 rstest_reuse = "0.4"
+rand = "0.8.5"

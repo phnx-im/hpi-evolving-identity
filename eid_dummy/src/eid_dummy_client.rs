@@ -3,7 +3,7 @@ use eid_traits::key_store::{EidKeyStore, ToKeyStoreValue};
 use eid_traits::types::{EidError, Member};
 
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
-use crate::eid_dummy_keypair::KeyPair;
+
 use crate::eid_dummy_keystore::EidDummyKeystore;
 use crate::eid_dummy_state::EidDummyState;
 
@@ -32,7 +32,8 @@ impl EidClient for EidDummyClient {
     }
 
     fn create_eid(key_store: EidDummyKeystore) -> Result<Self, EidError> {
-        let members = vec![Member::default()];
+        let pk = "public key".as_bytes().to_vec();
+        let members = vec![Member::new(pk.clone())];
         let state = EidDummyState { members };
         Ok(EidDummyClient {
             state,
