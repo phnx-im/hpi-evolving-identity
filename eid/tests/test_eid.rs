@@ -1,28 +1,48 @@
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_keystore::EidDummyKeystore;
+use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
 use eid_traits::client::EidClient;
+use eid_traits::evolvement::Evolvement;
 use eid_traits::state::EidState;
+use eid_traits::transcript::Transcript;
 use eid_traits::types::Member;
-use rand::*;
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
 
 #[template]
-#[rstest(client,
-    case::EIDDummy(&mut EidDummyClient::create_eid(EidDummyKeystore::default()).expect("creation failed")),
+#[rstest(client, transcript,
+    case::EIDDummy(&mut EidDummyClient::create_eid(EidDummyKeystore::default()).expect("creation failed"), EidDummyTranscript::default()),
 )]
 #[allow(non_snake_case)]
-pub fn eid_clients(client: &mut impl EidClient) {}
+pub fn eid_clients<C, T>(client: &mut C, transcript: T)
+where
+    C: EidClient,
+    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+{
+}
 
 #[apply(eid_clients)]
-fn create<T: EidClient>(client: &mut T) {
+fn create<C, T>(client: &mut C, transcript: T)
+where
+    C: EidClient,
+    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+{
     let members = client.state().get_members().expect("failed to get members");
+    // create transcript, trusting the client's state
+    let transcript = T::new(client.state().clone(), vec![]);
+    assert_eq!(transcript.trusted_state(), client.state());
     assert_eq!(members.len(), 1);
     assert!(client.state().verify().unwrap());
 }
 
 #[apply(eid_clients)]
-fn add(client: &mut impl EidClient) {
+fn add<C, T>(client: &mut C, transcript: T)
+where
+    C: EidClient,
+    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+{
+    // create transcript, trusting the client's state
+    T::new(client.state().clone(), vec![]);
     let pk = (0..256).map(|_| rand::random::<u8>()).collect();
     let member = Member::new(pk);
     let member_clone = member.clone();
@@ -40,7 +60,11 @@ fn add(client: &mut impl EidClient) {
 }
 
 #[apply(eid_clients)]
-fn remove(client: &mut impl EidClient) {
+fn remove<C, T>(client: &mut C, transcript: T)
+where
+    C: EidClient,
+    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+{
     let pk = (0..256).map(|_| rand::random::<u8>()).collect();
     let member = Member::new(pk);
     let member_to_remove = member.clone();
@@ -67,7 +91,11 @@ fn remove(client: &mut impl EidClient) {
 }
 
 #[apply(eid_clients)]
-fn update(client: &mut impl EidClient) {
+fn update<C, T>(client: &mut C, transcript: T)
+where
+    C: EidClient,
+    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+{
     let member = client.state().get_members().expect("failed to get members")[0].clone();
 
     let update_evolvement = client.update().expect("Updating client keys failed");
