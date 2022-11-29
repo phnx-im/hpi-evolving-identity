@@ -1,7 +1,9 @@
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
+use eid_dummy::eid_dummy_keystore::EidDummyKeystore;
 use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
 use eid_traits::types::Member;
+use rand::*;
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
 
@@ -21,7 +23,8 @@ fn create<T: EidClient>(client: &mut T) {
 
 #[apply(eid_clients)]
 fn add(client: &mut impl EidClient) {
-    let member = Member::default();
+    let pk = (0..256).map(|_| rand::random::<u8>()).collect();
+    let member = Member::new(pk);
     let member_clone = member.clone();
     let evolvement = client.add(member).expect("failed to add member");
     client
@@ -33,7 +36,7 @@ fn add(client: &mut impl EidClient) {
     let members = state.get_members().expect("failed to get members");
     assert!(state.verify().unwrap());
     assert!(members.contains(&member_clone));
-    assert_eq!(1, members.len())
+    assert_eq!(2, members.len())
 }
 
 #[apply(eid_clients)]
@@ -68,6 +71,13 @@ fn update(client: &mut impl EidClient) {
     let member = client.state().get_members().expect("failed to get members")[0].clone();
 
     let update_evolvement = client.update().expect("Updating client keys failed");
+    client
+        .state()
+        .apply(update_evolvement)
+        .expect("Failed to apply update on client state");
+    let new_members = client.state().get_members().expect("failed to get members");
 
-    let members = state.get_members().expect("failed to get members");
+    assert!(client.state().verify().unwrap());
+    assert!(!new_members.contains(&member));
+    assert_eq!(1, new_members.len());
 }
