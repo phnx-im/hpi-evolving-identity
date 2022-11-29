@@ -9,7 +9,6 @@ pub struct EidDummyState {
 }
 
 impl EidState<EidDummyEvolvement> for EidDummyState {
-
     fn from_log(evolvements: Vec<EidDummyEvolvement>) -> Result<Self, EidError> {
         let members = evolvements.last().unwrap().clone().members;
 

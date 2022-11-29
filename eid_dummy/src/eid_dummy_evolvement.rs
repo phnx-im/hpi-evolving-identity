@@ -3,7 +3,7 @@ use eid_traits::types::Member;
 
 #[derive(Default, Clone)]
 pub struct EidDummyEvolvement {
-    pub(crate) members: Vec<Member>
+    pub(crate) members: Vec<Member>,
 }
 
 impl Evolvement for EidDummyEvolvement {
