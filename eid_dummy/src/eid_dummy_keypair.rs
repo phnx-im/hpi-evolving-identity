@@ -1,6 +1,5 @@
 use crate::eid_dummy_keystore::Error;
 use eid_traits::key_store::{FromKeyStoreValue, ToKeyStoreValue};
-use eid_traits::types::EidError;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct KeyPair {

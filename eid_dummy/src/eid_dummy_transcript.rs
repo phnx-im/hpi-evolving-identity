@@ -1,12 +1,11 @@
-use eid_traits::evolvement::Evolvement;
-use eid_traits::transcript::Transcript;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_state::EidDummyState;
+use eid_traits::transcript::Transcript;
 
 #[derive(Default)]
 pub struct EidDummyTranscript {
     trusted_state: EidDummyState,
-    log: Vec<EidDummyEvolvement>
+    log: Vec<EidDummyEvolvement>,
 }
 
 impl Transcript for EidDummyTranscript {
@@ -14,12 +13,10 @@ impl Transcript for EidDummyTranscript {
     type EvolvementProvider = EidDummyEvolvement;
 
     fn new(trusted_state: Self::StateProvider, log: Vec<EidDummyEvolvement>) -> Self {
-        EidDummyTranscript {trusted_state, log}
+        EidDummyTranscript { trusted_state, log }
     }
 
-    fn add_evolvement(&self, evolvement: EidDummyEvolvement) {
-
-    }
+    fn add_evolvement(&self, evolvement: EidDummyEvolvement) {}
 
     fn trusted_state(&self) -> Self::StateProvider {
         self.trusted_state.clone()

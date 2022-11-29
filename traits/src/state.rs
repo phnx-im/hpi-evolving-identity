@@ -1,4 +1,3 @@
-use crate::evolvement;
 use crate::evolvement::Evolvement;
 use crate::types::EidError;
 use crate::types::Member;
