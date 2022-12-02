@@ -8,6 +8,7 @@ use eid_traits::transcript::Transcript;
 use eid_traits::types::Member;
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
+use std::fmt::Debug;
 
 #[template]
 #[rstest(client, transcript,
@@ -26,11 +27,16 @@ fn create<C, T>(client: &mut C, transcript: T)
 where
     C: EidClient,
     T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    <C as EidClient>::StateProvider: Debug,
 {
     let members = client.state().get_members().expect("failed to get members");
     // create transcript, trusting the client's state
     let transcript = T::new(client.state().clone(), vec![]);
-    assert_eq!(transcript.trusted_state(), client.state());
+    assert_eq!(
+        &mut transcript.trusted_state(),
+        client.state(),
+        "initial states of transcript and client do not match"
+    );
     assert_eq!(members.len(), 1);
     assert!(client.state().verify().unwrap());
 }

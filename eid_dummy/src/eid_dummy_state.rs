@@ -2,7 +2,7 @@ use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
 
-#[derive(Default, Clone)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct EidDummyState {
     pub(crate) members: Vec<Member>,
 }
