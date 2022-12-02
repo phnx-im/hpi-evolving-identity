@@ -1,5 +1,4 @@
 use eid_traits::client::EidClient;
-use eid_traits::key_store::{EidKeyStore, ToKeyStoreValue};
 use eid_traits::types::{EidError, Member};
 
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
@@ -42,6 +41,11 @@ impl EidClient for EidDummyClient {
         })
     }
     fn add(&self, member: Member) -> Result<EidDummyEvolvement, EidError> {
+        if self.state.members.contains(&member) {
+            return Err(EidError::AddMemberError(String::from(
+                "Member already in EID",
+            )));
+        }
         let mut new_state = self.state.clone();
         new_state.members.push(member);
         let evolvement = EidDummyEvolvement {
@@ -50,6 +54,12 @@ impl EidClient for EidDummyClient {
         Ok(evolvement)
     }
     fn remove(&self, member: Member) -> Result<EidDummyEvolvement, EidError> {
+        if !self.state.members.contains(&member) {
+            return Err(EidError::InvalidMemberError(String::from(
+                "Member not in EID",
+            )));
+        }
+
         let mut new_state = self.state.clone();
 
         if let Some(pos) = new_state.members.iter().position(|x| x.pk() == member.pk()) {

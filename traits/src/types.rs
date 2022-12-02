@@ -8,6 +8,8 @@ use std::fmt::{Debug, Display, Formatter};
 pub enum EidError {
     StateNotInitialized,
     StateAlreadyInitialized,
+    AddMemberError(String),
+    InvalidMemberError(String),
 }
 
 impl Display for EidError {
