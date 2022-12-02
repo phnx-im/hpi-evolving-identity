@@ -1,7 +1,7 @@
 use eid_traits::evolvement::Evolvement;
 use eid_traits::types::Member;
 
-#[derive(Default, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct EidDummyEvolvement {
     pub(crate) members: Vec<Member>,
 }

@@ -47,6 +47,7 @@ fn add<C, T>(client: &mut C, transcript: T)
 where
     C: EidClient,
     T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    <C as EidClient>::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.state().clone(), vec![]);
@@ -68,11 +69,10 @@ where
     transcript.add_evolvement(add_alice_evolvement.clone());
 
     // Try to add Alice a second time
-    let member_in_eid_error = client.add(alice.clone());
-    assert!(matches!(
-        member_in_eid_error,
-        Err(EidError::AddMemberError(..))
-    ));
+    let member_in_eid_error = client
+        .add(alice.clone())
+        .expect_err("Adding member a second time");
+    assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
     // Add Bob
     let pk_bob = (0..256).map(|_| rand::random::<u8>()).collect();
@@ -97,6 +97,7 @@ fn remove<C, T>(client: &mut C, transcript: T)
 where
     C: EidClient,
     T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    <C as EidClient>::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.state().clone(), vec![]);
@@ -124,10 +125,12 @@ where
     transcript.add_evolvement(evolvement_remove);
 
     // Try to remove Alice a second time
-    let member_not_in_eid_error = client.remove(alice.clone());
+    let member_not_in_eid_error = client
+        .remove(alice.clone())
+        .expect_err("Removing non-existent member");
     assert!(matches!(
         member_not_in_eid_error,
-        Err(EidError::InvalidMemberError(..))
+        EidError::InvalidMemberError(..)
     ));
 
     let state = client.state();
