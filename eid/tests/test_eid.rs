@@ -146,16 +146,48 @@ where
     C: EidClient,
     T: Transcript<C::EvolvementProvider, C::StateProvider>,
 {
-    let member = client.state().get_members().expect("failed to get members")[0].clone();
+    // Create transcript, trusting the client's state
+    let mut transcript = T::new(client.state().clone(), vec![]);
+    let alice_pk_before_update_1 =
+        client.state().get_members().expect("failed to get members")[0].pk();
 
-    let update_evolvement = client.update().expect("Updating client keys failed");
+    let update_evolvement_1 = client.update().expect("Updating client keys failed");
     client
-        .state()
-        .apply(update_evolvement)
+        .evolve(update_evolvement_1.clone())
         .expect("Failed to apply update on client state");
-    let new_members = client.state().get_members().expect("failed to get members");
+    transcript.add_evolvement(update_evolvement_1.clone());
+
+    let pks_after_update_1 = client
+        .state()
+        .get_members()
+        .expect("failed to get members")
+        .iter()
+        .map(|m| m.pk())
+        .collect::<Vec<_>>();
 
     assert!(client.state().verify().unwrap());
-    assert!(!new_members.contains(&member));
-    assert_eq!(1, new_members.len());
+    assert!(!pks_after_update_1.contains(&alice_pk_before_update_1));
+    assert_eq!(1, pks_after_update_1.len());
+
+    // Update Alice a second time
+    let alice_pk_before_update_2 = pks_after_update_1[0].clone();
+    let update_evolvement_2 = client.update().expect("Updating client keys failed");
+    client
+        .state()
+        .apply(update_evolvement_2.clone())
+        .expect("Failed to apply update on client state");
+    assert!(update_evolvement_1.is_valid_successor(&update_evolvement_2));
+    transcript.add_evolvement(update_evolvement_2);
+
+    let pks_after_update_2 = client
+        .state()
+        .get_members()
+        .expect("failed to get members")
+        .iter()
+        .map(|m| m.pk())
+        .collect::<Vec<_>>();
+
+    assert!(client.state().verify().unwrap());
+    assert!(!pks_after_update_2.contains(&alice_pk_before_update_2));
+    assert_eq!(1, pks_after_update_2.len());
 }

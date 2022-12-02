@@ -30,5 +30,9 @@ pub trait EidClient {
         Self: Sized;
 
     /// Create an [Evolvement] to update your own key material.
-    fn update(&self) -> Result<Self::EvolvementProvider, EidError>;
+    fn update(&mut self) -> Result<Self::EvolvementProvider, EidError>;
+
+    /// Apply an [evolvement::Evolvement], changing the client's state. If the [evolvement::Evolvement]
+    /// is invalid, return an [EidError].
+    fn evolve(&mut self, evolvement: Self::EvolvementProvider) -> Result<(), EidError>;
 }

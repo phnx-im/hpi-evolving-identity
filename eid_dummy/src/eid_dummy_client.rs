@@ -1,5 +1,7 @@
 use eid_traits::client::EidClient;
-use eid_traits::types::{EidError, Member};
+use eid_traits::state::EidState;
+use eid_traits::types::{EidError, EvolvementType, Member};
+use std::cmp::Ordering;
 
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 
@@ -11,6 +13,19 @@ pub struct EidDummyClient {
     state: EidDummyState,
     key_store: EidDummyKeystore,
     pk: Vec<u8>,
+    pending_pk_update: Option<Vec<u8>>,
+}
+
+impl EidDummyClient {
+    fn get_evolvement_type(&self, evolvement: &EidDummyEvolvement) -> EvolvementType {
+        let state_member_count = self.state.members.len();
+        let evolvement_member_count = evolvement.members.len();
+        match evolvement_member_count.cmp(&state_member_count) {
+            Ordering::Less => EvolvementType::Remove,
+            Ordering::Greater => EvolvementType::Add,
+            Ordering::Equal => EvolvementType::Update,
+        }
+    }
 }
 
 impl EidClient for EidDummyClient {
@@ -38,8 +53,23 @@ impl EidClient for EidDummyClient {
             state,
             key_store,
             pk: pk,
+            pending_pk_update: None,
         })
     }
+
+    fn evolve(&mut self, evolvement: EidDummyEvolvement) -> Result<(), EidError> {
+        // in case of update, change your own pk
+        match self.get_evolvement_type(&evolvement) {
+            EvolvementType::Update => {
+                self.pk = self.pending_pk_update.clone().unwrap();
+                self.pending_pk_update = None;
+            }
+            _ => {}
+        }
+
+        self.state().apply(evolvement)
+    }
+
     fn add(&self, member: Member) -> Result<EidDummyEvolvement, EidError> {
         if self.state.members.contains(&member) {
             return Err(EidError::AddMemberError(String::from(
@@ -71,7 +101,7 @@ impl EidClient for EidDummyClient {
         };
         Ok(evolvement)
     }
-    fn update(&self) -> Result<EidDummyEvolvement, EidError> {
+    fn update(&mut self) -> Result<EidDummyEvolvement, EidError> {
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
         new_members.retain(|m| *self.pk() != m.pk());
@@ -79,7 +109,10 @@ impl EidClient for EidDummyClient {
         // create a member with your new pk
         let mut new_pk = self.pk().clone();
         new_pk[0] = new_pk[0] + 1;
-        let member = Member::new(new_pk);
+        let member = Member::new(new_pk.clone());
+
+        // remember the new pk for later
+        self.pending_pk_update = Some(new_pk);
 
         // create an evolvement with the new member
         new_members.push(member);

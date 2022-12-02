@@ -20,6 +20,12 @@ impl Display for EidError {
 
 impl Error for EidError {}
 
+pub enum EvolvementType {
+    Add,
+    Update,
+    Remove,
+}
+
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct Member {
     pk: Vec<u8>,
