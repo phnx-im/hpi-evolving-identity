@@ -1,11 +1,13 @@
 [package]
-name = "eid_traits"
+name = "eid_dummy"
 version = "0.1.0"
 edition = "2021"
-
-[lib]
-path = "src/traits.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+eid_traits = { version = "0.1.0", path = "../traits" }
+thiserror = "1.0"
+serde_json = "^1.0"
+serde = "1.0"
+serde_derive = "1.0"

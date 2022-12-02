@@ -1,19 +1,16 @@
+use crate::evolvement::Evolvement;
 use crate::types::EidError;
 use crate::types::Member;
-use crate::evolvement;
-use crate::transcript::Transcript;
 
-pub trait EidState {
-
-    /// The type describing a step from one state to the next.
-    type EvolvementProvider: evolvement::Evolvement;
-
+pub trait EidState<T: Evolvement>: Sized {
     /// Create an [EidState] from a log of evolvements. Used to verify a slice of a transcript or to recover a state from a transcript.
-    fn apply_log(log: Vec<Self::EvolvementProvider>);
+    fn from_log(log: Vec<T>) -> Result<Self, EidError>
+    where
+        Self: Sized;
 
     /// Apply an [evolvement::Evolvement], changing the [EidState]. If the [evolvement::Evolvement]
     /// is invalid, return an [EidError].
-    fn apply(&self, evolvement: Self::EvolvementProvider) -> Result<(), EidError>;
+    fn apply(&mut self, evolvement: T) -> Result<(), EidError>;
 
     /// Verify that the current EID state is valid.
     fn verify(&self) -> Result<bool, EidError>;
@@ -22,6 +19,5 @@ pub trait EidState {
     fn verify_client(&self, client: Member) -> Result<bool, EidError>;
 
     /// Get all clients which are members of the EID.
-    fn get_clients(&self) -> Result<Vec<Member>, EidError>;
-
+    fn get_members(&self) -> Result<Vec<Member>, EidError>;
 }
