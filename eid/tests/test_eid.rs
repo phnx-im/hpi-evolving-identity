@@ -57,8 +57,7 @@ where
     let alice = Member::new(pk_alice);
     let add_alice_evolvement = client.add(alice.clone()).expect("failed to add member");
     client
-        .state()
-        .apply(add_alice_evolvement.clone())
+        .evolve(add_alice_evolvement.clone())
         .expect("Failed to apply state");
 
     assert!(client.state().verify().unwrap());
@@ -79,8 +78,7 @@ where
     let bob = Member::new(pk_bob);
     let add_bob_evolvement = client.add(bob.clone()).expect("failed to add member");
     client
-        .state()
-        .apply(add_bob_evolvement.clone())
+        .evolve(add_bob_evolvement.clone())
         .expect("Failed to apply state");
 
     assert!(add_alice_evolvement.is_valid_successor(&add_bob_evolvement));
@@ -106,8 +104,7 @@ where
     let alice = Member::new(pk);
     let evolvement_add = client.add(alice.clone()).expect("failed to add member");
     client
-        .state()
-        .apply(evolvement_add.clone())
+        .evolve(evolvement_add.clone())
         .expect("Failed to apply state");
     assert!(client.state().verify().unwrap());
 
@@ -117,8 +114,7 @@ where
         .remove(alice.clone())
         .expect("failed to remove member");
     client
-        .state()
-        .apply(evolvement_remove.clone())
+        .evolve(evolvement_remove.clone())
         .expect("Failed to apply remove on client state");
 
     assert!(evolvement_add.is_valid_successor(&evolvement_remove));
@@ -173,8 +169,7 @@ where
     let alice_pk_before_update_2 = pks_after_update_1[0].clone();
     let update_evolvement_2 = client.update().expect("Updating client keys failed");
     client
-        .state()
-        .apply(update_evolvement_2.clone())
+        .evolve(update_evolvement_2.clone())
         .expect("Failed to apply update on client state");
     assert!(update_evolvement_1.is_valid_successor(&update_evolvement_2));
     transcript.add_evolvement(update_evolvement_2);
