@@ -16,18 +16,6 @@ pub struct EidDummyClient {
     pending_pk_update: Option<Vec<u8>>,
 }
 
-impl EidDummyClient {
-    fn get_evolvement_type(&self, evolvement: &EidDummyEvolvement) -> EvolvementType {
-        let state_member_count = self.state.members.len();
-        let evolvement_member_count = evolvement.members.len();
-        match evolvement_member_count.cmp(&state_member_count) {
-            Ordering::Less => EvolvementType::Remove,
-            Ordering::Greater => EvolvementType::Add,
-            Ordering::Equal => EvolvementType::Update,
-        }
-    }
-}
-
 impl EidClient for EidDummyClient {
     type StateProvider = EidDummyState;
     type KeyStoreProvider = EidDummyKeystore;
@@ -59,8 +47,8 @@ impl EidClient for EidDummyClient {
 
     fn evolve(&mut self, evolvement: EidDummyEvolvement) -> Result<(), EidError> {
         // in case of update, change your own pk
-        match self.get_evolvement_type(&evolvement) {
-            EvolvementType::Update => {
+        match &evolvement {
+            EidDummyEvolvement::Update { members: _ } => {
                 self.pk = self.pending_pk_update.clone().unwrap();
                 self.pending_pk_update = None;
             }
@@ -78,7 +66,7 @@ impl EidClient for EidDummyClient {
         }
         let mut new_state = self.state.clone();
         new_state.members.push(member);
-        let evolvement = EidDummyEvolvement {
+        let evolvement = EidDummyEvolvement::Add {
             members: new_state.members,
         };
         Ok(evolvement)
