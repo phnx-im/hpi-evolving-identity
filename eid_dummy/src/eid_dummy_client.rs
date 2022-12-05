@@ -1,10 +1,8 @@
 use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
-use eid_traits::types::{EidError, EvolvementType, Member};
-use std::cmp::Ordering;
+use eid_traits::types::{EidError, Member};
 
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
-
 use crate::eid_dummy_keystore::EidDummyKeystore;
 use crate::eid_dummy_state::EidDummyState;
 
@@ -84,7 +82,7 @@ impl EidClient for EidDummyClient {
             new_state.members.swap_remove(pos);
         }
 
-        let evolvement = EidDummyEvolvement {
+        let evolvement = EidDummyEvolvement::Remove {
             members: new_state.members,
         };
         Ok(evolvement)
@@ -104,7 +102,7 @@ impl EidClient for EidDummyClient {
 
         // create an evolvement with the new member
         new_members.push(member);
-        let evolvement = EidDummyEvolvement {
+        let evolvement = EidDummyEvolvement::Update {
             members: new_members,
         };
         Ok(evolvement)
