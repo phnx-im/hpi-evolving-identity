@@ -1,5 +1,4 @@
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
-use eid_traits::evolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
 
