@@ -30,7 +30,7 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
         &self.pk
     }
 
-    fn create_eid(key_store: &'a EidDummyKeystore) -> Result<EidDummyClient<'a>, EidError> {
+    fn create_eid(key_store: &'a EidDummyKeystore) -> Result<Self, EidError> {
         let pk = "public key".as_bytes().to_vec();
         let members = vec![Member::new(pk.clone())];
         let state = EidDummyState { members };
