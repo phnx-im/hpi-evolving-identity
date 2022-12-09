@@ -1,15 +1,17 @@
 use eid_traits::client::EidClient;
 use eid_traits::types::{EidError, Member};
+use openmls::group::MlsGroup;
+use openmls::prelude::StagedCommit;
+
+use crate::eid_dummy_keystore::EidDummyKeystore;
 
 #[derive(Default)]
 struct EidMlsClient {}
 
 impl EidClient for EidMlsClient {
-    type StateProvider = Type;
-    // Todo
-    type KeyStoreProvider = Type;
-    // Todo
-    type EvolvementProvider = Type; // Todo
+    type KeyStoreProvider = EidDummyKeystore;
+    type EvolvementProvider = StagedCommit;
+    type StateProvider = MlsGroup;
 
     fn state(&mut self) -> &mut Self::StateProvider {
         todo!()
