@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 eid_traits = { version = "0.1.0", path = "../traits" }
+openmls = "0.4.1"
