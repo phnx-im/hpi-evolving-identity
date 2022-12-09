@@ -8,17 +8,16 @@ pub struct EidDummyTranscript {
     log: Vec<EidDummyEvolvement>,
 }
 
-impl Transcript for EidDummyTranscript {
-    type StateProvider = EidDummyState;
-    type EvolvementProvider = EidDummyEvolvement;
-
-    fn new(trusted_state: Self::StateProvider, log: Vec<EidDummyEvolvement>) -> Self {
+impl Transcript<EidDummyEvolvement, EidDummyState> for EidDummyTranscript {
+    fn new(trusted_state: EidDummyState, log: Vec<EidDummyEvolvement>) -> Self {
         EidDummyTranscript { trusted_state, log }
     }
 
-    fn add_evolvement(&self, evolvement: EidDummyEvolvement) {}
+    fn add_evolvement(&mut self, evolvement: EidDummyEvolvement) {
+        self.log.push(evolvement);
+    }
 
-    fn trusted_state(&self) -> Self::StateProvider {
+    fn trusted_state(&self) -> EidDummyState {
         self.trusted_state.clone()
     }
 

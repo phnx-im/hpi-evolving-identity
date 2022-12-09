@@ -8,6 +8,8 @@ use std::fmt::{Debug, Display, Formatter};
 pub enum EidError {
     StateNotInitialized,
     StateAlreadyInitialized,
+    AddMemberError(String),
+    InvalidMemberError(String),
 }
 
 impl Display for EidError {
@@ -18,7 +20,13 @@ impl Display for EidError {
 
 impl Error for EidError {}
 
-#[derive(Clone, Default, PartialEq)]
+pub enum EvolvementType {
+    Add,
+    Update,
+    Remove,
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct Member {
     pk: Vec<u8>,
 }
