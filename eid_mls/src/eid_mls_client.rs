@@ -6,12 +6,14 @@ use openmls::prelude::StagedCommit;
 use crate::eid_dummy_keystore::EidDummyKeystore;
 
 #[derive(Default)]
-struct EidMlsClient {}
+struct EidMlsClient {
+    state: EidMlsState,
+}
 
 impl EidClient for EidMlsClient {
     type KeyStoreProvider = EidDummyKeystore;
-    type EvolvementProvider = StagedCommit;
-    type StateProvider = MlsGroup;
+    type EvolvementProvider = EidMlsEvolvement;
+    type StateProvider = EidMlsState;
 
     fn state(&mut self) -> &mut Self::StateProvider {
         todo!()
