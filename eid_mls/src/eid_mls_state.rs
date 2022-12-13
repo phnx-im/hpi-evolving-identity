@@ -80,7 +80,8 @@ impl<'a> EidState<EidMlsEvolvement> for EidMlsState<'a> {
     }
 
     fn verify_client(&self, client: &Member) -> Result<bool, EidError> {
-        todo!()
+        let members = self.get_members()?;
+        Ok(members.contains(client))
     }
 
     fn get_members(&self) -> Result<Vec<Member>, EidError> {
