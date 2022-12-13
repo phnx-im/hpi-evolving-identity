@@ -11,14 +11,7 @@ pub struct EidDummyState {
 impl EidState<EidDummyEvolvement> for EidDummyState {
     fn apply_log(&mut self, evolvements: &Vec<EidDummyEvolvement>) -> Result<(), EidError> {
         let evolvement = evolvements.last().unwrap();
-        match &evolvement {
-            EidDummyEvolvement::Update { members }
-            | EidDummyEvolvement::Add { members }
-            | EidDummyEvolvement::Remove { members } => {
-                self.members = members.clone();
-                Ok(())
-            }
-        }
+        self.apply(evolvement)
     }
     fn apply(&mut self, evolvement: &EidDummyEvolvement) -> Result<(), EidError> {
         match &evolvement {
