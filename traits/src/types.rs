@@ -10,6 +10,10 @@ pub enum EidError {
     StateAlreadyInitialized,
     AddMemberError(String),
     InvalidMemberError(String),
+    ParseMessageError,
+    UnverifiedMessageError,
+    InvalidMessageError,
+    ApplyCommitError,
 }
 
 impl Display for EidError {
