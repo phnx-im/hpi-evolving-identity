@@ -94,7 +94,10 @@ impl<'a> EidState<EidMlsEvolvement> for EidMlsState<'a> {
                 let members = public_keys.map(|pk| Member::new(pk.to_vec())).collect();
                 Ok(members)
             }
-            EidMlsState::Transcript { group, backend } => Ok(vec![]),
+            EidMlsState::Transcript { group, backend } => {
+                // TODO
+                Ok(vec![])
+            }
         }
     }
 }
