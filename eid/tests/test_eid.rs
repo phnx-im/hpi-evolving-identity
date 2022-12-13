@@ -1,3 +1,11 @@
+#[macro_use]
+extern crate lazy_static;
+
+use std::fmt::Debug;
+
+pub use rstest::*;
+pub use rstest_reuse::{self, *};
+
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_keystore::EidDummyKeystore;
 use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
@@ -7,12 +15,6 @@ use eid_traits::state::EidState;
 use eid_traits::transcript::Transcript;
 use eid_traits::types::EidError;
 use eid_traits::types::Member;
-pub use rstest::*;
-pub use rstest_reuse::{self, *};
-use std::fmt::Debug;
-
-#[macro_use]
-extern crate lazy_static;
 
 lazy_static! {
     static ref DUMMY_KEYSTORE: EidDummyKeystore = EidDummyKeystore::default();
@@ -46,7 +48,6 @@ where
         "initial states of transcript and client do not match"
     );
     assert_eq!(members.len(), 1);
-    assert!(client.state().verify().unwrap());
 }
 
 #[apply(eid_clients)]
@@ -67,7 +68,6 @@ where
         .evolve(&add_alice_evolvement)
         .expect("Failed to apply state");
 
-    assert!(client.state().verify().unwrap());
     let members = client.state().get_members().expect("failed to get members");
     assert!(members.contains(&alice));
     assert_eq!(2, members.len());
@@ -90,7 +90,6 @@ where
     transcript.add_evolvement(add_bob_evolvement.clone());
 
     let members = client.state().get_members().expect("failed to get members");
-    assert!(client.state().verify().unwrap());
     assert!(members.contains(&bob));
     assert_eq!(3, members.len())
 }
@@ -111,7 +110,6 @@ where
     client
         .evolve(&evolvement_add)
         .expect("Failed to apply state");
-    assert!(client.state().verify().unwrap());
 
     transcript.add_evolvement(evolvement_add.clone());
 
@@ -134,7 +132,6 @@ where
 
     let state = client.state();
     let members = state.get_members().expect("failed to get members");
-    assert!(state.verify().unwrap());
     assert!(!members.contains(&alice));
     assert_eq!(1, members.len());
 }
@@ -165,7 +162,6 @@ where
         .map(|m| m.pk())
         .collect::<Vec<_>>();
 
-    assert!(client.state().verify().unwrap());
     assert!(!pks_after_update_1.contains(&alice_pk_before_update_1));
     assert_eq!(1, pks_after_update_1.len());
 
@@ -186,7 +182,6 @@ where
         .map(|m| m.pk())
         .collect::<Vec<_>>();
 
-    assert!(client.state().verify().unwrap());
     assert!(!pks_after_update_2.contains(&alice_pk_before_update_2));
     assert_eq!(1, pks_after_update_2.len());
 }
