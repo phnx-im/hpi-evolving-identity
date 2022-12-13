@@ -9,6 +9,7 @@ pub struct EidDummyTranscript {
 }
 
 impl Transcript<EidDummyEvolvement, EidDummyState> for EidDummyTranscript {
+    type StateProvider = EidDummyState;
     fn new(trusted_state: EidDummyState, log: Vec<EidDummyEvolvement>) -> Self {
         EidDummyTranscript { trusted_state, log }
     }
