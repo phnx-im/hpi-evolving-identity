@@ -30,9 +30,6 @@ impl EidState<EidDummyEvolvement> for EidDummyState {
             }
         }
     }
-    fn verify(&self) -> Result<bool, EidError> {
-        Ok(true)
-    }
     fn verify_client(&self, _: &Member) -> Result<bool, EidError> {
         Ok(true)
     }

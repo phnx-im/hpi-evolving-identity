@@ -79,10 +79,6 @@ impl<'a> EidState<EidMlsEvolvement> for EidMlsState<'a> {
         Ok(())
     }
 
-    fn verify(&self) -> Result<bool, EidError> {
-        todo!()
-    }
-
     fn verify_client(&self, client: &Member) -> Result<bool, EidError> {
         todo!()
     }

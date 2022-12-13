@@ -12,9 +12,6 @@ pub trait EidState<T: Evolvement>: Sized + Clone + Eq {
     /// is invalid, return an [EidError].
     fn apply(&mut self, evolvement: &T) -> Result<(), EidError>;
 
-    /// Verify that the current EID state is valid.
-    fn verify(&self) -> Result<bool, EidError>;
-
     /// Verify that a client is part of the EID.
     fn verify_client(&self, client: &Member) -> Result<bool, EidError>;
 
