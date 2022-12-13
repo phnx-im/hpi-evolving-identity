@@ -7,7 +7,7 @@ use openmls::prelude::{
 };
 
 use crate::eid_mls_client::EidMlsClient;
-use crate::eid_mls_state::EidMlsState::Client;
+use crate::r#trait::EidMlsClientState::Client;
 
 fn create_store_credential(
     identifier: String,

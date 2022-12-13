@@ -4,7 +4,7 @@ use crate::types::Member;
 
 pub trait EidState<T: Evolvement>: Sized + Clone + Eq {
     /// Create an [EidState] from a log of evolvements. Used to verify a slice of a transcript or to recover a state from a transcript.
-    fn apply_log(&mut self, &mut log: &Vec<T>) -> Result<(), EidError>
+    fn apply_log(&mut self, log: &Vec<T>) -> Result<(), EidError>
     where
         Self: Sized;
 
