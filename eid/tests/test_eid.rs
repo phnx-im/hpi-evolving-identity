@@ -41,10 +41,10 @@ where
 {
     let members = client.state().get_members().expect("failed to get members");
     // create transcript, trusting the client's state
-    let transcript = T::new(client.state().clone(), vec![]);
+    let transcript = T::new(client.state().clone().into(), vec![]);
     assert_eq!(
-        &mut transcript.trusted_state(),
-        client.state(),
+        transcript.trusted_state().clone(),
+        client.state().clone().into(),
         "initial states of transcript and client do not match"
     );
     assert_eq!(members.len(), 1);
@@ -58,7 +58,7 @@ where
     <C as EidClient<'a>>::StateProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().clone(), vec![]);
+    let mut transcript = T::new(client.state().clone().into(), vec![]);
 
     // Create Alice as a member with a random pk
     let pk_alice = (0..256).map(|_| rand::random::<u8>()).collect();
@@ -102,7 +102,7 @@ where
     <C as EidClient<'a>>::StateProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().clone(), vec![]);
+    let mut transcript = T::new(client.state().clone().into(), vec![]);
 
     let pk = (0..256).map(|_| rand::random::<u8>()).collect();
     let alice = Member::new(pk);
@@ -144,7 +144,7 @@ where
     <C as EidClient<'a>>::StateProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().clone(), vec![]);
+    let mut transcript = T::new(client.state().clone().into(), vec![]);
     let alice_pk_before_update_1 =
         client.state().get_members().expect("failed to get members")[0].pk();
 
