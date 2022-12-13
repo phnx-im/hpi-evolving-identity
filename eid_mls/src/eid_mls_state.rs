@@ -90,8 +90,8 @@ impl<'a> EidState<EidMlsEvolvement> for EidMlsState<'a> {
     fn get_members(&self) -> Result<Vec<Member>, EidError> {
         match self {
             EidMlsState::Client { group, backend } => {
-                let key_packges = group.members();
-                let public_keys = key_packges
+                let key_packages = group.members();
+                let public_keys = key_packages
                     .iter()
                     .map(|kp| kp.credential().signature_key().as_slice());
                 let members = public_keys.map(|pk| Member::new(pk.to_vec())).collect();
