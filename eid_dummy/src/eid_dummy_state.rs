@@ -8,7 +8,7 @@ pub struct EidDummyState {
 }
 
 impl EidState<EidDummyEvolvement> for EidDummyState {
-    fn from_log(evolvements: &Vec<EidDummyEvolvement>) -> Result<Self, EidError> {
+    fn from_log(evolvements: &[EidDummyEvolvement]) -> Result<Self, EidError> {
         let evolvement = evolvements.last().unwrap();
         match &evolvement {
             EidDummyEvolvement::Update { members }

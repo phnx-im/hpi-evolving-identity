@@ -26,7 +26,7 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
         &self.key_store
     }
 
-    fn pk(&self) -> &Vec<u8> {
+    fn pk(&self) -> &[u8] {
         &self.pk
     }
 
@@ -92,7 +92,7 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
         new_members.retain(|m| *self.pk() != m.pk());
 
         // create a member with your new pk
-        let mut new_pk = self.pk().clone();
+        let mut new_pk = self.pk().clone().to_vec();
         new_pk[0] = new_pk[0] + 1;
         let member = Member::new(new_pk.clone());
 
