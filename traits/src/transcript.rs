@@ -1,11 +1,8 @@
 use crate::evolvement::Evolvement;
 use crate::state::EidState;
-use std::fmt::Debug;
 
 pub trait Transcript<E: Evolvement> {
-    type StateProvider: EidState<E>
-        // require that a transcript state can be created from a client state
-        + Debug;
+    type StateProvider: EidState<E>;
     /// creates a new log from a trusted [EidState] and a vector of evolvements that happened after the trusted [EidState].
     fn new(trusted_state: Self::StateProvider, log: Vec<E>) -> Self;
 
