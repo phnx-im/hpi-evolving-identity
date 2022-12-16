@@ -25,7 +25,7 @@ impl<'a> EidClient<'a> for EidMlsClient {
         todo!()
     }
 
-    fn pk(&self) -> &Vec<u8> {
+    fn pk(&self) -> &[u8] {
         todo!()
     }
 
