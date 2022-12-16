@@ -1,3 +1,3 @@
-mod client_state;
-mod state_trait;
-mod transcript_state;
+pub(crate) mod client_state;
+pub(crate) mod state_trait;
+pub(crate) mod transcript_state;

@@ -1,23 +1,27 @@
 use eid_traits::client::EidClient;
 use eid_traits::types::{EidError, Member};
 use openmls::group::MlsGroup;
-use openmls::prelude::{Ciphersuite, OpenMlsCryptoProvider, StagedCommit};
+use openmls::prelude::{
+    Ciphersuite, KeyPackage, OpenMlsCryptoProvider, ProcessedMessage, StagedCommit,
+};
 use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use crate::eid_dummy_keystore::EidDummyKeystore;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_state::EidMlsState;
+use crate::state::client_state::EidMlsClientState;
 
 #[derive(Default)]
 pub(crate) struct EidMlsClient<'a> {
-    pub(crate) state: EidMlsState<'a>,
+    pub(crate) state: EidMlsClientState<'a>,
     pub(crate) backend: &'a OpenMlsRustCrypto,
 }
 
 impl<'a> EidClient<'a> for EidMlsClient {
     type KeyStoreProvider = EidDummyKeystore;
     type EvolvementProvider = EidMlsEvolvement;
-    type StateProvider = EidMlsState<'a>;
+    type StateProvider = EidMlsClientState<'a>;
+    type Member = KeyPackage;
 
     fn state(&mut self) -> &mut Self::StateProvider {
         todo!()
@@ -43,14 +47,27 @@ impl<'a> EidClient<'a> for EidMlsClient {
         Self::create_mls_eid(keystore, backend, ciphersuite)
     }
 
-    fn add(&self, member: &Member) -> Result<Self::EvolvementProvider, EidError>
+    fn add(&mut self, member: &Self::Member) -> Result<Self::EvolvementProvider, EidError>
     where
         Self: Sized,
     {
-        todo!()
+        let group = &mut self.state.group;
+        let (mls_out, welcome) = group.add_members(self.backend, &[member.clone()]);
+        let mls_in = mls_out.into();
+        let proc_msg = group
+            .process_unverified_message(mls_in, None, backend)
+            .expect("Can't process message");
+        return if let ProcessedMessage::StagedCommitMessage(staged_commit) = proc_msg {
+            Ok(EidMlsEvolvement {
+                commit: *staged_commit,
+                message: mls_in,
+            })
+        } else {
+            Err(e)
+        };
     }
 
-    fn remove(&self, member: &Member) -> Result<Self::EvolvementProvider, EidError>
+    fn remove(&self, member: &Self::Member) -> Result<Self::EvolvementProvider, EidError>
     where
         Self: Sized,
     {

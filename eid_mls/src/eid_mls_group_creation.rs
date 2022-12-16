@@ -8,6 +8,7 @@ use openmls::prelude::{
 
 use crate::eid_mls_client::EidMlsClient;
 use crate::r#trait::EidMlsClientState::Client;
+use crate::state::client_state::EidMlsClientState;
 
 fn create_store_credential(
     identifier: String,
@@ -110,7 +111,7 @@ impl EidMlsClient {
         .expect("Could not create MlsGroup");
 
         Ok(Self {
-            state: Client {
+            state: EidMlsClientState {
                 group: mls_group,
                 backend,
             },

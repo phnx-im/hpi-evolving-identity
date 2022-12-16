@@ -1,9 +1,15 @@
-use super::state_trait::EidMlsState;
+use eid_traits::state::EidState;
+use eid_traits::types::EidError;
+use openmls::prelude::{MlsGroup, ProcessedMessage};
+use openmls_rust_crypto::OpenMlsRustCrypto;
+
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 
+use super::state_trait::EidMlsState;
+
 pub(crate) struct EidMlsClientState<'a> {
-    group: MlsGroup,
-    backend: &'a OpenMlsRustCrypto,
+    pub(crate) group: MlsGroup,
+    pub(crate) backend: &'a OpenMlsRustCrypto,
 }
 
 impl EidState<EidMlsEvolvement> for EidMlsClientState {
@@ -18,6 +24,7 @@ impl EidState<EidMlsEvolvement> for EidMlsClientState {
                     .map_err(|| EidError::ApplyCommitError)? // TODO
             }
         }
+        Ok(())
     }
 
     fn apply(&mut self, evolvement: &EidMlsEvolvement) -> Result<(), EidError> {

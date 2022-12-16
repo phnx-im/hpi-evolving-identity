@@ -9,7 +9,7 @@ use openmls_rust_crypto::OpenMlsRustCrypto;
 use crate::eid_mls_client::EidMlsClient;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 
-pub(crate) trait EidMlsState: EidState + Clone + PartialEq {
+pub(crate) trait EidMlsState: EidState<T> + Clone + PartialEq {
     fn verify_client(&self, client: &Member) -> Result<bool, EidError> {
         let members = self.get_members()?;
         Ok(members.contains(client))
