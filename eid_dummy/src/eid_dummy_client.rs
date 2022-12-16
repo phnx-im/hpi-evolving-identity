@@ -6,15 +6,14 @@ use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_keystore::EidDummyKeystore;
 use crate::eid_dummy_state::EidDummyState;
 
-#[derive(Default)]
-pub struct EidDummyClient {
+pub struct EidDummyClient<'a> {
     state: EidDummyState,
-    key_store: EidDummyKeystore,
+    key_store: &'a EidDummyKeystore,
     pk: Vec<u8>,
     pending_pk_update: Option<Vec<u8>>,
 }
 
-impl EidClient for EidDummyClient {
+impl<'a> EidClient<'a> for EidDummyClient<'a> {
     type StateProvider = EidDummyState;
     type KeyStoreProvider = EidDummyKeystore;
     type EvolvementProvider = EidDummyEvolvement;
@@ -27,23 +26,23 @@ impl EidClient for EidDummyClient {
         &self.key_store
     }
 
-    fn pk(&self) -> &Vec<u8> {
+    fn pk(&self) -> &[u8] {
         &self.pk
     }
 
-    fn create_eid(key_store: EidDummyKeystore) -> Result<Self, EidError> {
+    fn create_eid(key_store: &'a EidDummyKeystore) -> Result<Self, EidError> {
         let pk = "public key".as_bytes().to_vec();
         let members = vec![Member::new(pk.clone())];
         let state = EidDummyState { members };
         Ok(EidDummyClient {
             state,
-            key_store,
+            key_store: &key_store,
             pk: pk,
             pending_pk_update: None,
         })
     }
 
-    fn evolve(&mut self, evolvement: EidDummyEvolvement) -> Result<(), EidError> {
+    fn evolve(&mut self, evolvement: &EidDummyEvolvement) -> Result<(), EidError> {
         // in case of update, change your own pk
         match &evolvement {
             EidDummyEvolvement::Update { members: _ } => {
@@ -56,21 +55,21 @@ impl EidClient for EidDummyClient {
         self.state().apply(evolvement)
     }
 
-    fn add(&self, member: Member) -> Result<EidDummyEvolvement, EidError> {
-        if self.state.members.contains(&member) {
+    fn add(&self, member: &Member) -> Result<EidDummyEvolvement, EidError> {
+        if self.state.members.contains(member) {
             return Err(EidError::AddMemberError(String::from(
                 "Member already in EID",
             )));
         }
         let mut new_state = self.state.clone();
-        new_state.members.push(member);
+        new_state.members.push(member.clone());
         let evolvement = EidDummyEvolvement::Add {
             members: new_state.members,
         };
         Ok(evolvement)
     }
-    fn remove(&self, member: Member) -> Result<EidDummyEvolvement, EidError> {
-        if !self.state.members.contains(&member) {
+    fn remove(&self, member: &Member) -> Result<EidDummyEvolvement, EidError> {
+        if !self.state.members.contains(member) {
             return Err(EidError::InvalidMemberError(String::from(
                 "Member not in EID",
             )));
@@ -93,7 +92,7 @@ impl EidClient for EidDummyClient {
         new_members.retain(|m| *self.pk() != m.pk());
 
         // create a member with your new pk
-        let mut new_pk = self.pk().clone();
+        let mut new_pk = self.pk().clone().to_vec();
         new_pk[0] = new_pk[0] + 1;
         let member = Member::new(new_pk.clone());
 

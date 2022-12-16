@@ -1,5 +1,4 @@
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
-use eid_traits::evolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
 
@@ -9,7 +8,7 @@ pub struct EidDummyState {
 }
 
 impl EidState<EidDummyEvolvement> for EidDummyState {
-    fn from_log(evolvements: Vec<EidDummyEvolvement>) -> Result<Self, EidError> {
+    fn from_log(evolvements: &[EidDummyEvolvement]) -> Result<Self, EidError> {
         let evolvement = evolvements.last().unwrap();
         match &evolvement {
             EidDummyEvolvement::Update { members }
@@ -19,7 +18,7 @@ impl EidState<EidDummyEvolvement> for EidDummyState {
             }),
         }
     }
-    fn apply(&mut self, evolvement: EidDummyEvolvement) -> Result<(), EidError> {
+    fn apply(&mut self, evolvement: &EidDummyEvolvement) -> Result<(), EidError> {
         match &evolvement {
             EidDummyEvolvement::Update { members }
             | EidDummyEvolvement::Add { members }
@@ -32,7 +31,7 @@ impl EidState<EidDummyEvolvement> for EidDummyState {
     fn verify(&self) -> Result<bool, EidError> {
         Ok(true)
     }
-    fn verify_client(&self, _: Member) -> Result<bool, EidError> {
+    fn verify_client(&self, _: &Member) -> Result<bool, EidError> {
         Ok(true)
     }
     fn get_members(&self) -> Result<Vec<Member>, EidError> {

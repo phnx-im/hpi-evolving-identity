@@ -11,12 +11,19 @@ pub use rstest::*;
 pub use rstest_reuse::{self, *};
 use std::fmt::Debug;
 
+#[macro_use]
+extern crate lazy_static;
+
+lazy_static! {
+    static ref DUMMY_KEYSTORE: EidDummyKeystore = EidDummyKeystore::default();
+}
+
 #[template]
-#[rstest(client, transcript,
-    case::EIDDummy(&mut EidDummyClient::create_eid(EidDummyKeystore::default()).expect("creation failed"), EidDummyTranscript::default()),
+#[rstest(client, _transcript,
+    case::EIDDummy(&mut EidDummyClient::create_eid(&DUMMY_KEYSTORE).expect("creation failed"), EidDummyTranscript::default()),
 )]
 #[allow(non_snake_case)]
-pub fn eid_clients<C, T>(client: &mut C, transcript: T)
+pub fn eid_clients<C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient,
     T: Transcript<C::EvolvementProvider, C::StateProvider>,
@@ -24,11 +31,11 @@ where
 }
 
 #[apply(eid_clients)]
-fn create<C, T>(client: &mut C, transcript: T)
+fn create<'a, C, T>(client: &mut C, _transcript: T)
 where
-    C: EidClient,
+    C: EidClient<'a>,
     T: Transcript<C::EvolvementProvider, C::StateProvider>,
-    <C as EidClient>::StateProvider: Debug,
+    <C as EidClient<'a>>::StateProvider: Debug,
 {
     let members = client.state().get_members().expect("failed to get members");
     // create transcript, trusting the client's state
@@ -43,11 +50,11 @@ where
 }
 
 #[apply(eid_clients)]
-fn add<C, T>(client: &mut C, transcript: T)
+fn add<'a, C, T>(client: &mut C, _transcript: T)
 where
-    C: EidClient,
+    C: EidClient<'a>,
     T: Transcript<C::EvolvementProvider, C::StateProvider>,
-    <C as EidClient>::EvolvementProvider: Debug,
+    <C as EidClient<'a>>::StateProvider: Debug,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.state().clone(), vec![]);
@@ -55,9 +62,9 @@ where
     // Create Alice as a member with a random pk
     let pk_alice = (0..256).map(|_| rand::random::<u8>()).collect();
     let alice = Member::new(pk_alice);
-    let add_alice_evolvement = client.add(alice.clone()).expect("failed to add member");
+    let add_alice_evolvement = client.add(&alice).expect("failed to add member");
     client
-        .evolve(add_alice_evolvement.clone())
+        .evolve(&add_alice_evolvement)
         .expect("Failed to apply state");
 
     assert!(client.state().verify().unwrap());
@@ -68,21 +75,19 @@ where
     transcript.add_evolvement(add_alice_evolvement.clone());
 
     // Try to add Alice a second time
-    let member_in_eid_error = client
-        .add(alice.clone())
-        .expect_err("Adding member a second time");
+    let member_in_eid_error = client.add(&alice).expect_err("Adding member a second time");
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
     // Add Bob
     let pk_bob = (0..256).map(|_| rand::random::<u8>()).collect();
     let bob = Member::new(pk_bob);
-    let add_bob_evolvement = client.add(bob.clone()).expect("failed to add member");
+    let add_bob_evolvement = client.add(&bob).expect("failed to add member");
     client
-        .evolve(add_bob_evolvement.clone())
+        .evolve(&add_bob_evolvement)
         .expect("Failed to apply state");
 
     assert!(add_alice_evolvement.is_valid_successor(&add_bob_evolvement));
-    transcript.add_evolvement(add_bob_evolvement);
+    transcript.add_evolvement(add_bob_evolvement.clone());
 
     let members = client.state().get_members().expect("failed to get members");
     assert!(client.state().verify().unwrap());
@@ -91,38 +96,36 @@ where
 }
 
 #[apply(eid_clients)]
-fn remove<C, T>(client: &mut C, transcript: T)
+fn remove<'a, C, T>(client: &mut C, _transcript: T)
 where
-    C: EidClient,
+    C: EidClient<'a>,
     T: Transcript<C::EvolvementProvider, C::StateProvider>,
-    <C as EidClient>::EvolvementProvider: Debug,
+    <C as EidClient<'a>>::StateProvider: Debug,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.state().clone(), vec![]);
 
     let pk = (0..256).map(|_| rand::random::<u8>()).collect();
     let alice = Member::new(pk);
-    let evolvement_add = client.add(alice.clone()).expect("failed to add member");
+    let evolvement_add = client.add(&alice).expect("failed to add member");
     client
-        .evolve(evolvement_add.clone())
+        .evolve(&evolvement_add)
         .expect("Failed to apply state");
     assert!(client.state().verify().unwrap());
 
     transcript.add_evolvement(evolvement_add.clone());
 
-    let evolvement_remove = client
-        .remove(alice.clone())
-        .expect("failed to remove member");
+    let evolvement_remove = client.remove(&alice).expect("failed to remove member");
     client
-        .evolve(evolvement_remove.clone())
+        .evolve(&evolvement_remove)
         .expect("Failed to apply remove on client state");
 
     assert!(evolvement_add.is_valid_successor(&evolvement_remove));
-    transcript.add_evolvement(evolvement_remove);
+    transcript.add_evolvement(evolvement_remove.clone());
 
     // Try to remove Alice a second time
     let member_not_in_eid_error = client
-        .remove(alice.clone())
+        .remove(&alice)
         .expect_err("Removing non-existent member");
     assert!(matches!(
         member_not_in_eid_error,
@@ -137,10 +140,11 @@ where
 }
 
 #[apply(eid_clients)]
-fn update<C, T>(client: &mut C, transcript: T)
+fn update<'a, C, T>(client: &mut C, _transcript: T)
 where
-    C: EidClient,
+    C: EidClient<'a>,
     T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    <C as EidClient<'a>>::StateProvider: Debug,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.state().clone(), vec![]);
@@ -149,7 +153,7 @@ where
 
     let update_evolvement_1 = client.update().expect("Updating client keys failed");
     client
-        .evolve(update_evolvement_1.clone())
+        .evolve(&update_evolvement_1)
         .expect("Failed to apply update on client state");
     transcript.add_evolvement(update_evolvement_1.clone());
 
@@ -169,10 +173,10 @@ where
     let alice_pk_before_update_2 = pks_after_update_1[0].clone();
     let update_evolvement_2 = client.update().expect("Updating client keys failed");
     client
-        .evolve(update_evolvement_2.clone())
+        .evolve(&update_evolvement_2)
         .expect("Failed to apply update on client state");
     assert!(update_evolvement_1.is_valid_successor(&update_evolvement_2));
-    transcript.add_evolvement(update_evolvement_2);
+    transcript.add_evolvement(update_evolvement_2.clone());
 
     let pks_after_update_2 = client
         .state()
