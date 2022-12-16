@@ -2,11 +2,10 @@ use crate::evolvement::Evolvement;
 use crate::key_store::EidKeyStore;
 use crate::state::EidState;
 use crate::types::{EidError, Member};
-use std::fmt::Debug;
 
 pub trait EidClient<'a> {
-    type KeyStoreProvider: EidKeyStore + Default;
-    type EvolvementProvider: Evolvement + Debug;
+    type KeyStoreProvider: EidKeyStore;
+    type EvolvementProvider: Evolvement;
     type StateProvider: EidState<Self::EvolvementProvider>;
 
     fn state(&mut self) -> &mut Self::StateProvider;
