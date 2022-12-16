@@ -1,7 +1,6 @@
 use eid_traits::client::EidClient;
 use eid_traits::types::{EidError, Member};
-use openmls::group::MlsGroup;
-use openmls::prelude::{Ciphersuite, OpenMlsCryptoProvider, StagedCommit};
+use openmls::prelude::Ciphersuite;
 use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use crate::eid_dummy_keystore::EidDummyKeystore;
@@ -11,7 +10,7 @@ use crate::eid_mls_state::EidMlsState;
 #[derive(Default)]
 pub struct EidMlsClient<'a> {
     pub(crate) state: EidMlsState<'a>,
-    pub(crate) backend: &'a OpenMlsRustCrypto,
+    pub(crate) backend: &'static OpenMlsRustCrypto,
 }
 
 impl<'a> EidClient<'a> for EidMlsClient {

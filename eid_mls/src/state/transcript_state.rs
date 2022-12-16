@@ -2,6 +2,7 @@ use super::state_trait::EidMlsState;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
+use openmls::group::MlsGroup;
 use openmls_rust_crypto::OpenMlsRustCrypto;
 
 /// Eid Mls Transcript State

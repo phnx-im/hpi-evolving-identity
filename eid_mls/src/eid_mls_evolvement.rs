@@ -1,5 +1,4 @@
 use eid_traits::evolvement::Evolvement;
-use eid_traits::state::EidState;
 use openmls::framing::MlsMessageIn;
 use openmls::group::StagedCommit;
 
