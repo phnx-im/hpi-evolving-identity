@@ -14,5 +14,7 @@ impl Clone for EidMlsEvolvement {
 }
 
 impl Evolvement for EidMlsEvolvement {
-    fn is_valid_successor(&self, previous: &Self) {}
+    fn is_valid_successor(&self, previous: &Self) -> bool {
+        todo!()
+    }
 }

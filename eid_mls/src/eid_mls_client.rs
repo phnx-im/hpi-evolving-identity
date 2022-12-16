@@ -5,10 +5,10 @@ use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use crate::eid_dummy_keystore::EidDummyKeystore;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
+use crate::state::client_state::EidMlsClientState;
 
-#[derive(Default)]
-pub struct EidMlsClient<'a> {
-    pub(crate) state: EidMlsState<'a>,
+pub struct EidMlsClient {
+    pub(crate) state: EidMlsClientState,
     pub(crate) backend: &'static OpenMlsRustCrypto,
 }
 

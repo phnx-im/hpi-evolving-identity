@@ -6,7 +6,7 @@ use openmls::group::MlsGroup;
 use openmls_rust_crypto::OpenMlsRustCrypto;
 
 /// Eid Mls Transcript State
-pub(crate) struct EidMlsTranscriptState<'a> {
+pub(crate) struct EidMlsTranscriptState {
     group: MlsGroup,
     backend: &'a OpenMlsRustCrypto,
 }
@@ -17,6 +17,14 @@ impl EidState<EidMlsEvolvement> for EidMlsTranscriptState {
     }
 
     fn get_members(&self) -> Result<Vec<Member>, EidError> {
+        todo!()
+    }
+
+    fn verify_client(&self, _: &eid_traits::types::Member) -> Result<bool, EidError> {
+        todo!()
+    }
+
+    fn apply_log(&mut self, _: &[EidMlsEvolvement]) -> Result<(), EidError> {
         todo!()
     }
 }

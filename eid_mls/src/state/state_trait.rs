@@ -3,6 +3,7 @@ use eid_traits::types::EidError;
 use eid_traits::types::Member;
 
 use crate::eid_mls_evolvement::EidMlsEvolvement;
+use openmls::prelude::ProcessedMessage;
 
 pub trait EidMlsState: EidState<EidMlsEvolvement> + Clone + PartialEq {
     fn verify_client(&self, client: &Member) -> Result<bool, EidError> {
@@ -20,5 +21,7 @@ pub trait EidMlsState: EidState<EidMlsEvolvement> + Clone + PartialEq {
         Ok(())
     }
 
-    fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError>;
+    fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
+        todo!()
+    }
 }
