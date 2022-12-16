@@ -8,7 +8,7 @@ pub struct EidDummyTranscript {
     log: Vec<EidDummyEvolvement>,
 }
 
-impl Transcript<EidDummyEvolvement, EidDummyState> for EidDummyTranscript {
+impl Transcript<EidDummyEvolvement> for EidDummyTranscript {
     type StateProvider = EidDummyState;
     fn new(trusted_state: EidDummyState, log: Vec<EidDummyEvolvement>) -> Self {
         EidDummyTranscript { trusted_state, log }

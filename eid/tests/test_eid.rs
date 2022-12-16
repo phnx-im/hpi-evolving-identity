@@ -28,7 +28,7 @@ lazy_static! {
 pub fn eid_clients<C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    T: Transcript<C::EvolvementProvider>,
 {
 }
 
@@ -36,8 +36,10 @@ where
 fn create<'a, C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient<'a>,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    T: Transcript<C::EvolvementProvider>,
     <C as EidClient<'a>>::StateProvider: Debug,
+    // require that a transcript state can be created from a client state
+    <T as Transcript<C::EvolvementProvider>>::StateProvider: From<C::StateProvider>,
 {
     let members = client.state().get_members().expect("failed to get members");
     // create transcript, trusting the client's state
@@ -54,8 +56,10 @@ where
 fn add<'a, C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient<'a>,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    T: Transcript<C::EvolvementProvider>,
     <C as EidClient<'a>>::StateProvider: Debug,
+    // require that a transcript state can be created from a client state
+    <T as Transcript<C::EvolvementProvider>>::StateProvider: From<C::StateProvider>,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.state().clone().into(), vec![]);
@@ -98,8 +102,10 @@ where
 fn remove<'a, C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient<'a>,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    T: Transcript<C::EvolvementProvider>,
     <C as EidClient<'a>>::StateProvider: Debug,
+    // require that a transcript state can be created from a client state
+    <T as Transcript<C::EvolvementProvider>>::StateProvider: From<C::StateProvider>,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.state().clone().into(), vec![]);
@@ -140,8 +146,10 @@ where
 fn update<'a, C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient<'a>,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    T: Transcript<C::EvolvementProvider>,
     <C as EidClient<'a>>::StateProvider: Debug,
+    // require that a transcript state can be created from a client state
+    <T as Transcript<C::EvolvementProvider>>::StateProvider: From<C::StateProvider>,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.state().clone().into(), vec![]);
