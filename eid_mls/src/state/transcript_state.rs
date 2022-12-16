@@ -1,6 +1,8 @@
 use super::state_trait::EidMlsState;
+use crate::eid_mls_evolvement::EidMlsEvolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
+use openmls_rust_crypto::OpenMlsRustCrypto;
 
 /// Eid Mls Transcript State
 pub(crate) struct EidMlsTranscriptState<'a> {
@@ -8,8 +10,8 @@ pub(crate) struct EidMlsTranscriptState<'a> {
     backend: &'a OpenMlsRustCrypto,
 }
 
-impl EidState for EidMlsTranscriptState {
-    fn apply(&mut self, evolvement: &T) -> Result<(), EidError> {
+impl EidState for EidMlsTranscriptState<EidMlsEvolvement> {
+    fn apply(&mut self, evolvement: EidMlsEvolvement) -> Result<(), EidError> {
         todo!()
     }
 

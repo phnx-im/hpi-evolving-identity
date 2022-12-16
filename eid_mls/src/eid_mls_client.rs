@@ -9,7 +9,7 @@ use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_state::EidMlsState;
 
 #[derive(Default)]
-pub(crate) struct EidMlsClient<'a> {
+pub struct EidMlsClient<'a> {
     pub(crate) state: EidMlsState<'a>,
     pub(crate) backend: &'a OpenMlsRustCrypto,
 }
