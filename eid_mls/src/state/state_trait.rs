@@ -1,15 +1,11 @@
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 use eid_traits::types::Member;
-use openmls::framing::{ProcessedMessage, UnverifiedMessage};
-use openmls::group::MlsGroup;
-use openmls::prelude::{OpenMlsCrypto, OpenMlsCryptoProvider};
-use openmls_rust_crypto::OpenMlsRustCrypto;
 
-use crate::eid_mls_client::EidMlsClient;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
+use openmls::prelude::ProcessedMessage;
 
-pub(crate) trait EidMlsState: EidState<T> + Clone + PartialEq {
+pub trait EidMlsState: EidState<EidMlsEvolvement> + Clone + PartialEq {
     fn verify_client(&self, client: &Member) -> Result<bool, EidError> {
         let members = self.get_members()?;
         Ok(members.contains(client))
@@ -23,5 +19,9 @@ pub(crate) trait EidMlsState: EidState<T> + Clone + PartialEq {
             self.apply(evolvement)?;
         }
         Ok(())
+    }
+
+    fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
+        todo!()
     }
 }

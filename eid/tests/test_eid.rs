@@ -9,6 +9,7 @@ pub use rstest_reuse::{self, *};
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_keystore::EidDummyKeystore;
 use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
+use eid_mls::eid_mls_client::EidMlsClient;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
 use eid_traits::state::EidState;
@@ -23,6 +24,7 @@ lazy_static! {
 #[template]
 #[rstest(client, _transcript,
 case::EIDDummy(& mut EidDummyClient::create_eid(& DUMMY_KEYSTORE).expect("creation failed"), EidDummyTranscript::default()),
+case::EIDMls(& mut EidMlsClient::create_eid(& DUMMY_KEYSTORE).expect("creation failed"), EidDummyTranscript::default()),
 )]
 #[allow(non_snake_case)]
 pub fn eid_clients<'a, C, T>(client: &mut C, _transcript: T)
@@ -45,7 +47,7 @@ where
 {
     let members = client.state().get_members().expect("failed to get members");
     // create transcript, trusting the client's state
-    let transcript = T::new(client.state().clone().into(), vec![]);
+    let transcript = T::new(client.state().clone().into(), vec![]); //  T::new(T::StateProvider::from(client.state().clone()), vec![]);
     assert_eq!(
         transcript.trusted_state().clone(),
         client.state().clone().into(),

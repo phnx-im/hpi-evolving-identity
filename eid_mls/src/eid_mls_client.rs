@@ -1,26 +1,21 @@
 use eid_traits::client::EidClient;
 use eid_traits::types::{EidError, Member};
-use openmls::group::MlsGroup;
-use openmls::prelude::{
-    Ciphersuite, KeyPackage, OpenMlsCryptoProvider, ProcessedMessage, StagedCommit,
-};
+use openmls::prelude::Ciphersuite;
 use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use crate::eid_dummy_keystore::EidDummyKeystore;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
-use crate::eid_mls_state::EidMlsState;
 use crate::state::client_state::EidMlsClientState;
 
-#[derive(Default)]
-pub(crate) struct EidMlsClient<'a> {
-    pub(crate) state: EidMlsClientState<'a>,
-    pub(crate) backend: &'a OpenMlsRustCrypto,
+pub struct EidMlsClient {
+    pub(crate) state: EidMlsClientState,
+    pub(crate) backend: &'static OpenMlsRustCrypto,
 }
 
 impl<'a> EidClient<'a> for EidMlsClient {
     type KeyStoreProvider = EidDummyKeystore;
     type EvolvementProvider = EidMlsEvolvement;
-    type StateProvider = EidMlsClientState<'a>;
+    type StateProvider = EidMlsClientState;
     type Member = KeyPackage;
 
     fn state(&mut self) -> &mut Self::StateProvider {
@@ -31,7 +26,7 @@ impl<'a> EidClient<'a> for EidMlsClient {
         todo!()
     }
 
-    fn pk(&self) -> &Vec<u8> {
+    fn pk(&self) -> &[u8] {
         todo!()
     }
 

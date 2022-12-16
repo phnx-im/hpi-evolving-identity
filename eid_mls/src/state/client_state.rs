@@ -4,15 +4,21 @@ use openmls::prelude::{MlsGroup, ProcessedMessage};
 use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use crate::eid_mls_evolvement::EidMlsEvolvement;
+use eid_traits::state::EidState;
+use eid_traits::types::EidError;
+use eid_traits::types::Member;
+use openmls::group::MlsGroup;
+use openmls::prelude::ProcessedMessage;
+use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use super::state_trait::EidMlsState;
 
-pub(crate) struct EidMlsClientState<'a> {
+pub(crate) struct EidMlsClientState {
     pub(crate) group: MlsGroup,
-    pub(crate) backend: &'a OpenMlsRustCrypto,
+    pub(crate) backend: &'static OpenMlsRustCrypto, //todo resolve ststaic lifetime
 }
 
-impl EidState<EidMlsEvolvement> for EidMlsClientState {
+impl EidMlsState for EidMlsClientState {
     fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
         match message {
             ProcessedMessage::ApplicationMessage(_) | ProcessedMessage::ProposalMessage(_) => {
@@ -21,19 +27,24 @@ impl EidState<EidMlsEvolvement> for EidMlsClientState {
             ProcessedMessage::StagedCommitMessage(staged_commit) => {
                 self.group
                     .merge_staged_commit(*staged_commit)
-                    .map_err(|| EidError::ApplyCommitError)? // TODO
+                    .map_err(|_| EidError::ApplyCommitError)?;
+                Ok(())
             }
         }
         Ok(())
     }
+}
 
+impl EidState<EidMlsEvolvement> for EidMlsClientState {
     fn apply(&mut self, evolvement: &EidMlsEvolvement) -> Result<(), EidError> {
-        let parsed_message = group
-            .parse_message(evolvement.message.clone(), backend)
-            .map_err(|| EidError::ParseMessageError)?;
-        let verified_message = group
-            .process_unverified_message(parsed_message, None, backend)
-            .map_err(|| EidError::UnverifiedMessageError)?;
+        let parsed_message = self
+            .group
+            .parse_message(evolvement.message.clone(), self.backend)
+            .map_err(|_| EidError::ParseMessageError)?;
+        let verified_message = self
+            .group
+            .process_unverified_message(parsed_message, None, self.backend)
+            .map_err(|_| EidError::UnverifiedMessageError)?;
         self.apply_processed_message(verified_message)?;
 
         Ok(())
@@ -46,6 +57,14 @@ impl EidState<EidMlsEvolvement> for EidMlsClientState {
             .map(|kp| kp.credential().signature_key().as_slice());
         let members = public_keys.map(|pk| Member::new(pk.to_vec())).collect();
         Ok(members)
+    }
+
+    fn apply_log(&mut self, _: &[EidMlsEvolvement]) -> Result<(), EidError> {
+        todo!()
+    }
+
+    fn verify_client(&self, _: &eid_traits::types::Member) -> Result<bool, EidError> {
+        todo!()
     }
 }
 
@@ -62,5 +81,3 @@ impl PartialEq<Self> for EidMlsClientState {
         todo!()
     }
 }
-
-impl EidMlsState for EidMlsClientState {}

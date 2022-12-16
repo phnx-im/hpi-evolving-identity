@@ -1,5 +1,4 @@
 use eid_traits::evolvement::Evolvement;
-use eid_traits::state::EidState;
 use openmls::framing::MlsMessageIn;
 use openmls::group::StagedCommit;
 
@@ -15,5 +14,7 @@ impl Clone for EidMlsEvolvement {
 }
 
 impl Evolvement for EidMlsEvolvement {
-    fn is_valid_successor(&self, previous: &Self) {}
+    fn is_valid_successor(&self, previous: &Self) -> bool {
+        todo!()
+    }
 }
