@@ -1,8 +1,9 @@
 use crate::evolvement::Evolvement;
+use crate::member::Member;
 use crate::state::EidState;
 
-pub trait Transcript<E: Evolvement> {
-    type StateProvider: EidState<E>;
+pub trait Transcript<E: Evolvement, M: Member> {
+    type StateProvider: EidState<E, M>;
     /// creates a new log from a trusted [EidState] and a vector of evolvements that happened after the trusted [EidState].
     fn new(trusted_state: Self::StateProvider, log: Vec<E>) -> Self;
 
