@@ -11,7 +11,7 @@ pub(crate) struct EidMlsTranscriptState<'a> {
     backend: &'a OpenMlsRustCrypto,
 }
 
-impl EidState for EidMlsTranscriptState<EidMlsEvolvement> {
+impl EidState<EidMlsEvolvement> for EidMlsTranscriptState {
     fn apply(&mut self, evolvement: EidMlsEvolvement) -> Result<(), EidError> {
         todo!()
     }

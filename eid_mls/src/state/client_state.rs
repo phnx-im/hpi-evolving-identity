@@ -1,5 +1,11 @@
 use super::state_trait::EidMlsState;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
+use eid_traits::state::EidState;
+use eid_traits::types::EidError;
+use eid_traits::types::Member;
+use openmls::group::MlsGroup;
+use openmls::prelude::ProcessedMessage;
+use openmls_rust_crypto::OpenMlsRustCrypto;
 
 pub(crate) struct EidMlsClientState {
     group: MlsGroup,
