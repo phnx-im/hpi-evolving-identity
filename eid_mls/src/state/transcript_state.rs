@@ -8,11 +8,11 @@ use openmls_rust_crypto::OpenMlsRustCrypto;
 /// Eid Mls Transcript State
 pub(crate) struct EidMlsTranscriptState {
     group: MlsGroup,
-    backend: &'a OpenMlsRustCrypto,
+    backend: &'static OpenMlsRustCrypto,
 }
 
 impl EidState<EidMlsEvolvement> for EidMlsTranscriptState {
-    fn apply(&mut self, evolvement: EidMlsEvolvement) -> Result<(), EidError> {
+    fn apply(&mut self, evolvement: &EidMlsEvolvement) -> Result<(), EidError> {
         todo!()
     }
 

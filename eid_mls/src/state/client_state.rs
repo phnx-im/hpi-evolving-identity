@@ -52,7 +52,7 @@ impl EidState<EidMlsEvolvement> for EidMlsClientState {
         Ok(members)
     }
 
-    fn apply_log(&mut self, _: &Vec<T>) -> Result<(), EidError> {
+    fn apply_log(&mut self, _: &[EidMlsEvolvement]) -> Result<(), EidError> {
         todo!()
     }
 

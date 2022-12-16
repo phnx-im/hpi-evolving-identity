@@ -15,7 +15,7 @@ pub struct EidMlsClient {
 impl<'a> EidClient<'a> for EidMlsClient {
     type KeyStoreProvider = EidDummyKeystore;
     type EvolvementProvider = EidMlsEvolvement;
-    type StateProvider = EidMlsState<'a>;
+    type StateProvider = EidMlsClientState;
 
     fn state(&mut self) -> &mut Self::StateProvider {
         todo!()
