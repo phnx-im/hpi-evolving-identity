@@ -1,7 +1,7 @@
+use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
-
-use crate::eid_dummy_evolvement::EidDummyEvolvement;
+use std::convert::From;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct EidDummyState {
@@ -28,5 +28,11 @@ impl EidState<EidDummyEvolvement> for EidDummyState {
     }
     fn get_members(&self) -> Result<Vec<Member>, EidError> {
         Ok(self.members.clone())
+    }
+}
+
+impl From<&EidDummyState> for EidDummyState {
+    fn from(state: &EidDummyState) -> Self {
+        state.clone()
     }
 }

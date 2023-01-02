@@ -44,12 +44,9 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
 
     fn evolve(&mut self, evolvement: &EidDummyEvolvement) -> Result<(), EidError> {
         // in case of update, change your own pk
-        match &evolvement {
-            EidDummyEvolvement::Update { members: _ } => {
-                self.pk = self.pending_pk_update.clone().unwrap();
-                self.pending_pk_update = None;
-            }
-            _ => {}
+        if let EidDummyEvolvement::Update { members: _ } = &evolvement {
+            self.pk = self.pending_pk_update.clone().unwrap();
+            self.pending_pk_update = None;
         }
 
         self.state.apply(evolvement)

@@ -9,7 +9,7 @@ use openmls_rust_crypto::OpenMlsRustCrypto;
 
 pub(crate) struct EidMlsClientState {
     group: MlsGroup,
-    backend: &'static OpenMlsRustCrypto, //todo resolve ststaic lifetime
+    backend: &'static OpenMlsRustCrypto, //todo resolve static lifetime
 }
 
 impl EidMlsState for EidMlsClientState {
@@ -59,8 +59,8 @@ impl EidState<EidMlsEvolvement> for EidMlsClientState {
         Ok(())
     }
 
-    fn verify_client(&self, _: &eid_traits::types::Member) -> Result<bool, EidError> {
-        todo!()
+    fn verify_client(&self, member: &eid_traits::types::Member) -> Result<bool, EidError> {
+        Ok(self.get_members()?.contains(member))
     }
 }
 
