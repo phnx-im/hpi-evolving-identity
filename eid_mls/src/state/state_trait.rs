@@ -5,7 +5,7 @@ use eid_traits::types::Member;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use openmls::prelude::ProcessedMessage;
 
-pub trait EidMlsState: EidState<EidMlsEvolvement> + Clone + PartialEq {
+pub trait EidMlsState: EidState<EidMlsEvolvement> + PartialEq {
     fn verify_client(&self, client: &Member) -> Result<bool, EidError> {
         let members = self.get_members()?;
         Ok(members.contains(client))

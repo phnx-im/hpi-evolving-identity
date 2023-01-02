@@ -52,17 +52,14 @@ impl EidState<EidMlsEvolvement> for EidMlsClientState {
         Ok(members)
     }
 
-    fn apply_log(&mut self, _: &[EidMlsEvolvement]) -> Result<(), EidError> {
-        todo!()
+    fn apply_log(&mut self, evolvements: &[EidMlsEvolvement]) -> Result<(), EidError> {
+        for evolvement in evolvements {
+            self.apply(evolvement);
+        }
+        Ok(())
     }
 
     fn verify_client(&self, _: &eid_traits::types::Member) -> Result<bool, EidError> {
-        todo!()
-    }
-}
-
-impl Clone for EidMlsClientState {
-    fn clone(&self) -> Self {
         todo!()
     }
 }

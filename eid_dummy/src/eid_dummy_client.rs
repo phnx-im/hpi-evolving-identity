@@ -18,12 +18,12 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
     type KeyStoreProvider = EidDummyKeystore;
     type EvolvementProvider = EidDummyEvolvement;
 
-    fn state(&mut self) -> &mut EidDummyState {
-        &mut self.state
+    fn state(&self) -> &EidDummyState {
+        &self.state
     }
 
     fn key_store(&self) -> &EidDummyKeystore {
-        &self.key_store
+        self.key_store
     }
 
     fn pk(&self) -> &[u8] {
@@ -36,8 +36,8 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
         let state = EidDummyState { members };
         Ok(EidDummyClient {
             state,
-            key_store: &key_store,
-            pk: pk,
+            key_store,
+            pk,
             pending_pk_update: None,
         })
     }
@@ -52,7 +52,7 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
             _ => {}
         }
 
-        self.state().apply(evolvement)
+        self.state.apply(evolvement)
     }
 
     fn add(&self, member: &Member) -> Result<EidDummyEvolvement, EidError> {
@@ -92,8 +92,8 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
         new_members.retain(|m| *self.pk() != m.pk());
 
         // create a member with your new pk
-        let mut new_pk = self.pk().clone().to_vec();
-        new_pk[0] = new_pk[0] + 1;
+        let mut new_pk = self.pk().to_vec();
+        new_pk[0] += 1;
         let member = Member::new(new_pk.clone());
 
         // remember the new pk for later
