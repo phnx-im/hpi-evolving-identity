@@ -178,9 +178,9 @@ where
     let alice_pk_before_update_1 =
         client.state().get_members().expect("failed to get members")[0].pk();
 
-    let update_evolvement_1 = client.update().expect("Updating client keys failed");
+    let update_evolvement_1 = client.update(backend).expect("Updating client keys failed");
     client
-        .evolve(&update_evolvement_1)
+        .evolve(&update_evolvement_1, backend)
         .expect("Failed to apply update on client state");
     transcript.add_evolvement(update_evolvement_1.clone());
 
@@ -197,9 +197,9 @@ where
 
     // Update Alice a second time
     let alice_pk_before_update_2 = pks_after_update_1[0].clone();
-    let update_evolvement_2 = client.update().expect("Updating client keys failed");
+    let update_evolvement_2 = client.update(backend).expect("Updating client keys failed");
     client
-        .evolve(&update_evolvement_2)
+        .evolve(&update_evolvement_2, backend)
         .expect("Failed to apply update on client state");
     assert!(update_evolvement_1.is_valid_successor(&update_evolvement_2));
     transcript.add_evolvement(update_evolvement_2.clone());

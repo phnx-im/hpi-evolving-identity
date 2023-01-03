@@ -2,41 +2,35 @@ use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
 
+use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
-use crate::eid_dummy_keystore::EidDummyKeystore;
 use crate::eid_dummy_state::EidDummyState;
 
-pub struct EidDummyClient<'a> {
+pub struct EidDummyClient {
     state: EidDummyState,
-    key_store: &'a EidDummyKeystore,
     pk: Vec<u8>,
     pending_pk_update: Option<Vec<u8>>,
 }
 
-impl<'a> EidClient<'a> for EidDummyClient<'a> {
+impl EidClient for EidDummyClient {
     type StateProvider = EidDummyState;
-    type KeyStoreProvider = EidDummyKeystore;
     type EvolvementProvider = EidDummyEvolvement;
+    type BackendProvider = EidDummyBackend;
 
     fn state(&self) -> &EidDummyState {
         &self.state
-    }
-
-    fn key_store(&self) -> &EidDummyKeystore {
-        self.key_store
     }
 
     fn pk(&self) -> &[u8] {
         &self.pk
     }
 
-    fn create_eid(key_store: &'a EidDummyKeystore) -> Result<Self, EidError> {
+    fn create_eid(_backend: &EidDummyBackend) -> Result<Self, EidError> {
         let pk = "public key".as_bytes().to_vec();
         let members = vec![Member::new(pk.clone())];
         let state = EidDummyState { members };
         Ok(EidDummyClient {
             state,
-            key_store,
             pk,
             pending_pk_update: None,
         })
@@ -95,7 +89,7 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
         };
         Ok(evolvement)
     }
-    fn update(&mut self) -> Result<EidDummyEvolvement, EidError> {
+    fn update(&mut self, _backend: &EidDummyBackend) -> Result<EidDummyEvolvement, EidError> {
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
         new_members.retain(|m| *self.pk() != m.pk());
