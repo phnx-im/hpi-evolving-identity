@@ -1,4 +1,3 @@
-use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
 

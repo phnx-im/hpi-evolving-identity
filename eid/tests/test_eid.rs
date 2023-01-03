@@ -10,7 +10,6 @@ use eid_dummy::eid_dummy_backend::EidDummyBackend;
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
 // use eid_mls::eid_mls_client::EidMlsClient;
-use eid_traits::backend::EidBackend;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
 use eid_traits::state::EidState;
@@ -47,15 +46,15 @@ where
     <C as EidClient>::EvolvementProvider: Debug,
     // require that a transcript state can be created from a client state
     <T as Transcript<<C as EidClient>::EvolvementProvider>>::StateProvider:
-        From<&'a <C as EidClient>::StateProvider> + Debug,
+        From<<C as EidClient>::StateProvider> + Debug,
     <C as EidClient>::StateProvider: 'a,
 {
     let members = client.state().get_members().expect("failed to get members");
     // create transcript, trusting the client's state
-    let transcript = T::new(client.state().into(), vec![]); //  T::new(T::StateProvider::from(client.state().clone()), vec![]);
+    let transcript = T::new(client.state().clone().into(), vec![]); //  T::new(T::StateProvider::from(client.state().clone()), vec![]);
     assert_eq!(
         transcript.trusted_state(),
-        client.state().into(),
+        client.state().clone().into(),
         "initial states of transcript and client do not match"
     );
     assert_eq!(members.len(), 1);
@@ -70,11 +69,11 @@ where
     <C as EidClient>::EvolvementProvider: Debug,
     // require that a transcript state can be created from a client state
     <T as Transcript<<C as EidClient>::EvolvementProvider>>::StateProvider:
-        From<&'a <C as EidClient>::StateProvider> + Debug,
+        From<<C as EidClient>::StateProvider> + Debug,
     <C as EidClient>::StateProvider: 'a,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().into(), vec![]);
+    let mut transcript = T::new(client.state().clone().into(), vec![]);
 
     // Create Alice as a member with a random pk
     let pk_alice = (0..256).map(|_| rand::random::<u8>()).collect();
@@ -121,11 +120,11 @@ where
     <C as EidClient>::EvolvementProvider: Debug,
     // require that a transcript state can be created from a client state
     <T as Transcript<<C as EidClient>::EvolvementProvider>>::StateProvider:
-        From<&'a <C as EidClient>::StateProvider> + Debug,
+        From<<C as EidClient>::StateProvider> + Debug,
     <C as EidClient>::StateProvider: 'a,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().into(), vec![]);
+    let mut transcript = T::new(client.state().clone().into(), vec![]);
 
     let pk = (0..256).map(|_| rand::random::<u8>()).collect();
     let alice = Member::new(pk);
@@ -170,11 +169,11 @@ where
     <C as EidClient>::EvolvementProvider: Debug,
     // require that a transcript state can be created from a client state
     <T as Transcript<<C as EidClient>::EvolvementProvider>>::StateProvider:
-        From<&'a <C as EidClient>::StateProvider> + Debug,
+        From<<C as EidClient>::StateProvider> + Debug,
     <C as EidClient>::StateProvider: 'a,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().into(), vec![]);
+    let mut transcript = T::new(client.state().clone().into(), vec![]);
     let alice_pk_before_update_1 =
         client.state().get_members().expect("failed to get members")[0].pk();
 
