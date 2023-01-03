@@ -30,7 +30,3 @@ impl EidState<EidDummyEvolvement> for EidDummyState {
         Ok(self.members.clone())
     }
 }
-
-impl From<&EidDummyState> for EidDummyState {
-    fn from(state: &EidDummyState) -> Self { state.clone() }   
-}
