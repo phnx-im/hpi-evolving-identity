@@ -42,7 +42,11 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
         })
     }
 
-    fn evolve(&mut self, evolvement: &EidDummyEvolvement) -> Result<(), EidError> {
+    fn evolve(
+        &mut self,
+        evolvement: &EidDummyEvolvement,
+        _backend: &EidDummyBackend,
+    ) -> Result<(), EidError> {
         // in case of update, change your own pk
         if let EidDummyEvolvement::Update { members: _ } = &evolvement {
             self.pk = self.pending_pk_update.clone().unwrap();
@@ -52,7 +56,11 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
         self.state.apply(evolvement)
     }
 
-    fn add(&self, member: &Member) -> Result<EidDummyEvolvement, EidError> {
+    fn add(
+        &self,
+        member: &Member,
+        _backend: &EidDummyBackend,
+    ) -> Result<EidDummyEvolvement, EidError> {
         if self.state.members.contains(member) {
             return Err(EidError::AddMemberError(String::from(
                 "Member already in EID",
@@ -65,7 +73,11 @@ impl<'a> EidClient<'a> for EidDummyClient<'a> {
         };
         Ok(evolvement)
     }
-    fn remove(&self, member: &Member) -> Result<EidDummyEvolvement, EidError> {
+    fn remove(
+        &self,
+        member: &Member,
+        _backend: &EidDummyBackend,
+    ) -> Result<EidDummyEvolvement, EidError> {
         if !self.state.members.contains(member) {
             return Err(EidError::InvalidMemberError(String::from(
                 "Member not in EID",

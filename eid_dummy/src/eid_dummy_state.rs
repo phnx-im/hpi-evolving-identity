@@ -1,3 +1,4 @@
+use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
 use eid_traits::types::{EidError, Member};
 
@@ -29,4 +30,8 @@ impl EidState<EidDummyEvolvement> for EidDummyState {
     fn get_members(&self) -> Result<Vec<Member>, EidError> {
         Ok(self.members.clone())
     }
+}
+
+impl From<&EidDummyState> for EidDummyState {
+    fn from(state: &EidDummyState) -> Self { state.clone() }   
 }
