@@ -9,7 +9,7 @@ pub use rstest_reuse::{self, *};
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_keystore::EidDummyKeystore;
 use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
-// use eid_mls::eid_mls_client::EidMlsClient;
+use eid_mls::eid_mls_client::EidMlsClient;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
 use eid_traits::state::EidState;
@@ -20,11 +20,11 @@ use eid_traits::types::Member;
 lazy_static! {
     static ref DUMMY_KEYSTORE: EidDummyKeystore = EidDummyKeystore::default();
 }
-// case::EIDMls(& mut EidMlsClient::create_eid(& DUMMY_KEYSTORE).expect("creation failed"), EidDummyTranscript::default()),
 
 #[template]
 #[rstest(client, _transcript,
 case::EIDDummy(& mut EidDummyClient::create_eid(& DUMMY_KEYSTORE).expect("creation failed"), EidDummyTranscript::default()),
+case::EIDMls(& mut EidMlsClient::create_eid(& DUMMY_KEYSTORE).expect("creation failed"), EidDummyTranscript::default()),
 )]
 #[allow(non_snake_case)]
 pub fn eid_clients<'a, C, T>(client: &mut C, _transcript: T)
@@ -36,47 +36,38 @@ where
 }
 
 #[apply(eid_clients)]
-fn create<'a, C, T>(client: &'a mut C, _transcript: T)
+fn create<'a, C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient<'a>,
     T: Transcript<C::EvolvementProvider>,
-    <C as EidClient<'a>>::StateProvider: Debug + 'a,
+    <C as EidClient<'a>>::StateProvider: Debug,
     <C as EidClient<'a>>::EvolvementProvider: Debug,
     // require that a transcript state can be created from a client state
-    <T as Transcript<<C as EidClient<'a>>::EvolvementProvider>>::StateProvider:
-        From<&'a <C as EidClient<'a>>::StateProvider> + Debug,
+    <T as Transcript<C::EvolvementProvider>>::StateProvider: From<C::StateProvider> + Debug,
 {
     let members = client.state().get_members().expect("failed to get members");
-    let transcript_state: T::StateProvider;
-
     // create transcript, trusting the client's state
-    let transcript_state = T::StateProvider::from(client.state()).clone();
-
-    let transcript = T::new(transcript_state, vec![]); //  T::new(T::StateProvider::from(client.state()), vec![]);
+    let transcript = T::new(client.state().clone().into(), vec![]); //  T::new(T::StateProvider::from(client.state().clone()), vec![]);
     assert_eq!(
         transcript.trusted_state(),
-        client.state().into(),
+        client.state().clone().into(),
         "initial states of transcript and client do not match"
     );
     assert_eq!(members.len(), 1);
 }
 
 #[apply(eid_clients)]
-fn add<'a, C, T>(client: &'a mut C, _transcript: T)
+fn add<'a, C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient<'a>,
     T: Transcript<C::EvolvementProvider>,
-    <C as EidClient<'a>>::StateProvider: Debug + 'a,
+    <C as EidClient<'a>>::StateProvider: Debug,
     <C as EidClient<'a>>::EvolvementProvider: Debug,
     // require that a transcript state can be created from a client state
-    <T as Transcript<<C as EidClient<'a>>::EvolvementProvider>>::StateProvider:
-        From<&'a <C as EidClient<'a>>::StateProvider> + Debug,
+    <T as Transcript<C::EvolvementProvider>>::StateProvider: From<C::StateProvider> + Debug,
 {
     // Create transcript, trusting the client's state
-    let transcript_state;
-    {
-        transcript_state = T::StateProvider::from(client.state()).clone();
-    }
+    let mut transcript = T::new(client.state().clone().into(), vec![]);
 
     // Create Alice as a member with a random pk
     let pk_alice = (0..256).map(|_| rand::random::<u8>()).collect();
@@ -89,6 +80,8 @@ where
     let members = client.state().get_members().expect("failed to get members");
     assert!(members.contains(&alice));
     assert_eq!(2, members.len());
+
+    transcript.add_evolvement(add_alice_evolvement.clone());
 
     // Try to add Alice a second time
     let member_in_eid_error = client.add(&alice).expect_err("Adding member a second time");
@@ -103,28 +96,25 @@ where
         .expect("Failed to apply state");
 
     assert!(add_alice_evolvement.is_valid_successor(&add_bob_evolvement));
+    transcript.add_evolvement(add_bob_evolvement.clone());
 
     let members = client.state().get_members().expect("failed to get members");
     assert!(members.contains(&bob));
-    assert_eq!(3, members.len());
-    let mut transcript = T::new(transcript_state, vec![]);
-    transcript.add_evolvement(add_alice_evolvement.clone());
-    transcript.add_evolvement(add_bob_evolvement.clone());
+    assert_eq!(3, members.len())
 }
 
 #[apply(eid_clients)]
-fn remove<'a, C, T>(client: &'a mut C, _transcript: T)
+fn remove<'a, C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient<'a>,
     T: Transcript<C::EvolvementProvider>,
-    <C as EidClient<'a>>::StateProvider: Debug + 'a,
+    <C as EidClient<'a>>::StateProvider: Debug,
     <C as EidClient<'a>>::EvolvementProvider: Debug,
     // require that a transcript state can be created from a client state
-    <T as Transcript<<C as EidClient<'a>>::EvolvementProvider>>::StateProvider:
-        From<&'a <C as EidClient<'a>>::StateProvider> + Debug,
+    <T as Transcript<C::EvolvementProvider>>::StateProvider: From<C::StateProvider> + Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().into(), vec![]);
+    let mut transcript = T::new(client.state().clone().into(), vec![]);
 
     let pk = (0..256).map(|_| rand::random::<u8>()).collect();
     let alice = Member::new(pk);
@@ -159,18 +149,17 @@ where
 }
 
 #[apply(eid_clients)]
-fn update<'a, C, T>(client: &'a mut C, _transcript: T)
+fn update<'a, C, T>(client: &mut C, _transcript: T)
 where
     C: EidClient<'a>,
     T: Transcript<C::EvolvementProvider>,
-    <C as EidClient<'a>>::StateProvider: Debug + 'a,
+    <C as EidClient<'a>>::StateProvider: Debug,
     <C as EidClient<'a>>::EvolvementProvider: Debug,
     // require that a transcript state can be created from a client state
-    <T as Transcript<<C as EidClient<'a>>::EvolvementProvider>>::StateProvider:
-        From<&'a <C as EidClient<'a>>::StateProvider> + Debug,
+    <T as Transcript<C::EvolvementProvider>>::StateProvider: From<C::StateProvider> + Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().into(), vec![]);
+    let mut transcript = T::new(client.state().clone().into(), vec![]);
     let alice_pk_before_update_1 =
         client.state().get_members().expect("failed to get members")[0].pk();
 
