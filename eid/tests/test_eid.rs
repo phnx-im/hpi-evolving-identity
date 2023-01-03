@@ -9,6 +9,7 @@ pub use rstest_reuse::{self, *};
 use eid_dummy::eid_dummy_backend::EidDummyBackend;
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
+use eid_traits::backend::EidBackend;
 // use eid_mls::eid_mls_client::EidMlsClient;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
