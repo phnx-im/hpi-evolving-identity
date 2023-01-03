@@ -1,9 +1,10 @@
+use openmls::prelude::ProcessedMessage;
+
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 use eid_traits::types::Member;
 
 use crate::eid_mls_evolvement::EidMlsEvolvement;
-use openmls::prelude::ProcessedMessage;
 
 pub trait EidMlsState: EidState<EidMlsEvolvement> + Clone + PartialEq {
     fn verify_client(&self, client: &Member) -> Result<bool, EidError> {

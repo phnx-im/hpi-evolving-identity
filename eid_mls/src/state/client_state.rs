@@ -1,21 +1,6 @@
-use eid_traits::state::EidState;
-use eid_traits::types::EidError;
-use openmls::prelude::{MlsGroup, ProcessedMessage};
-use openmls_rust_crypto::OpenMlsRustCrypto;
-
-use crate::eid_mls_evolvement::EidMlsEvolvement;
-use eid_traits::state::EidState;
-use eid_traits::types::EidError;
-use eid_traits::types::Member;
-use openmls::group::MlsGroup;
-use openmls::prelude::ProcessedMessage;
-use openmls_rust_crypto::OpenMlsRustCrypto;
-
-use super::state_trait::EidMlsState;
-
 pub(crate) struct EidMlsClientState {
     pub(crate) group: MlsGroup,
-    pub(crate) backend: &'static OpenMlsRustCrypto, //todo resolve ststaic lifetime
+    pub(crate) backend: &'static OpenMlsRustCrypto, //todo resolve static lifetime
 }
 
 impl EidMlsState for EidMlsClientState {
@@ -59,18 +44,15 @@ impl EidState<EidMlsEvolvement> for EidMlsClientState {
         Ok(members)
     }
 
-    fn apply_log(&mut self, _: &[EidMlsEvolvement]) -> Result<(), EidError> {
-        todo!()
+    fn apply_log(&mut self, evolvements: &[EidMlsEvolvement]) -> Result<(), EidError> {
+        for evolvement in evolvements {
+            self.apply(evolvement)?;
+        }
+        Ok(())
     }
 
-    fn verify_client(&self, _: &eid_traits::types::Member) -> Result<bool, EidError> {
-        todo!()
-    }
-}
-
-impl Clone for EidMlsClientState {
-    fn clone(&self) -> Self {
-        todo!()
+    fn verify_client(&self, member: &eid_traits::types::Member) -> Result<bool, EidError> {
+        Ok(self.get_members()?.contains(member))
     }
 }
 

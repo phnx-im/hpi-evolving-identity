@@ -39,7 +39,7 @@ impl<'a> EidClient<'a> for EidMlsClient {
         // ... and the crypto backend to use.
         let backend = &OpenMlsRustCrypto::default();
 
-        Self::create_mls_eid(keystore, backend, ciphersuite)
+        Self::create_mls_eid(keystore, backend, ciphersuite) // todo: implement this
     }
 
     fn add(&mut self, member: &Self::Member) -> Result<Self::EvolvementProvider, EidError>

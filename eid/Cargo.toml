@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 eid_traits = { version = "0.1.0", path = "../traits" }
-eid_mls = { version = "0.1.0", path = "../eid_mls" } # todo , optional = true }
+# eid_mls = { version = "0.1.0", path = "../eid_mls" } # todo , optional = true }
 eid_dummy = { version = "0.1.0", path = "../eid_dummy" } # todo, optional = true }
-rstest = {version = "^0.15"} # todo , optional = true}
-rstest_reuse = {version = "0.4"} # todo , optional = true}
+rstest = { version = "^0.15" } # todo , optional = true}
+rstest_reuse = { version = "0.4" } # todo , optional = true}
 rand = "0.8.5"
 lazy_static = "1.4.0" # todo , optional = true}
 
