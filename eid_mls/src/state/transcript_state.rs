@@ -1,9 +1,12 @@
-use super::state_trait::EidMlsState;
-use crate::eid_mls_evolvement::EidMlsEvolvement;
+use eid_traits::member::Member;
 use eid_traits::state::EidState;
-use eid_traits::types::{EidError, Member};
+use eid_traits::types::EidError;
 use openmls::group::MlsGroup;
 use openmls_rust_crypto::OpenMlsRustCrypto;
+
+use crate::eid_mls_evolvement::EidMlsEvolvement;
+
+use super::state_trait::EidMlsState;
 
 /// Eid Mls Transcript State
 pub(crate) struct EidMlsTranscriptState {
@@ -11,16 +14,16 @@ pub(crate) struct EidMlsTranscriptState {
     backend: &'static OpenMlsRustCrypto,
 }
 
-impl EidState<EidMlsEvolvement> for EidMlsTranscriptState {
+impl<M: Member> EidState<EidMlsEvolvement, M> for EidMlsTranscriptState {
     fn apply(&mut self, evolvement: &EidMlsEvolvement) -> Result<(), EidError> {
         todo!()
     }
 
-    fn get_members(&self) -> Result<Vec<Member>, EidError> {
+    fn get_members(&self) -> Result<Vec<M>, EidError> {
         todo!()
     }
 
-    fn verify_client(&self, _: &eid_traits::types::Member) -> Result<bool, EidError> {
+    fn verify_client(&self, _: &M) -> Result<bool, EidError> {
         todo!()
     }
 
