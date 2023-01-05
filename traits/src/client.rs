@@ -20,7 +20,7 @@ pub trait EidClient {
 
     /// Create an [Evolvement] to add a member to the EID.
     fn add(
-        &self,
+        &mut self,
         member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>
@@ -29,7 +29,7 @@ pub trait EidClient {
 
     /// Create an [Evolvement] to remove a member from the EID.
     fn remove(
-        &self,
+        &mut self,
         member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>
