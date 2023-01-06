@@ -1,9 +1,11 @@
 use eid_traits::client::EidClient;
+use eid_traits::member::Member;
 use eid_traits::state::EidState;
-use eid_traits::types::{EidError, Member};
+use eid_traits::types::EidError;
 
 use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
+use crate::eid_dummy_member::EidDummyMember;
 use crate::eid_dummy_state::EidDummyState;
 
 pub struct EidDummyClient {
@@ -27,7 +29,7 @@ impl EidClient for EidDummyClient {
 
     fn create_eid(_backend: &EidDummyBackend) -> Result<Self, EidError> {
         let pk = "public key".as_bytes().to_vec();
-        let members = vec![Member::new(pk.clone())];
+        let members = vec![EidDummyMember::new(pk.clone())];
         let state = EidDummyState { members };
         Ok(EidDummyClient {
             state,
@@ -97,7 +99,7 @@ impl EidClient for EidDummyClient {
         // create a member with your new pk
         let mut new_pk = self.pk().to_vec();
         new_pk[0] += 1;
-        let member = Member::new(new_pk.clone());
+        let member = EidDummyMember::new(new_pk.clone());
 
         // remember the new pk for later
         self.pending_pk_update = Some(new_pk);
