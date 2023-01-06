@@ -2,7 +2,7 @@ use openmls::prelude::KeyPackage;
 
 use eid_traits::member::Member;
 
-pub(crate) struct EidMlsMember {
+pub struct EidMlsMember {
     key_package: KeyPackage,
 }
 

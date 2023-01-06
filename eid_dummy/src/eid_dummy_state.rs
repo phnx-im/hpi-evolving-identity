@@ -36,7 +36,7 @@ impl EidState for EidDummyState {
             }
         }
     }
-    fn verify_client(&self, _: &EidDummyMember) -> Result<bool, EidError> {
+    fn verify_member(&self, _: &EidDummyMember) -> Result<bool, EidError> {
         Ok(true)
     }
     fn get_members(&self) -> Result<Vec<EidDummyMember>, EidError> {

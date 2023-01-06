@@ -21,6 +21,14 @@ impl EidState for EidMlsTranscriptState {
     type MemberProvider = EidMlsMember;
     type BackendProvider = EidMlsBackend;
 
+    fn apply_log(
+        &mut self,
+        _: &[EidMlsEvolvement],
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
+        todo!()
+    }
+
     fn apply(
         &mut self,
         evolvement: &Self::EvolvementProvider,
@@ -29,19 +37,11 @@ impl EidState for EidMlsTranscriptState {
         todo!()
     }
 
+    fn verify_member(&self, _: &Self::MemberProvider) -> Result<bool, EidError> {
+        todo!()
+    }
+
     fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
-        todo!()
-    }
-
-    fn verify_client(&self, _: &Self::MemberProvider) -> Result<bool, EidError> {
-        todo!()
-    }
-
-    fn apply_log(
-        &mut self,
-        _: &[EidMlsEvolvement],
-        backend: &Self::BackendProvider,
-    ) -> Result<(), EidError> {
         todo!()
     }
 }

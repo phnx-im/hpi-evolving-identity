@@ -23,13 +23,13 @@ impl EidClient for EidMlsClient {
         todo!()
     }
 
-    fn pk(&self) -> &[u8] {
-        todo!()
-    }
-
     fn generate_credential(
         backend: &Self::BackendProvider,
     ) -> <Self::MemberProvider as Member>::CredentialProvider {
+        todo!()
+    }
+
+    fn pk(&self) -> &[u8] {
         todo!()
     }
 
@@ -56,7 +56,7 @@ impl EidClient for EidMlsClient {
             .expect("Could not add member");
         let mls_in: MlsMessageIn = mls_out.into();
         let unverified_msg = group
-            .parse_message(mls_in.clone(), backend)
+            .parse_message(mls_in.clone(), backend.mls_backend)
             .expect("Could not parse message");
         let proc_msg = group
             .process_unverified_message(unverified_msg, None, backend)

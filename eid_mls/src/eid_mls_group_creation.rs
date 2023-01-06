@@ -7,6 +7,7 @@ use openmls::prelude::{
 
 use eid_traits::types::EidError;
 
+use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_client::EidMlsClient;
 use crate::state::client_state::EidMlsClientState;
 
@@ -77,7 +78,7 @@ impl EidMlsClient {
     {
         let credential_bundle = create_store_credential(
             String::from("id01"), // TODO: set some actual identifier
-            backend,
+            backend.mls_backend,
             ciphersuite.signature_algorithm(),
         );
         // TODO: keystore parameter is not used
@@ -88,8 +89,12 @@ impl EidMlsClient {
         ))];
 
         // Create the key package bundle
-        let key_package_bundle =
-            create_store_key_package(ciphersuite, &credential_bundle, backend, extensions.clone());
+        let key_package_bundle = create_store_key_package(
+            ciphersuite,
+            &credential_bundle,
+            backend.mls_backend,
+            extensions.clone(),
+        );
 
         let mls_group_config = MlsGroupConfig::builder()
             .sender_ratchet_configuration(SenderRatchetConfiguration::new(10, 2000))
@@ -98,7 +103,7 @@ impl EidMlsClient {
             .build();
 
         let mut mls_group = MlsGroup::new(
-            backend,
+            backend.mls_backend,
             &mls_group_config,
             GroupId::from_slice(b"group01"), // TODO: set some actual identifier
             key_package_bundle
