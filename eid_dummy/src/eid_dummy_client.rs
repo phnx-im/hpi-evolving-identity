@@ -17,6 +17,7 @@ pub struct EidDummyClient {
 impl EidClient for EidDummyClient {
     type StateProvider = EidDummyState;
     type EvolvementProvider = EidDummyEvolvement;
+    type MemberProvider = EidDummyMember;
     type BackendProvider = EidDummyBackend;
 
     fn state(&self) -> &EidDummyState {
@@ -53,8 +54,8 @@ impl EidClient for EidDummyClient {
     }
 
     fn add(
-        &self,
-        member: &Member,
+        &mut self,
+        member: &EidDummyMember,
         _backend: &EidDummyBackend,
     ) -> Result<EidDummyEvolvement, EidError> {
         if self.state.members.contains(member) {
@@ -70,8 +71,8 @@ impl EidClient for EidDummyClient {
         Ok(evolvement)
     }
     fn remove(
-        &self,
-        member: &Member,
+        &mut self,
+        member: &EidDummyMember,
         _backend: &EidDummyBackend,
     ) -> Result<EidDummyEvolvement, EidError> {
         if !self.state.members.contains(member) {
@@ -82,7 +83,11 @@ impl EidClient for EidDummyClient {
 
         let mut new_state = self.state.clone();
 
-        if let Some(pos) = new_state.members.iter().position(|x| x.pk() == member.pk()) {
+        if let Some(pos) = new_state
+            .members
+            .iter()
+            .position(|x| x.get_pk() == member.get_pk())
+        {
             new_state.members.swap_remove(pos);
         }
 
@@ -94,7 +99,7 @@ impl EidClient for EidDummyClient {
     fn update(&mut self, _backend: &EidDummyBackend) -> Result<EidDummyEvolvement, EidError> {
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
-        new_members.retain(|m| *self.pk() != m.pk());
+        new_members.retain(|m| *self.pk != m.get_pk());
 
         // create a member with your new pk
         let mut new_pk = self.pk().to_vec();
