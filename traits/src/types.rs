@@ -29,17 +29,3 @@ pub enum EvolvementType {
     Update,
     Remove,
 }
-
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
-pub struct Member {
-    pk: Vec<u8>,
-}
-
-impl Member {
-    pub fn new(pk: Vec<u8>) -> Self {
-        Self { pk }
-    }
-    pub fn pk(&self) -> Vec<u8> {
-        self.pk.clone()
-    }
-}

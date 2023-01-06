@@ -1,10 +1,12 @@
 use crate::evolvement::Evolvement;
+use crate::member::Member;
 use crate::state::EidState;
-use crate::types::{EidError, Member};
+use crate::types::EidError;
 
 pub trait EidClient {
     type EvolvementProvider: Evolvement;
-    type StateProvider: EidState<Self::EvolvementProvider>;
+    type MemberProvider: Member;
+    type StateProvider: EidState<Self::EvolvementProvider, Self::MemberProvider>;
     type BackendProvider;
 
     fn state(&self) -> &Self::StateProvider;
@@ -18,8 +20,8 @@ pub trait EidClient {
 
     /// Create an [Evolvement] to add a member to the EID.
     fn add(
-        &self,
-        member: &Member,
+        &mut self,
+        member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>
     where
@@ -27,8 +29,8 @@ pub trait EidClient {
 
     /// Create an [Evolvement] to remove a member from the EID.
     fn remove(
-        &self,
-        member: &Member,
+        &mut self,
+        member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>
     where

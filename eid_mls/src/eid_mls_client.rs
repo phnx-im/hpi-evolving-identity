@@ -1,10 +1,10 @@
 use eid_traits::client::EidClient;
-use eid_traits::types::{EidError, Member};
-use openmls::prelude::Ciphersuite;
+use eid_traits::types::EidError;
+use openmls::prelude::{Ciphersuite, MlsMessageIn, ProcessedMessage};
 use openmls_rust_crypto::OpenMlsRustCrypto;
 
-use crate::eid_dummy_keystore::EidDummyKeystore;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
+use crate::eid_mls_member::EidMlsMember;
 use crate::state::client_state::EidMlsClientState;
 
 pub struct EidMlsClient {
@@ -12,16 +12,13 @@ pub struct EidMlsClient {
     pub(crate) backend: &'static OpenMlsRustCrypto,
 }
 
-impl<'a> EidClient<'a> for EidMlsClient {
-    type KeyStoreProvider = EidDummyKeystore;
+impl EidClient for EidMlsClient {
     type EvolvementProvider = EidMlsEvolvement;
+    type MemberProvider = EidMlsMember;
     type StateProvider = EidMlsClientState;
+    type BackendProvider = OpenMlsRustCrypto;
 
-    fn state(&mut self) -> &mut Self::StateProvider {
-        todo!()
-    }
-
-    fn key_store(&self) -> &Self::KeyStoreProvider {
+    fn state(&self) -> &Self::StateProvider {
         todo!()
     }
 
@@ -29,37 +26,65 @@ impl<'a> EidClient<'a> for EidMlsClient {
         todo!()
     }
 
-    fn create_eid(keystore: &'a Self::KeyStoreProvider) -> Result<Self, EidError>
-    where
-        Self: Sized,
+    fn create_eid(backend: &Self::BackendProvider) -> Result<Self, EidError>
+        where
+            Self: Sized,
     {
-        // Define cipher suite ...
-        let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519;
-        // ... and the crypto backend to use.
-        let backend = &OpenMlsRustCrypto::default();
+        let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
 
-        Self::create_mls_eid(keystore, backend, ciphersuite) // todo: implement this
+        Self::create_mls_eid(backend, ciphersuite)
     }
 
-    fn add(&self, member: &Member) -> Result<Self::EvolvementProvider, EidError>
-    where
-        Self: Sized,
+    fn add(
+        &mut self,
+        member: &Self::MemberProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::EvolvementProvider, EidError>
+        where
+            Self: Sized,
+    {
+        let group = &mut self.state.group;
+        let (mls_out, welcome) = group.add_members(self.backend, &[member.get_key_package()]).expect("Could not add member");
+        let mls_in: MlsMessageIn = mls_out.into();
+        let unverified_msg = group
+            .parse_message(mls_in.clone(), backend)
+            .expect("Could not parse message");
+        let proc_msg = group
+            .process_unverified_message(unverified_msg, None, backend)
+            .expect("Can't process message");
+        return if let ProcessedMessage::StagedCommitMessage(staged_commit) = proc_msg {
+            Ok(EidMlsEvolvement {
+                commit: *staged_commit,
+                message: mls_in,
+            })
+        } else {
+            Err(EidError::ParseMessageError)
+        };
+    }
+
+    fn remove(
+        &mut self,
+        member: &Self::MemberProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::EvolvementProvider, EidError>
+        where
+            Self: Sized,
     {
         todo!()
     }
 
-    fn remove(&self, member: &Member) -> Result<Self::EvolvementProvider, EidError>
-    where
-        Self: Sized,
-    {
+    fn update(
+        &mut self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::EvolvementProvider, EidError> {
         todo!()
     }
 
-    fn update(&mut self) -> Result<Self::EvolvementProvider, EidError> {
-        todo!()
-    }
-
-    fn evolve(&mut self, evolvement: &Self::EvolvementProvider) -> Result<(), EidError> {
+    fn evolve(
+        &mut self,
+        evolvement: &Self::EvolvementProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
         todo!()
     }
 }

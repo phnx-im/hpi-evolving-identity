@@ -2,12 +2,12 @@ use eid_traits::types::EidError;
 use openmls::prelude::{
     Ciphersuite, CredentialBundle, CredentialType, Extension, GroupId, KeyPackageBundle,
     LifetimeExtension, MlsGroup, MlsGroupConfig, OpenMlsCryptoProvider, OpenMlsKeyStore,
-    SenderRatchetConfiguration, SignatureScheme, TlsSerializeTrait,
-    PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
+    PURE_PLAINTEXT_WIRE_FORMAT_POLICY, SenderRatchetConfiguration, SignatureScheme,
+    TlsSerializeTrait,
 };
 
 use crate::eid_mls_client::EidMlsClient;
-use crate::r#trait::EidMlsClientState::Client;
+use crate::state::client_state::EidMlsClientState;
 
 fn create_store_credential(
     identifier: String,
@@ -68,7 +68,6 @@ fn create_store_key_package(
 
 impl EidMlsClient {
     pub(crate) fn create_mls_eid(
-        keystore: &Self::KeyStoreProvider,
         backend: &impl OpenMlsCryptoProvider,
         ciphersuite: Ciphersuite,
     ) -> Result<Self, EidError>
@@ -83,7 +82,7 @@ impl EidMlsClient {
         // TODO: keystore parameter is not used
 
         // Define extensions
-        let extensions = vec![Extension::Lifetime(LifetimeExtension::new(
+        let extensions = vec![Extension::LifeTime(LifetimeExtension::new(
             60 * 60 * 24 * 90, // Maximum lifetime of 90 days, expressed in seconds
         ))];
 
@@ -110,7 +109,7 @@ impl EidMlsClient {
         .expect("Could not create MlsGroup");
 
         Ok(Self {
-            state: Client {
+            state: EidMlsClientState {
                 group: mls_group,
                 backend,
             },
