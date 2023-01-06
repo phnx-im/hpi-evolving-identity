@@ -1,10 +1,10 @@
 use openmls::prelude::{Ciphersuite, MlsMessageIn, ProcessedMessage};
-use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
 use eid_traits::types::EidError;
 
+use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 use crate::state::client_state::EidMlsClientState;
@@ -17,7 +17,7 @@ impl EidClient for EidMlsClient {
     type EvolvementProvider = EidMlsEvolvement;
     type MemberProvider = EidMlsMember;
     type StateProvider = EidMlsClientState;
-    type BackendProvider = OpenMlsRustCrypto;
+    type BackendProvider = EidMlsBackend;
 
     fn state(&self) -> &Self::StateProvider {
         todo!()
@@ -33,13 +33,15 @@ impl EidClient for EidMlsClient {
         todo!()
     }
 
-    fn create_eid(backend: &Self::BackendProvider) -> Result<Self, EidError>
+    fn create_eid(
+        cred: <Self::MemberProvider as Member>::CredentialProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self, EidError>
     where
         Self: Sized,
     {
         let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
-
-        Self::create_mls_eid(backend, ciphersuite)
+        Self::create_mls_eid(backend, ciphersuite) // TODO: use cred
     }
 
     fn add(
@@ -52,14 +54,14 @@ impl EidClient for EidMlsClient {
     {
         let group = &mut self.state.group;
         let (mls_out, welcome) = group
-            .add_members(self.backend, &[member.get_key_package()])
+            .add_members(backend.mls_backend, &[member.get_key_package()])
             .expect("Could not add member");
         let mls_in: MlsMessageIn = mls_out.into();
         let unverified_msg = group
             .parse_message(mls_in.clone(), backend.mls_backend)
             .expect("Could not parse message");
         let proc_msg = group
-            .process_unverified_message(unverified_msg, None, backend)
+            .process_unverified_message(unverified_msg, None, backend.mls_backend)
             .expect("Can't process message");
         return if let ProcessedMessage::StagedCommitMessage(staged_commit) = proc_msg {
             Ok(EidMlsEvolvement {

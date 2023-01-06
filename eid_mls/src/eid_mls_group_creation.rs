@@ -70,7 +70,7 @@ fn create_store_key_package(
 
 impl EidMlsClient {
     pub(crate) fn create_mls_eid(
-        backend: &impl OpenMlsCryptoProvider,
+        backend: &EidMlsBackend,
         ciphersuite: Ciphersuite,
     ) -> Result<Self, EidError>
     where

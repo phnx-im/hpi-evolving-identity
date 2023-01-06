@@ -6,7 +6,7 @@ use eid_traits::types::EidError;
 pub trait EidMlsState: EidState + Clone + PartialEq {
     fn verify_member(&self, member: &Self::MemberProvider) -> Result<bool, EidError> {
         let members = self.get_members()?;
-        Ok(members.contains(client))
+        Ok(members.contains(member))
     }
 
     fn apply_log(

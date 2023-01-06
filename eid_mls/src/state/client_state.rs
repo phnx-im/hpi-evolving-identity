@@ -1,5 +1,4 @@
-use openmls::prelude::{MlsGroup, OpenMlsCryptoProvider, ProcessedMessage};
-use openmls_rust_crypto::OpenMlsRustCrypto;
+use openmls::prelude::{MlsGroup, ProcessedMessage};
 
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
@@ -10,7 +9,7 @@ use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 use crate::state::state_trait::EidMlsState;
 
-pub(crate) struct EidMlsClientState {
+pub struct EidMlsClientState {
     pub(crate) group: MlsGroup,
 }
 

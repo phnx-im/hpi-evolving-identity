@@ -1,7 +1,5 @@
 use openmls::group::MlsGroup;
-use openmls_rust_crypto::OpenMlsRustCrypto;
 
-use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
