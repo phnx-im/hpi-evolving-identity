@@ -108,7 +108,7 @@ impl EidMlsClient {
             GroupId::from_slice(b"group01"), // TODO: set some actual identifier
             key_package_bundle
                 .key_package()
-                .hash_ref(backend.crypto())
+                .hash_ref(backend.mls_backend.crypto())
                 .expect("Could not hash KeyPackage")
                 .as_slice(),
         )

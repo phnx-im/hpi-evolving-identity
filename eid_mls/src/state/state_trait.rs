@@ -18,7 +18,7 @@ pub trait EidMlsState: EidState + Clone + PartialEq {
         Self: Sized,
     {
         for evolvement in log.iter() {
-            self.apply(evolvement)?;
+            self.apply(evolvement, backend)?;
         }
         Ok(())
     }
