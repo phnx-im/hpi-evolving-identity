@@ -1,7 +1,9 @@
-use eid_traits::client::EidClient;
-use eid_traits::types::EidError;
 use openmls::prelude::{Ciphersuite, MlsMessageIn, ProcessedMessage};
 use openmls_rust_crypto::OpenMlsRustCrypto;
+
+use eid_traits::client::EidClient;
+use eid_traits::member::Member;
+use eid_traits::types::EidError;
 
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
@@ -9,7 +11,6 @@ use crate::state::client_state::EidMlsClientState;
 
 pub struct EidMlsClient {
     pub(crate) state: EidMlsClientState,
-    pub(crate) backend: &'static OpenMlsRustCrypto,
 }
 
 impl EidClient for EidMlsClient {
@@ -26,9 +27,15 @@ impl EidClient for EidMlsClient {
         todo!()
     }
 
+    fn generate_credential(
+        backend: &Self::BackendProvider,
+    ) -> <Self::MemberProvider as Member>::CredentialProvider {
+        todo!()
+    }
+
     fn create_eid(backend: &Self::BackendProvider) -> Result<Self, EidError>
-        where
-            Self: Sized,
+    where
+        Self: Sized,
     {
         let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
 
@@ -40,11 +47,13 @@ impl EidClient for EidMlsClient {
         member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>
-        where
-            Self: Sized,
+    where
+        Self: Sized,
     {
         let group = &mut self.state.group;
-        let (mls_out, welcome) = group.add_members(self.backend, &[member.get_key_package()]).expect("Could not add member");
+        let (mls_out, welcome) = group
+            .add_members(self.backend, &[member.get_key_package()])
+            .expect("Could not add member");
         let mls_in: MlsMessageIn = mls_out.into();
         let unverified_msg = group
             .parse_message(mls_in.clone(), backend)
@@ -67,8 +76,8 @@ impl EidClient for EidMlsClient {
         member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>
-        where
-            Self: Sized,
+    where
+        Self: Sized,
     {
         todo!()
     }

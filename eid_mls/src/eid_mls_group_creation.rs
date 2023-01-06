@@ -1,10 +1,11 @@
-use eid_traits::types::EidError;
 use openmls::prelude::{
     Ciphersuite, CredentialBundle, CredentialType, Extension, GroupId, KeyPackageBundle,
     LifetimeExtension, MlsGroup, MlsGroupConfig, OpenMlsCryptoProvider, OpenMlsKeyStore,
-    PURE_PLAINTEXT_WIRE_FORMAT_POLICY, SenderRatchetConfiguration, SignatureScheme,
-    TlsSerializeTrait,
+    SenderRatchetConfiguration, SignatureScheme, TlsSerializeTrait,
+    PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
 };
+
+use eid_traits::types::EidError;
 
 use crate::eid_mls_client::EidMlsClient;
 use crate::state::client_state::EidMlsClientState;
@@ -109,11 +110,7 @@ impl EidMlsClient {
         .expect("Could not create MlsGroup");
 
         Ok(Self {
-            state: EidMlsClientState {
-                group: mls_group,
-                backend,
-            },
-            backend,
+            state: EidMlsClientState { group: mls_group },
         })
     }
 }
