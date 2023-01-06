@@ -13,6 +13,7 @@ impl EidTranscript for EidDummyTranscript {
     type EvolvementProvider = EidDummyEvolvement;
     type MemberProvider = EidDummyMember;
     type StateProvider = EidDummyState;
+
     fn new(trusted_state: EidDummyState, log: Vec<EidDummyEvolvement>) -> Self {
         EidDummyTranscript { trusted_state, log }
     }

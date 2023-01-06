@@ -20,7 +20,7 @@ impl EidState for EidDummyState {
         backend: &EidDummyBackend,
     ) -> Result<(), EidError> {
         let evolvement = evolvements.last().unwrap();
-        self.apply(evolvement)
+        self.apply(evolvement, backend)
     }
     fn apply(
         &mut self,

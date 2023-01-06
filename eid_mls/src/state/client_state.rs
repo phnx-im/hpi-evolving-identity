@@ -25,11 +25,10 @@ impl EidMlsState for EidMlsClientState {
             ProcessedMessage::ApplicationMessage(_) | ProcessedMessage::ProposalMessage(_) => {
                 Err(EidError::InvalidMessageError)
             }
-            ProcessedMessage::StagedCommitMessage(staged_commit) => {
-                self.group
-                    .merge_staged_commit(*staged_commit)
-                    .map_err(|_| EidError::ApplyCommitError)
-            }
+            ProcessedMessage::StagedCommitMessage(staged_commit) => self
+                .group
+                .merge_staged_commit(*staged_commit)
+                .map_err(|_| EidError::ApplyCommitError),
         }
     }
 }

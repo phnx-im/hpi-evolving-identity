@@ -20,6 +20,11 @@ impl EidClient for EidDummyClient {
     type MemberProvider = EidDummyMember;
     type BackendProvider = EidDummyBackend;
 
+    fn generate_credential(
+        _backend: &Self::BackendProvider,
+    ) -> <Self::MemberProvider as Member>::CredentialProvider {
+        (0..256).map(|_| rand::random::<u8>()).collect()
+    }
     fn state(&self) -> &EidDummyState {
         &self.state
     }
@@ -36,7 +41,7 @@ impl EidClient for EidDummyClient {
         let state = EidDummyState { members };
         Ok(EidDummyClient {
             state,
-            pk,
+            pk: cred,
             pending_pk_update: None,
         })
     }
@@ -44,7 +49,7 @@ impl EidClient for EidDummyClient {
     fn evolve(
         &mut self,
         evolvement: &EidDummyEvolvement,
-        _backend: &EidDummyBackend,
+        backend: &EidDummyBackend,
     ) -> Result<(), EidError> {
         // in case of update, change your own pk
         if let EidDummyEvolvement::Update { members: _ } = &evolvement {
@@ -52,7 +57,7 @@ impl EidClient for EidDummyClient {
             self.pending_pk_update = None;
         }
 
-        self.state.apply(evolvement)
+        self.state.apply(evolvement, backend)
     }
 
     fn add(

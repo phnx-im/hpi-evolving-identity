@@ -1,3 +1,4 @@
+use crate::backend::EidBackend;
 use crate::evolvement::Evolvement;
 use crate::member::Member;
 use crate::state::EidState;
@@ -6,10 +7,17 @@ use crate::types::EidError;
 pub trait EidClient {
     type EvolvementProvider: Evolvement;
     type MemberProvider: Member;
-    type StateProvider: EidState<Self::EvolvementProvider, Self::MemberProvider>;
-    type BackendProvider;
+    type StateProvider: EidState<
+        EvolvementProvider = Self::EvolvementProvider,
+        MemberProvider = Self::MemberProvider,
+    >;
+    type BackendProvider: EidBackend;
 
     fn state(&self) -> &Self::StateProvider;
+
+    fn generate_credential(
+        backend: &Self::BackendProvider,
+    ) -> <Self::MemberProvider as Member>::CredentialProvider;
 
     fn pk(&self) -> &[u8];
 

@@ -1,5 +1,6 @@
-use eid_traits::member::Member;
 use openmls::prelude::KeyPackage;
+
+use eid_traits::member::Member;
 
 pub(crate) struct EidMlsMember {
     key_package: KeyPackage,
@@ -21,12 +22,10 @@ impl Member for EidMlsMember {
     type CredentialProvider = KeyPackage;
 
     fn new(key_package: KeyPackage) -> Self {
-        Self {
-            key_package
-        }
+        Self { key_package }
     }
 
-    fn get_pk(&self) -> Vec<u8> {
-        todo!()
+    fn get_credential(&self) -> Self::CredentialProvider {
+        self.key_package.clone()
     }
 }
