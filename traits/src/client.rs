@@ -7,13 +7,13 @@ use crate::types::EidError;
 pub trait EidClient {
     type EvolvementProvider: Evolvement;
     type MemberProvider: Member;
-    type StateProvider: EidState<
+    type ClientStateProvider: EidState<
         EvolvementProvider = Self::EvolvementProvider,
         MemberProvider = Self::MemberProvider,
     >;
     type BackendProvider: EidBackend;
 
-    fn state(&self) -> &Self::StateProvider;
+    fn export_transcript_state(&self) -> Self::TranscriptStateProvider;
 
     fn generate_credential(
         backend: &Self::BackendProvider,

@@ -8,6 +8,7 @@ use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 use crate::state::client_state::EidMlsClientState;
+use crate::state::transcript_state::EidMlsTranscriptState;
 
 pub struct EidMlsClient {
     pub(crate) state: EidMlsClientState,
@@ -16,10 +17,11 @@ pub struct EidMlsClient {
 impl EidClient for EidMlsClient {
     type EvolvementProvider = EidMlsEvolvement;
     type MemberProvider = EidMlsMember;
-    type StateProvider = EidMlsClientState;
+    type ClientStateProvider = EidMlsClientState;
+    type TranscriptStateProvider = EidMlsTranscriptState;
     type BackendProvider = EidMlsBackend;
 
-    fn state(&self) -> &Self::StateProvider {
+    fn export_transcript_state(&self) -> Self::TranscriptStateProvider {
         todo!()
     }
 

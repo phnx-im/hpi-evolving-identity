@@ -15,7 +15,8 @@ pub struct EidDummyClient {
 }
 
 impl EidClient for EidDummyClient {
-    type StateProvider = EidDummyState;
+    type ClientStateProvider = EidDummyState;
+    type TranscriptStateProvider = EidDummyState;
     type EvolvementProvider = EidDummyEvolvement;
     type MemberProvider = EidDummyMember;
     type BackendProvider = EidDummyBackend;
@@ -25,8 +26,8 @@ impl EidClient for EidDummyClient {
     ) -> <Self::MemberProvider as Member>::CredentialProvider {
         (0..256).map(|_| rand::random::<u8>()).collect()
     }
-    fn state(&self) -> &EidDummyState {
-        &self.state
+    fn export_transcript_state(&self) -> EidDummyState {
+        self.state.clone()
     }
 
     fn pk(&self) -> &[u8] {
