@@ -1,3 +1,4 @@
+use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_member::EidDummyMember;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
@@ -9,12 +10,23 @@ pub struct EidDummyState {
     pub(crate) members: Vec<EidDummyMember>,
 }
 
-impl EidState<EidDummyEvolvement, EidDummyMember> for EidDummyState {
-    fn apply_log(&mut self, evolvements: &[EidDummyEvolvement]) -> Result<(), EidError> {
+impl EidState for EidDummyState {
+    type EvolvementProvider = EidDummyEvolvement;
+    type MemberProvider = EidDummyMember;
+    type BackendProvider = EidDummyBackend;
+    fn apply_log(
+        &mut self,
+        evolvements: &[EidDummyEvolvement],
+        backend: &EidDummyBackend,
+    ) -> Result<(), EidError> {
         let evolvement = evolvements.last().unwrap();
         self.apply(evolvement)
     }
-    fn apply(&mut self, evolvement: &EidDummyEvolvement) -> Result<(), EidError> {
+    fn apply(
+        &mut self,
+        evolvement: &EidDummyEvolvement,
+        _backend: &EidDummyBackend,
+    ) -> Result<(), EidError> {
         match &evolvement {
             EidDummyEvolvement::Update { members }
             | EidDummyEvolvement::Add { members }

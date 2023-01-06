@@ -28,9 +28,11 @@ impl EidClient for EidDummyClient {
         &self.pk
     }
 
-    fn create_eid(_backend: &EidDummyBackend) -> Result<Self, EidError> {
-        let pk = "public key".as_bytes().to_vec();
-        let members = vec![EidDummyMember::new(pk.clone())];
+    fn create_eid(
+        cred: <Self::MemberProvider as Member>::CredentialProvider,
+        _backend: &Self::BackendProvider,
+    ) -> Result<Self, EidError> {
+        let members = vec![EidDummyMember::new(cred.clone())];
         let state = EidDummyState { members };
         Ok(EidDummyClient {
             state,
@@ -83,11 +85,7 @@ impl EidClient for EidDummyClient {
 
         let mut new_state = self.state.clone();
 
-        if let Some(pos) = new_state
-            .members
-            .iter()
-            .position(|x| x.get_pk() == member.get_pk())
-        {
+        if let Some(pos) = new_state.members.iter().position(|x| x == member) {
             new_state.members.swap_remove(pos);
         }
 
@@ -99,7 +97,8 @@ impl EidClient for EidDummyClient {
     fn update(&mut self, _backend: &EidDummyBackend) -> Result<EidDummyEvolvement, EidError> {
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
-        new_members.retain(|m| *self.pk != m.get_pk());
+        let myself = &EidDummyMember::new(self.pk().into());
+        new_members.retain(|m| myself != m);
 
         // create a member with your new pk
         let mut new_pk = self.pk().to_vec();
