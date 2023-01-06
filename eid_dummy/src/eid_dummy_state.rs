@@ -9,7 +9,7 @@ pub struct EidDummyState {
     pub(crate) members: Vec<EidDummyMember>,
 }
 
-impl EidState<EidDummyEvolvement> for EidDummyState {
+impl EidState<EidDummyEvolvement, EidDummyMember> for EidDummyState {
     fn apply_log(&mut self, evolvements: &[EidDummyEvolvement]) -> Result<(), EidError> {
         let evolvement = evolvements.last().unwrap();
         self.apply(evolvement)

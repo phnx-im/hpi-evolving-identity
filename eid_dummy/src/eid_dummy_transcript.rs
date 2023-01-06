@@ -1,4 +1,5 @@
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
+use crate::eid_dummy_member::EidDummyMember;
 use crate::eid_dummy_state::EidDummyState;
 use eid_traits::transcript::Transcript;
 
@@ -8,7 +9,7 @@ pub struct EidDummyTranscript {
     log: Vec<EidDummyEvolvement>,
 }
 
-impl Transcript<EidDummyEvolvement> for EidDummyTranscript {
+impl Transcript<EidDummyEvolvement, EidDummyMember> for EidDummyTranscript {
     type StateProvider = EidDummyState;
     fn new(trusted_state: EidDummyState, log: Vec<EidDummyEvolvement>) -> Self {
         EidDummyTranscript { trusted_state, log }
