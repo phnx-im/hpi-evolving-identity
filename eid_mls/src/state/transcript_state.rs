@@ -10,7 +10,7 @@ use crate::eid_mls_member::EidMlsMember;
 use super::state_trait::EidMlsState;
 
 /// Eid Mls Transcript State
-pub(crate) struct EidMlsTranscriptState {
+pub struct EidMlsTranscriptState {
     group: MlsGroup,
 }
 

@@ -11,6 +11,10 @@ pub trait EidClient {
         EvolvementProvider = Self::EvolvementProvider,
         MemberProvider = Self::MemberProvider,
     >;
+    type TranscriptStateProvider: EidState<
+        EvolvementProvider = Self::EvolvementProvider,
+        MemberProvider = Self::MemberProvider,
+    >;
     type BackendProvider: EidBackend;
 
     fn export_transcript_state(&self) -> Self::TranscriptStateProvider;
