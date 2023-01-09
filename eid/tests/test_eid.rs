@@ -105,7 +105,7 @@ where
     C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.export_transcript_state().clone().into(), vec![]);
+    let mut transcript = T::new(client.export_transcript_state(), vec![]);
 
     let cred = C::generate_credential(backend);
     let alice = Member::new(cred);
