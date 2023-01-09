@@ -29,7 +29,7 @@ impl EidClient for EidDummyClient {
         self.state.clone()
     }
 
-    fn pk(&self) -> &[u8] {
+    fn get_credential(&self) -> &Vec<u8> {
         &self.pk
     }
 
@@ -102,11 +102,11 @@ impl EidClient for EidDummyClient {
     fn update(&mut self, _backend: &EidDummyBackend) -> Result<EidDummyEvolvement, EidError> {
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
-        let myself = &EidDummyMember::new(self.pk().into());
+        let myself = &EidDummyMember::new(self.get_credential().clone());
         new_members.retain(|m| myself != m);
 
         // create a member with your new pk
-        let mut new_pk = self.pk().to_vec();
+        let mut new_pk = self.get_credential().to_vec();
         new_pk[0] += 1;
         let member = EidDummyMember::new(new_pk.clone());
 

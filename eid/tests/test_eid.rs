@@ -56,14 +56,16 @@ where
     let cred_alice = C::generate_credential(backend);
     let alice = Member::new(cred_alice);
     let add_alice_evolvement = client.add(&alice, backend).expect("failed to add member");
+
+    // member list length unchanged before evolving
+    let members = client.get_members().expect("failed to get members");
+    assert_eq!(1, members.len());
+
     client
         .evolve(&add_alice_evolvement, backend)
         .expect("Failed to apply state");
 
-    let members = client
-        .export_transcript_state()
-        .get_members()
-        .expect("failed to get members");
+    let members = client.get_members().expect("failed to get members");
     assert!(members.contains(&alice));
     assert_eq!(2, members.len());
 
@@ -86,10 +88,7 @@ where
     assert!(add_alice_evolvement.is_valid_successor(&add_bob_evolvement));
     transcript.add_evolvement(add_bob_evolvement.clone());
 
-    let members = client
-        .export_transcript_state()
-        .get_members()
-        .expect("failed to get members");
+    let members = client.get_members().expect("failed to get members");
     assert!(members.contains(&bob));
     assert_eq!(3, members.len())
 }
@@ -134,9 +133,7 @@ where
         member_not_in_eid_error,
         EidError::InvalidMemberError(..)
     ));
-
-    let state = client.export_transcript_state();
-    let members = state.get_members().expect("failed to get members");
+    let members = client.get_members().expect("failed to get members");
     assert!(!members.contains(&alice));
     assert_eq!(1, members.len());
 }
@@ -153,10 +150,7 @@ where
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.export_transcript_state(), vec![]);
-    let alice_before_update_1 = &client
-        .export_transcript_state()
-        .get_members()
-        .expect("failed to get members")[0];
+    let alice_before_update_1 = &client.get_members().expect("failed to get members")[0];
 
     let update_evolvement_1 = client.update(backend).expect("Updating client keys failed");
     client
@@ -164,10 +158,7 @@ where
         .expect("Failed to apply update on client state");
     transcript.add_evolvement(update_evolvement_1.clone());
 
-    let members_after_update_1 = client
-        .export_transcript_state()
-        .get_members()
-        .expect("failed to get members");
+    let members_after_update_1 = client.get_members().expect("failed to get members");
 
     assert!(!members_after_update_1.contains(alice_before_update_1));
     assert_eq!(1, members_after_update_1.len());
@@ -181,10 +172,7 @@ where
     assert!(update_evolvement_1.is_valid_successor(&update_evolvement_2));
     transcript.add_evolvement(update_evolvement_2.clone());
 
-    let members_after_update_2 = client
-        .export_transcript_state()
-        .get_members()
-        .expect("failed to get members");
+    let members_after_update_2 = client.get_members().expect("failed to get members");
 
     assert!(!members_after_update_2.contains(alice_before_update_2));
     assert_eq!(1, members_after_update_2.len());

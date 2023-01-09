@@ -1,4 +1,4 @@
-use openmls::prelude::{Ciphersuite, MlsMessageIn, ProcessedMessage};
+use openmls::prelude::{Ciphersuite, KeyPackage, MlsMessageIn, ProcessedMessage};
 
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
@@ -30,7 +30,7 @@ impl EidClient for EidMlsClient {
         todo!()
     }
 
-    fn pk(&self) -> &[u8] {
+    fn get_credential(&self) -> &KeyPackage {
         todo!()
     }
 
