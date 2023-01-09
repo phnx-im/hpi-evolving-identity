@@ -48,7 +48,7 @@ impl EidClient for EidDummyClient {
 
     fn evolve(
         &mut self,
-        evolvement: &EidDummyEvolvement,
+        evolvement: EidDummyEvolvement,
         backend: &EidDummyBackend,
     ) -> Result<(), EidError> {
         // in case of update, change your own pk

@@ -16,7 +16,7 @@ impl EidState for EidDummyState {
     type BackendProvider = EidDummyBackend;
     fn apply_log(
         &mut self,
-        evolvements: &[EidDummyEvolvement],
+        evolvements: Vec<EidDummyEvolvement>,
         backend: &EidDummyBackend,
     ) -> Result<(), EidError> {
         let evolvement = evolvements.last().unwrap();

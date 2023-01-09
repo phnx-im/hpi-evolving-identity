@@ -44,12 +44,12 @@ impl EidState for EidMlsClientState {
 
     fn apply(
         &mut self,
-        evolvement: &Self::EvolvementProvider,
+        evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
         let parsed_message = self
             .group
-            .parse_message(evolvement.message.clone(), backend.mls_backend)
+            .parse_message(evolvement.message.into(), backend.mls_backend)
             .map_err(|_| EidError::ParseMessageError)?;
         let verified_message = self
             .group
@@ -71,13 +71,5 @@ impl EidState for EidMlsClientState {
             .map(|kp| EidMlsMember::new((*kp).clone()))
             .collect();
         Ok(members)
-    }
-}
-
-impl Eq for EidMlsClientState {}
-
-impl PartialEq<Self> for EidMlsClientState {
-    fn eq(&self, other: &Self) -> bool {
-        todo!()
     }
 }
