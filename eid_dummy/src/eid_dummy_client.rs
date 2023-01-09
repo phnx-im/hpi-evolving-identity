@@ -120,4 +120,8 @@ impl EidClient for EidDummyClient {
         };
         Ok(evolvement)
     }
+
+    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
+        self.state.get_members()
+    }
 }

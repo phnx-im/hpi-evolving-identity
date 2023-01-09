@@ -2,6 +2,7 @@ use openmls::prelude::{Ciphersuite, KeyPackage, MlsMessageIn, ProcessedMessage};
 
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
+use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
 use crate::eid_mls_backend::EidMlsBackend;
@@ -28,6 +29,10 @@ impl EidClient for EidMlsClient {
         backend: &Self::BackendProvider,
     ) -> <Self::MemberProvider as Member>::CredentialProvider {
         todo!()
+    }
+
+    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
+        self.state.get_members()
     }
 
     fn get_credential(&self) -> &KeyPackage {
