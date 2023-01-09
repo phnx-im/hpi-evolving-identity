@@ -7,10 +7,6 @@ use crate::types::EidError;
 pub trait EidClient {
     type EvolvementProvider: Evolvement;
     type MemberProvider: Member;
-    type ClientStateProvider: EidState<
-        EvolvementProvider = Self::EvolvementProvider,
-        MemberProvider = Self::MemberProvider,
-    >;
     type TranscriptStateProvider: EidState<
         EvolvementProvider = Self::EvolvementProvider,
         MemberProvider = Self::MemberProvider,

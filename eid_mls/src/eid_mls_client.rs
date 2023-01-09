@@ -17,7 +17,6 @@ pub struct EidMlsClient {
 impl EidClient for EidMlsClient {
     type EvolvementProvider = EidMlsEvolvement;
     type MemberProvider = EidMlsMember;
-    type ClientStateProvider = EidMlsClientState;
     type TranscriptStateProvider = EidMlsTranscriptState;
     type BackendProvider = EidMlsBackend;
 

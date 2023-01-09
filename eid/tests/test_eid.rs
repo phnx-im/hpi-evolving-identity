@@ -35,11 +35,7 @@ where
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
     >,
-    C::ClientStateProvider: Debug,
     C::EvolvementProvider: Debug,
-    // require that a transcript state can be created from a client state
-    T::StateProvider: Debug,
-    C::MemberProvider::CredentialProvider: FromIterator<u8>,
 {
 }
 
@@ -51,10 +47,7 @@ where
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
     >,
-    C::ClientStateProvider: Debug,
     C::EvolvementProvider: Debug,
-    // require that a transcript state can be created from a client state
-    T::StateProvider: From<C::ClientStateProvider> + Debug,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.export_transcript_state(), vec![]);
@@ -109,11 +102,7 @@ where
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
     >,
-    C::ClientStateProvider: Debug,
     C::EvolvementProvider: Debug,
-    // require that a transcript state can be created from a client state
-    T::StateProvider: From<C::ClientStateProvider> + Debug,
-    <<C as EidClient>::MemberProvider as Member>::CredentialProvider: FromIterator<u8>,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.export_transcript_state().clone().into(), vec![]);
@@ -160,10 +149,7 @@ where
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
     >,
-    C::ClientStateProvider: Debug,
     C::EvolvementProvider: Debug,
-    // require that a transcript state can be created from a client state
-    T::StateProvider: From<C::ClientStateProvider> + Debug,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.export_transcript_state(), vec![]);

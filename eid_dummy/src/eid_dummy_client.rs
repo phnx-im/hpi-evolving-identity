@@ -15,7 +15,6 @@ pub struct EidDummyClient {
 }
 
 impl EidClient for EidDummyClient {
-    type ClientStateProvider = EidDummyState;
     type TranscriptStateProvider = EidDummyState;
     type EvolvementProvider = EidDummyEvolvement;
     type MemberProvider = EidDummyMember;
