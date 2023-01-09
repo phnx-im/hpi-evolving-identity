@@ -3,7 +3,7 @@ use crate::evolvement::Evolvement;
 use crate::member::Member;
 use crate::types::EidError;
 
-pub trait EidState: Sized + Clone + Eq {
+pub trait EidState: Sized {
     type EvolvementProvider: Evolvement;
     type MemberProvider: Member;
     type BackendProvider: EidBackend;
@@ -11,7 +11,7 @@ pub trait EidState: Sized + Clone + Eq {
     /// Create an [EidState] from a log of evolvements. Used to verify a slice of a transcript or to recover a state from a transcript.
     fn apply_log(
         &mut self,
-        log: &[Self::EvolvementProvider],
+        log: Vec<Self::EvolvementProvider>,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError>
     where
@@ -21,7 +21,7 @@ pub trait EidState: Sized + Clone + Eq {
     /// is invalid, return an [EidError].
     fn apply(
         &mut self,
-        evolvement: &Self::EvolvementProvider,
+        evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError>;
 

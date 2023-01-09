@@ -1,15 +1,20 @@
 use eid_traits::evolvement::Evolvement;
 use openmls::framing::MlsMessageIn;
+use openmls::framing::MlsMessageOut;
 use openmls::group::StagedCommit;
+use openmls::prelude::Welcome;
 
 pub struct EidMlsEvolvement {
-    pub(crate) commit: StagedCommit,
-    pub(crate) message: MlsMessageIn,
+    pub(crate) message: MlsMessageOut,
+    pub(crate) welcome: Option<Welcome>,
 }
 
 impl Clone for EidMlsEvolvement {
     fn clone(&self) -> Self {
-        todo!()
+        EidMlsEvolvement {
+            message: self.message.clone(),
+            welcome: self.welcome.clone(),
+        }
     }
 }
 

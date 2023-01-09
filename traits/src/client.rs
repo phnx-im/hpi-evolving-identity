@@ -51,7 +51,7 @@ pub trait EidClient {
     /// is invalid, return an [EidError].
     fn evolve(
         &mut self,
-        evolvement: &Self::EvolvementProvider,
+        evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError>;
 

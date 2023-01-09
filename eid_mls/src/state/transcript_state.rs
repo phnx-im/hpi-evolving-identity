@@ -21,7 +21,7 @@ impl EidState for EidMlsTranscriptState {
 
     fn apply_log(
         &mut self,
-        _: &[EidMlsEvolvement],
+        _: Vec<EidMlsEvolvement>,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
         todo!()
@@ -29,7 +29,7 @@ impl EidState for EidMlsTranscriptState {
 
     fn apply(
         &mut self,
-        evolvement: &Self::EvolvementProvider,
+        evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
         todo!()

@@ -1,3 +1,4 @@
+use openmls::error;
 use openmls::prelude::{Ciphersuite, KeyPackage, MlsMessageIn, ProcessedMessage};
 
 use eid_traits::client::EidClient;
@@ -61,22 +62,12 @@ impl EidClient for EidMlsClient {
         let group = &mut self.state.group;
         let (mls_out, welcome) = group
             .add_members(backend.mls_backend, &[member.get_key_package()])
-            .expect("Could not add member");
-        let mls_in: MlsMessageIn = mls_out.into();
-        let unverified_msg = group
-            .parse_message(mls_in.clone(), backend.mls_backend)
-            .expect("Could not parse message");
-        let proc_msg = group
-            .process_unverified_message(unverified_msg, None, backend.mls_backend)
-            .expect("Can't process message");
-        return if let ProcessedMessage::StagedCommitMessage(staged_commit) = proc_msg {
-            Ok(EidMlsEvolvement {
-                commit: *staged_commit,
-                message: mls_in,
-            })
-        } else {
-            Err(EidError::ParseMessageError)
+            .map_err(|error| EidError::AddMemberError(error.to_string()))?;
+        let evolvement = EidMlsEvolvement {
+            message: mls_out,
+            welcome: Some(welcome),
         };
+        Ok(evolvement)
     }
 
     fn remove(
@@ -94,14 +85,22 @@ impl EidClient for EidMlsClient {
         &mut self,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError> {
-        todo!()
+        let group = &mut self.state.group;
+        let mls_out = group
+            .propose_self_update(backend.mls_backend, None)
+            .map_err(|error| EidError::UpdateMemberError(error.to_string()))?;
+        let evolvement = EidMlsEvolvement {
+            message: mls_out,
+            welcome: None,
+        };
+        Ok(evolvement)
     }
 
     fn evolve(
         &mut self,
-        evolvement: &Self::EvolvementProvider,
+        evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        todo!()
+        Ok(self.state.apply(evolvement, backend)?)
     }
 }

@@ -13,12 +13,6 @@ pub struct EidMlsClientState {
     pub(crate) group: MlsGroup,
 }
 
-impl Clone for EidMlsClientState {
-    fn clone(&self) -> Self {
-        todo!()
-    }
-}
-
 impl EidMlsState for EidMlsClientState {
     fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
         match message {
@@ -39,7 +33,7 @@ impl EidState for EidMlsClientState {
     type BackendProvider = EidMlsBackend;
     fn apply_log(
         &mut self,
-        evolvements: &[Self::EvolvementProvider],
+        evolvements: Vec<Self::EvolvementProvider>,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
         for evolvement in evolvements {

@@ -62,7 +62,7 @@ where
     assert_eq!(1, members.len());
 
     client
-        .evolve(&add_alice_evolvement, backend)
+        .evolve(add_alice_evolvement.clone(), backend)
         .expect("Failed to apply state");
 
     let members = client.get_members().expect("failed to get members");
@@ -82,7 +82,7 @@ where
     let bob = Member::new(cred_bob);
     let add_bob_evolvement = client.add(&bob, backend).expect("failed to add member");
     client
-        .evolve(&add_bob_evolvement, backend)
+        .evolve(add_bob_evolvement.clone(), backend)
         .expect("Failed to apply state");
 
     assert!(add_alice_evolvement.is_valid_successor(&add_bob_evolvement));
@@ -110,7 +110,7 @@ where
     let alice = Member::new(cred);
     let evolvement_add = client.add(&alice, backend).expect("failed to add member");
     client
-        .evolve(&evolvement_add, backend)
+        .evolve(evolvement_add.clone(), backend)
         .expect("Failed to apply state");
 
     transcript.add_evolvement(evolvement_add.clone());
@@ -119,7 +119,7 @@ where
         .remove(&alice, backend)
         .expect("failed to remove member");
     client
-        .evolve(&evolvement_remove, backend)
+        .evolve(evolvement_remove.clone(), backend)
         .expect("Failed to apply remove on client state");
 
     assert!(evolvement_add.is_valid_successor(&evolvement_remove));
@@ -154,7 +154,7 @@ where
 
     let update_evolvement_1 = client.update(backend).expect("Updating client keys failed");
     client
-        .evolve(&update_evolvement_1, backend)
+        .evolve(update_evolvement_1.clone(), backend)
         .expect("Failed to apply update on client state");
     transcript.add_evolvement(update_evolvement_1.clone());
 
@@ -167,7 +167,7 @@ where
     let alice_before_update_2 = &members_after_update_1[0];
     let update_evolvement_2 = client.update(backend).expect("Updating client keys failed");
     client
-        .evolve(&update_evolvement_2, backend)
+        .evolve(update_evolvement_2.clone(), backend)
         .expect("Failed to apply update on client state");
     assert!(update_evolvement_1.is_valid_successor(&update_evolvement_2));
     transcript.add_evolvement(update_evolvement_2.clone());

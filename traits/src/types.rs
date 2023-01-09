@@ -14,6 +14,7 @@ pub enum EidError {
     UnverifiedMessageError,
     InvalidMessageError,
     ApplyCommitError,
+    UpdateMemberError(String),
 }
 
 impl Display for EidError {

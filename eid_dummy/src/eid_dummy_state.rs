@@ -20,11 +20,11 @@ impl EidState for EidDummyState {
         backend: &EidDummyBackend,
     ) -> Result<(), EidError> {
         let evolvement = evolvements.last().unwrap();
-        self.apply(evolvement, backend)
+        self.apply(evolvement.clone(), backend)
     }
     fn apply(
         &mut self,
-        evolvement: &EidDummyEvolvement,
+        evolvement: EidDummyEvolvement,
         _backend: &EidDummyBackend,
     ) -> Result<(), EidError> {
         match &evolvement {
