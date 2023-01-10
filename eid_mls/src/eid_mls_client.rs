@@ -48,8 +48,7 @@ impl EidClient for EidMlsClient {
     where
         Self: Sized,
     {
-        let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
-        Self::create_mls_eid(backend, ciphersuite) // TODO: use cred
+        Self::create_mls_eid(backend, &cred)
     }
 
     fn add(

@@ -1,11 +1,5 @@
-use openmls::prelude::{
-    Ciphersuite, CredentialBundle, CredentialType, Extension, GroupId, KeyPackageBundle,
-    LifetimeExtension, MlsGroup, MlsGroupConfig, OpenMlsCryptoProvider, OpenMlsKeyStore,
-    SenderRatchetConfiguration, SignatureScheme, TlsSerializeTrait,
-    PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
-};
-
 use eid_traits::types::EidError;
+use openmls::prelude::{Ciphersuite, CredentialBundle, CredentialType, Extension, GroupId, KeyPackage, KeyPackageBundle, LifetimeExtension, MlsGroup, MlsGroupConfig, OpenMlsCryptoProvider, OpenMlsKeyStore, PURE_PLAINTEXT_WIRE_FORMAT_POLICY, SenderRatchetConfiguration, SignatureScheme, TlsSerializeTrait};
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_client::EidMlsClient;
@@ -71,31 +65,11 @@ fn create_store_key_package(
 impl EidMlsClient {
     pub(crate) fn create_mls_eid(
         backend: &EidMlsBackend,
-        ciphersuite: Ciphersuite,
+        key_package: &KeyPackage,
     ) -> Result<Self, EidError>
     where
         Self: Sized,
     {
-        let credential_bundle = create_store_credential(
-            String::from("id01"), // TODO: set some actual identifier
-            backend.mls_backend,
-            ciphersuite.signature_algorithm(),
-        );
-        // TODO: keystore parameter is not used
-
-        // Define extensions
-        let extensions = vec![Extension::LifeTime(LifetimeExtension::new(
-            60 * 60 * 24 * 90, // Maximum lifetime of 90 days, expressed in seconds
-        ))];
-
-        // Create the key package bundle
-        let key_package_bundle = create_store_key_package(
-            ciphersuite,
-            &credential_bundle,
-            backend.mls_backend,
-            extensions.clone(),
-        );
-
         let mls_group_config = MlsGroupConfig::builder()
             .sender_ratchet_configuration(SenderRatchetConfiguration::new(10, 2000))
             .use_ratchet_tree_extension(true)
@@ -106,8 +80,7 @@ impl EidMlsClient {
             backend.mls_backend,
             &mls_group_config,
             GroupId::from_slice(b"group01"), // TODO: set some actual identifier
-            key_package_bundle
-                .key_package()
+            key_package
                 .hash_ref(backend.mls_backend.crypto())
                 .expect("Could not hash KeyPackage")
                 .as_slice(),
