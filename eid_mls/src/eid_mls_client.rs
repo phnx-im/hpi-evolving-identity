@@ -1,14 +1,8 @@
 use eid_traits::client::EidClient;
-use eid_traits::evolvement;
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
-use openmls::error;
-use openmls::prelude::{
-    Ciphersuite, Extension, KeyPackage, LifetimeExtension, MlsMessageIn, OpenMlsCryptoProvider,
-    ProcessedMessage,
-};
-use openmls_rust_crypto::OpenMlsRustCrypto;
+use openmls::prelude::{Ciphersuite, Extension, LifetimeExtension, OpenMlsCryptoProvider};
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
