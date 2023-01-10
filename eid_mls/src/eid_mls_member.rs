@@ -1,6 +1,8 @@
-use eid_traits::member::Member;
 use openmls::prelude::KeyPackage;
 
+use eid_traits::member::Member;
+
+#[derive(Debug)]
 pub struct EidMlsMember {
     pub(crate) key_package: KeyPackage,
 }

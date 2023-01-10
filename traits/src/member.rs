@@ -1,4 +1,6 @@
-pub trait Member: PartialEq {
+use std::fmt::Debug;
+
+pub trait Member: PartialEq + Debug {
     type PubkeyProvider;
 
     fn new(cred: Self::PubkeyProvider) -> Self;
