@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "eid",
+    "eid_mls",
+    "eid_dummy"
+]
+resolver = "2"

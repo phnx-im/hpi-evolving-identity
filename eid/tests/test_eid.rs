@@ -3,6 +3,9 @@ extern crate lazy_static;
 
 use std::fmt::Debug;
 
+pub use rstest::*;
+pub use rstest_reuse::{self, *};
+
 use eid_dummy::eid_dummy_backend::EidDummyBackend;
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
@@ -14,8 +17,6 @@ use eid_traits::evolvement::Evolvement;
 use eid_traits::member::Member;
 use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
-pub use rstest::*;
-pub use rstest_reuse::{self, *};
 
 lazy_static! {
     static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();
@@ -34,6 +35,7 @@ where
     T: EidTranscript<
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
+        BackendProvider = B,
     >,
     C::EvolvementProvider: Debug,
 {
@@ -46,11 +48,13 @@ where
     T: EidTranscript<
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
+        BackendProvider = B,
     >,
     C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.export_transcript_state(), vec![]);
+    let mut transcript = T::new(client.export_transcript_state(), vec![], backend)
+        .expect("Failed to create transcript");
 
     // Create Alice as a member with a random pk
     let cred_alice = C::generate_pubkey(backend);
@@ -100,11 +104,13 @@ where
     T: EidTranscript<
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
+        BackendProvider = B,
     >,
     C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.export_transcript_state(), vec![]);
+    let mut transcript = T::new(client.export_transcript_state(), vec![], backend)
+        .expect("Failed to create transcript");
 
     let cred = C::generate_pubkey(backend);
     let alice = Member::new(cred);
@@ -145,11 +151,13 @@ where
     T: EidTranscript<
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
+        BackendProvider = B,
     >,
     C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.export_transcript_state(), vec![]);
+    let mut transcript = T::new(client.export_transcript_state(), vec![], backend)
+        .expect("Failed to create transcript");
     let alice_before_update_1 = &client.get_members().expect("failed to get members")[0];
 
     let update_evolvement_1 = client.update(backend).expect("Updating client keys failed");

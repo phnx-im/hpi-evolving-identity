@@ -1,5 +1,7 @@
 use eid_traits::transcript::EidTranscript;
+use eid_traits::types::EidError;
 
+use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 use crate::state::transcript_state::EidMlsTranscriptState;
@@ -15,9 +17,14 @@ impl Default for EidMlsTranscript {
 impl EidTranscript for EidMlsTranscript {
     type EvolvementProvider = EidMlsEvolvement;
     type MemberProvider = EidMlsMember;
+    type BackendProvider = EidMlsBackend;
     type StateProvider = EidMlsTranscriptState;
 
-    fn new(trusted_state: Self::StateProvider, log: Vec<Self::EvolvementProvider>) -> Self {
+    fn new(
+        trusted_state: Self::StateProvider,
+        log: Vec<Self::EvolvementProvider>,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self, EidError> {
         todo!()
     }
 

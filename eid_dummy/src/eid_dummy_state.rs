@@ -1,9 +1,10 @@
-use crate::eid_dummy_backend::EidDummyBackend;
-use crate::eid_dummy_member::EidDummyMember;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
+use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
+use crate::eid_dummy_member::EidDummyMember;
+use crate::eid_dummy_transcript::EidDummyTranscript;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct EidDummyState {
@@ -22,6 +23,7 @@ impl EidState for EidDummyState {
         let evolvement = evolvements.last().unwrap();
         self.apply(evolvement.clone(), backend)
     }
+
     fn apply(
         &mut self,
         evolvement: EidDummyEvolvement,
