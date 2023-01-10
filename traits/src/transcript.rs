@@ -2,7 +2,7 @@ use crate::evolvement::Evolvement;
 use crate::member::Member;
 use crate::state::EidState;
 
-pub trait EidTranscript {
+pub trait EidTranscript: Default {
     type EvolvementProvider: Evolvement;
     type MemberProvider: Member;
     type StateProvider: EidState<

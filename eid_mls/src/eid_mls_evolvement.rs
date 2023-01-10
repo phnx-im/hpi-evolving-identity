@@ -4,6 +4,7 @@ use openmls::framing::MlsMessageOut;
 use openmls::group::StagedCommit;
 use openmls::prelude::Welcome;
 
+#[derive(Debug)]
 pub struct EidMlsEvolvement {
     pub(crate) message: MlsMessageOut,
     pub(crate) welcome: Option<Welcome>,

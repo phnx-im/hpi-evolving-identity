@@ -3,29 +3,31 @@ extern crate lazy_static;
 
 use std::fmt::Debug;
 
-pub use rstest::*;
-pub use rstest_reuse::{self, *};
-
-use eid_dummy::eid_dummy_backend::EidDummyBackend;
-pub use eid_dummy::eid_dummy_client::EidDummyClient;
-use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
-// use eid_mls::eid_mls_client::EidMlsClient;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
+pub use rstest::*;
+pub use rstest_reuse::{self, *};
+
+use eid_dummy::eid_dummy_backend::EidDummyBackend;
+pub use eid_dummy::eid_dummy_client::EidDummyClient;
+use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
+use eid_mls::eid_mls_backend::EidMlsBackend;
+use eid_mls::eid_mls_client::EidMlsClient;
+use eid_mls::eid_mls_transcript::EidMlsTranscript;
 
 lazy_static! {
     static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();
-    // static ref MLS_BACKEND: = EidMlsBackend = EidMlsBackend::default();
+    static ref MLS_BACKEND: EidMlsBackend = EidMlsBackend::default();
 }
 
-// case::EIDMls(& mut EidMlsClient::create_eid(&MLS_BACKEND).expect("creation failed"), EidDummyTranscript::default(), &MLS_BACKEND),
 #[template]
 #[rstest(client, _transcript, backend,
 case::EIDDummy(& mut EidDummyClient::create_eid("test_key".as_bytes().to_vec(), & DUMMY_BACKEND).expect("creation failed"), EidDummyTranscript::default(), & DUMMY_BACKEND),
+case::EIDMls(& mut EidMlsClient::create_eid(EidMlsClient::generate_credential(& MLS_BACKEND), & MLS_BACKEND).expect("creation failed"), EidMlsTranscript::default(), & MLS_BACKEND),
 )]
 #[allow(non_snake_case)]
 pub fn eid_clients<C, T, B>(client: &mut C, _transcript: T, backend: &B)
