@@ -20,8 +20,10 @@ impl EidState for EidDummyState {
         evolvements: Vec<EidDummyEvolvement>,
         backend: &EidDummyBackend,
     ) -> Result<(), EidError> {
-        let evolvement = evolvements.last().unwrap();
-        self.apply(evolvement.clone(), backend)
+        if let Some(evolvement) = evolvements.last() {
+            self.apply(evolvement.clone(), backend)?;
+        }
+        Ok(())
     }
 
     fn apply(
