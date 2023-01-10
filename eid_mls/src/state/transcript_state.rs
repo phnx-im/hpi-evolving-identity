@@ -1,3 +1,4 @@
+use mls_assist::group::Group as AssistedGroup;
 use openmls::group::MlsGroup;
 
 use eid_traits::state::EidState;
@@ -11,7 +12,7 @@ use super::state_trait::EidMlsState;
 
 /// Eid Mls Transcript State
 pub struct EidMlsTranscriptState {
-    group: MlsGroup,
+    group: AssistedGroup,
 }
 
 impl EidState for EidMlsTranscriptState {

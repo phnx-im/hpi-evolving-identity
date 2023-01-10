@@ -1,8 +1,10 @@
+use mls_assist::group::Group as AssistedGroup;
+use openmls::prelude::{Ciphersuite, Extension, LifetimeExtension, OpenMlsCryptoProvider};
+
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
-use openmls::prelude::{Ciphersuite, Extension, LifetimeExtension, OpenMlsCryptoProvider};
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
@@ -98,7 +100,7 @@ impl EidClient for EidMlsClient {
     }
 
     fn export_transcript_state(&self) -> Self::TranscriptStateProvider {
-        todo!()
+        let group_info = self.state.group.export_group_context();
     }
 
     fn generate_pubkey(
