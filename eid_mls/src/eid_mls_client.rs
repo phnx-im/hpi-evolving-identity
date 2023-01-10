@@ -4,10 +4,12 @@ use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 use openmls::error;
-use openmls::prelude::{Ciphersuite, KeyPackage, MlsMessageIn, ProcessedMessage};
+use openmls::prelude::{Ciphersuite, Extension, KeyPackage, LifetimeExtension, MlsMessageIn, ProcessedMessage};
+use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
+use crate::eid_mls_key_creation::{create_store_credential, create_store_key_package};
 use crate::eid_mls_member::EidMlsMember;
 use crate::state::client_state::EidMlsClientState;
 use crate::state::transcript_state::EidMlsTranscriptState;
@@ -29,7 +31,16 @@ impl EidClient for EidMlsClient {
     fn generate_credential(
         backend: &Self::BackendProvider,
     ) -> <Self::MemberProvider as Member>::CredentialProvider {
-        todo!()
+        let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
+        let identifier = String::from("id01"); // TODO: yeah, idk ...
+        let credential_bundle = create_store_credential(identifier, &backend.mls_backend, ciphersuite.signature_algorithm());
+        let extensions = vec![Extension::LifeTime(LifetimeExtension::new(
+            60 * 60 * 24 * 90, // Maximum lifetime of 90 days, expressed in seconds
+        ))];
+        let key_bundle = create_store_key_package(ciphersuite, &credential_bundle, &backend.mls_backend, extensions);
+
+        // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
+        key_bundle.key_package().clone()
     }
 
     fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
