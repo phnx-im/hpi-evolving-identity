@@ -27,42 +27,6 @@ impl EidClient for EidMlsClient {
     type TranscriptStateProvider = EidMlsTranscriptState;
     type BackendProvider = EidMlsBackend;
 
-    fn export_transcript_state(&self) -> Self::TranscriptStateProvider {
-        todo!()
-    }
-
-    fn generate_pubkey(
-        backend: &Self::BackendProvider,
-    ) -> <Self::MemberProvider as Member>::PubkeyProvider {
-        let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
-        let identifier = String::from("id01"); // TODO: yeah, idk ...
-        let credential_bundle = create_store_credential(
-            identifier,
-            &backend.mls_backend,
-            ciphersuite.signature_algorithm(),
-        );
-        let extensions = vec![Extension::LifeTime(LifetimeExtension::new(
-            60 * 60 * 24 * 90, // Maximum lifetime of 90 days, expressed in seconds
-        ))];
-        let key_bundle = create_store_key_package(
-            ciphersuite,
-            &credential_bundle,
-            &backend.mls_backend,
-            extensions,
-        );
-
-        // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
-        key_bundle.key_package().clone()
-    }
-
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
-        self.state.get_members()
-    }
-
-    fn get_pk(&self) -> &KeyPackage {
-        todo!()
-    }
-
     fn create_eid(
         cred: <Self::MemberProvider as Member>::PubkeyProvider,
         backend: &Self::BackendProvider,
@@ -133,5 +97,37 @@ impl EidClient for EidMlsClient {
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
         Ok(self.state.apply(evolvement, backend)?)
+    }
+
+    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
+        self.state.get_members()
+    }
+
+    fn export_transcript_state(&self) -> Self::TranscriptStateProvider {
+        todo!()
+    }
+
+    fn generate_pubkey(
+        backend: &Self::BackendProvider,
+    ) -> <Self::MemberProvider as Member>::PubkeyProvider {
+        let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
+        let identifier = String::from("id01"); // TODO: yeah, idk ...
+        let credential_bundle = create_store_credential(
+            identifier,
+            &backend.mls_backend,
+            ciphersuite.signature_algorithm(),
+        );
+        let extensions = vec![Extension::LifeTime(LifetimeExtension::new(
+            60 * 60 * 24 * 90, // Maximum lifetime of 90 days, expressed in seconds
+        ))];
+        let key_bundle = create_store_key_package(
+            ciphersuite,
+            &credential_bundle,
+            &backend.mls_backend,
+            extensions,
+        );
+
+        // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
+        key_bundle.key_package().clone()
     }
 }

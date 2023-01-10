@@ -2,7 +2,7 @@ use eid_traits::member::Member;
 use openmls::prelude::KeyPackage;
 
 pub struct EidMlsMember {
-    key_package: KeyPackage,
+    pub(crate) key_package: KeyPackage,
 }
 
 impl PartialEq for EidMlsMember {

@@ -20,4 +20,7 @@ pub trait EidTranscript: Default {
 
     /// Return the [Evolvement]s that happened after the trusted [EidState].
     fn log(&self) -> Vec<Self::EvolvementProvider>;
+
+    ///Return the current members (i.e, after the latest [Evolvement])
+    fn get_members(&self) -> Vec<Self::MemberProvider>;
 }

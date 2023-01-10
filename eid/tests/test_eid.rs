@@ -3,21 +3,19 @@ extern crate lazy_static;
 
 use std::fmt::Debug;
 
-use eid_traits::client::EidClient;
-use eid_traits::evolvement::Evolvement;
-use eid_traits::member::Member;
-use eid_traits::state::EidState;
-use eid_traits::transcript::EidTranscript;
-use eid_traits::types::EidError;
-pub use rstest::*;
-pub use rstest_reuse::{self, *};
-
 use eid_dummy::eid_dummy_backend::EidDummyBackend;
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
 use eid_mls::eid_mls_backend::EidMlsBackend;
 use eid_mls::eid_mls_client::EidMlsClient;
 use eid_mls::eid_mls_transcript::EidMlsTranscript;
+use eid_traits::client::EidClient;
+use eid_traits::evolvement::Evolvement;
+use eid_traits::member::Member;
+use eid_traits::transcript::EidTranscript;
+use eid_traits::types::EidError;
+pub use rstest::*;
+pub use rstest_reuse::{self, *};
 
 lazy_static! {
     static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();

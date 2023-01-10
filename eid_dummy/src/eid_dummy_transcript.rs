@@ -1,7 +1,8 @@
+use eid_traits::transcript::EidTranscript;
+
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::EidDummyMember;
 use crate::eid_dummy_state::EidDummyState;
-use eid_traits::transcript::EidTranscript;
 
 #[derive(Default)]
 pub struct EidDummyTranscript {
@@ -28,5 +29,9 @@ impl EidTranscript for EidDummyTranscript {
 
     fn log(&self) -> Vec<EidDummyEvolvement> {
         self.log.clone()
+    }
+
+    fn get_members(&self) -> Vec<<Self as EidTranscript>::MemberProvider> {
+        todo!()
     }
 }

@@ -13,8 +13,6 @@ pub trait EidClient {
     >;
     type BackendProvider: EidBackend;
 
-    fn get_pk(&self) -> &<Self::MemberProvider as Member>::PubkeyProvider;
-
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(
         cred: <Self::MemberProvider as Member>::PubkeyProvider,

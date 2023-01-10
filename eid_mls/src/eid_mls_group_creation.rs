@@ -1,6 +1,9 @@
 use eid_traits::types::EidError;
 use openmls::group::MlsGroupConfig;
-use openmls::prelude::{GroupId, KeyPackage, MlsGroup, OpenMlsCryptoProvider, PURE_PLAINTEXT_WIRE_FORMAT_POLICY, SenderRatchetConfiguration};
+use openmls::prelude::{
+    GroupId, KeyPackage, MlsGroup, OpenMlsCryptoProvider, SenderRatchetConfiguration,
+    PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
+};
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_client::EidMlsClient;
@@ -20,7 +23,7 @@ impl EidMlsClient {
             .wire_format_policy(PURE_PLAINTEXT_WIRE_FORMAT_POLICY)
             .build();
 
-        let mut mls_group = MlsGroup::new(
+        let mls_group = MlsGroup::new(
             &backend.mls_backend,
             &mls_group_config,
             GroupId::from_slice(b"group01"), // TODO: set some actual identifier

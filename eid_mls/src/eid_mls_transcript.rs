@@ -32,4 +32,8 @@ impl EidTranscript for EidMlsTranscript {
     fn log(&self) -> Vec<Self::EvolvementProvider> {
         todo!()
     }
+
+    fn get_members(&self) -> Vec<Self::MemberProvider> {
+        todo!()
+    }
 }
