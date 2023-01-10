@@ -28,9 +28,9 @@ impl EidClient for EidMlsClient {
         todo!()
     }
 
-    fn generate_credential(
+    fn generate_pubkey(
         backend: &Self::BackendProvider,
-    ) -> <Self::MemberProvider as Member>::CredentialProvider {
+    ) -> <Self::MemberProvider as Member>::PubkeyProvider {
         let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
         let identifier = String::from("id01"); // TODO: yeah, idk ...
         let credential_bundle = create_store_credential(identifier, &backend.mls_backend, ciphersuite.signature_algorithm());
@@ -47,12 +47,12 @@ impl EidClient for EidMlsClient {
         self.state.get_members()
     }
 
-    fn get_credential(&self) -> &KeyPackage {
+    fn get_pk(&self) -> &KeyPackage {
         todo!()
     }
 
     fn create_eid(
-        cred: <Self::MemberProvider as Member>::CredentialProvider,
+        cred: <Self::MemberProvider as Member>::PubkeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where
@@ -71,7 +71,7 @@ impl EidClient for EidMlsClient {
     {
         let group = &mut self.state.group;
         let (mls_out, welcome) = group
-            .add_members(&backend.mls_backend, &[member.get_key_package()])
+            .add_members(&backend.mls_backend, &[member.get_pk()])
             .map_err(|error| EidError::AddMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement {
             message: mls_out,

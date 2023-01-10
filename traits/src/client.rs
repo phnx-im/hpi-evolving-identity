@@ -13,11 +13,11 @@ pub trait EidClient {
     >;
     type BackendProvider: EidBackend;
 
-    fn get_credential(&self) -> &<Self::MemberProvider as Member>::CredentialProvider;
+    fn get_pk(&self) -> &<Self::MemberProvider as Member>::PubkeyProvider;
 
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(
-        cred: <Self::MemberProvider as Member>::CredentialProvider,
+        cred: <Self::MemberProvider as Member>::PubkeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where
@@ -60,7 +60,7 @@ pub trait EidClient {
 
     fn export_transcript_state(&self) -> Self::TranscriptStateProvider;
 
-    fn generate_credential(
+    fn generate_pubkey(
         backend: &Self::BackendProvider,
-    ) -> <Self::MemberProvider as Member>::CredentialProvider;
+    ) -> <Self::MemberProvider as Member>::PubkeyProvider;
 }

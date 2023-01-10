@@ -27,7 +27,7 @@ lazy_static! {
 #[template]
 #[rstest(client, _transcript, backend,
 case::EIDDummy(& mut EidDummyClient::create_eid("test_key".as_bytes().to_vec(), & DUMMY_BACKEND).expect("creation failed"), EidDummyTranscript::default(), & DUMMY_BACKEND),
-case::EIDMls(& mut EidMlsClient::create_eid(EidMlsClient::generate_credential(& MLS_BACKEND), & MLS_BACKEND).expect("creation failed"), EidMlsTranscript::default(), & MLS_BACKEND),
+case::EIDMls(& mut EidMlsClient::create_eid(EidMlsClient::generate_pubkey(& MLS_BACKEND), & MLS_BACKEND).expect("creation failed"), EidMlsTranscript::default(), & MLS_BACKEND),
 )]
 #[allow(non_snake_case)]
 pub fn eid_clients<C, T, B>(client: &mut C, _transcript: T, backend: &B)
@@ -55,7 +55,7 @@ where
     let mut transcript = T::new(client.export_transcript_state(), vec![]);
 
     // Create Alice as a member with a random pk
-    let cred_alice = C::generate_credential(backend);
+    let cred_alice = C::generate_pubkey(backend);
     let alice = Member::new(cred_alice);
     let add_alice_evolvement = client.add(&alice, backend).expect("failed to add member");
 
@@ -80,7 +80,7 @@ where
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
     // Add Bob
-    let cred_bob = C::generate_credential(backend);
+    let cred_bob = C::generate_pubkey(backend);
     let bob = Member::new(cred_bob);
     let add_bob_evolvement = client.add(&bob, backend).expect("failed to add member");
     client
@@ -108,7 +108,7 @@ where
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.export_transcript_state(), vec![]);
 
-    let cred = C::generate_credential(backend);
+    let cred = C::generate_pubkey(backend);
     let alice = Member::new(cred);
     let evolvement_add = client.add(&alice, backend).expect("failed to add member");
     client

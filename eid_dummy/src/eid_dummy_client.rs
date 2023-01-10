@@ -20,21 +20,21 @@ impl EidClient for EidDummyClient {
     type MemberProvider = EidDummyMember;
     type BackendProvider = EidDummyBackend;
 
-    fn generate_credential(
+    fn generate_pubkey(
         _backend: &Self::BackendProvider,
-    ) -> <Self::MemberProvider as Member>::CredentialProvider {
+    ) -> <Self::MemberProvider as Member>::PubkeyProvider {
         (0..256).map(|_| rand::random::<u8>()).collect()
     }
     fn export_transcript_state(&self) -> EidDummyState {
         self.state.clone()
     }
 
-    fn get_credential(&self) -> &Vec<u8> {
+    fn get_pk(&self) -> &Vec<u8> {
         &self.pk
     }
 
     fn create_eid(
-        cred: <Self::MemberProvider as Member>::CredentialProvider,
+        cred: <Self::MemberProvider as Member>::PubkeyProvider,
         _backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
         let members = vec![EidDummyMember::new(cred.clone())];
@@ -102,11 +102,11 @@ impl EidClient for EidDummyClient {
     fn update(&mut self, _backend: &EidDummyBackend) -> Result<EidDummyEvolvement, EidError> {
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
-        let myself = &EidDummyMember::new(self.get_credential().clone());
+        let myself = &EidDummyMember::new(self.get_pk().clone());
         new_members.retain(|m| myself != m);
 
         // create a member with your new pk
-        let mut new_pk = self.get_credential().to_vec();
+        let mut new_pk = self.get_pk().to_vec();
         new_pk[0] += 1;
         let member = EidDummyMember::new(new_pk.clone());
 

@@ -1,7 +1,7 @@
 pub trait Member: PartialEq {
-    type CredentialProvider;
+    type PubkeyProvider;
 
-    fn new(cred: Self::CredentialProvider) -> Self;
+    fn new(cred: Self::PubkeyProvider) -> Self;
 
-    fn get_credential(&self) -> Self::CredentialProvider;
+    fn get_pk(&self) -> Self::PubkeyProvider;
 }
