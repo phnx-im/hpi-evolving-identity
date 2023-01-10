@@ -77,7 +77,7 @@ impl EidMlsClient {
             .build();
 
         let mut mls_group = MlsGroup::new(
-            backend.mls_backend,
+            &backend.mls_backend,
             &mls_group_config,
             GroupId::from_slice(b"group01"), // TODO: set some actual identifier
             key_package

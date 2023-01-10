@@ -1,2 +1,2 @@
-pub trait EidBackend {
+pub trait EidBackend: Default {
 }

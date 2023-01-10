@@ -1,11 +1,10 @@
-use openmls::error;
-use openmls::prelude::{Ciphersuite, KeyPackage, MlsMessageIn, ProcessedMessage};
-
 use eid_traits::client::EidClient;
 use eid_traits::evolvement;
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
+use openmls::error;
+use openmls::prelude::{Ciphersuite, KeyPackage, MlsMessageIn, ProcessedMessage};
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
@@ -61,7 +60,7 @@ impl EidClient for EidMlsClient {
     {
         let group = &mut self.state.group;
         let (mls_out, welcome) = group
-            .add_members(backend.mls_backend, &[member.get_key_package()])
+            .add_members(&backend.mls_backend, &[member.get_key_package()])
             .map_err(|error| EidError::AddMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement {
             message: mls_out,
@@ -87,7 +86,7 @@ impl EidClient for EidMlsClient {
     ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
         let mls_out = group
-            .propose_self_update(backend.mls_backend, None)
+            .propose_self_update(&backend.mls_backend, None)
             .map_err(|error| EidError::UpdateMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement {
             message: mls_out,

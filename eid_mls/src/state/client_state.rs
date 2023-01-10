@@ -1,8 +1,7 @@
-use openmls::prelude::{MlsGroup, ProcessedMessage};
-
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
+use openmls::prelude::{MlsGroup, ProcessedMessage};
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
@@ -49,11 +48,11 @@ impl EidState for EidMlsClientState {
     ) -> Result<(), EidError> {
         let parsed_message = self
             .group
-            .parse_message(evolvement.message.into(), backend.mls_backend)
+            .parse_message(evolvement.message.into(), &backend.mls_backend)
             .map_err(|_| EidError::ParseMessageError)?;
         let verified_message = self
             .group
-            .process_unverified_message(parsed_message, None, backend.mls_backend)
+            .process_unverified_message(parsed_message, None, &backend.mls_backend)
             .map_err(|_| EidError::UnverifiedMessageError)?;
         self.apply_processed_message(verified_message)?;
 
