@@ -9,6 +9,7 @@ pub enum EidError {
     StateNotInitialized,
     StateAlreadyInitialized,
     AddMemberError(String),
+    RemoveMemberError(String),
     InvalidMemberError(String),
     ParseMessageError,
     UnverifiedMessageError,

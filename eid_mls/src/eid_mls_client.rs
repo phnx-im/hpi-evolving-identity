@@ -4,7 +4,10 @@ use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 use openmls::error;
-use openmls::prelude::{Ciphersuite, Extension, KeyPackage, LifetimeExtension, MlsMessageIn, ProcessedMessage};
+use openmls::prelude::{
+    Ciphersuite, Extension, KeyPackage, LifetimeExtension, MlsMessageIn, OpenMlsCryptoProvider,
+    ProcessedMessage,
+};
 use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use crate::eid_mls_backend::EidMlsBackend;
@@ -33,11 +36,20 @@ impl EidClient for EidMlsClient {
     ) -> <Self::MemberProvider as Member>::PubkeyProvider {
         let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
         let identifier = String::from("id01"); // TODO: yeah, idk ...
-        let credential_bundle = create_store_credential(identifier, &backend.mls_backend, ciphersuite.signature_algorithm());
+        let credential_bundle = create_store_credential(
+            identifier,
+            &backend.mls_backend,
+            ciphersuite.signature_algorithm(),
+        );
         let extensions = vec![Extension::LifeTime(LifetimeExtension::new(
             60 * 60 * 24 * 90, // Maximum lifetime of 90 days, expressed in seconds
         ))];
-        let key_bundle = create_store_key_package(ciphersuite, &credential_bundle, &backend.mls_backend, extensions);
+        let key_bundle = create_store_key_package(
+            ciphersuite,
+            &credential_bundle,
+            &backend.mls_backend,
+            extensions,
+        );
 
         // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
         key_bundle.key_package().clone()
@@ -54,10 +66,7 @@ impl EidClient for EidMlsClient {
     fn create_eid(
         cred: <Self::MemberProvider as Member>::PubkeyProvider,
         backend: &Self::BackendProvider,
-    ) -> Result<Self, EidError>
-    where
-        Self: Sized,
-    {
+    ) -> Result<Self, EidError> {
         Self::create_mls_eid(backend, &cred)
     }
 
@@ -65,10 +74,7 @@ impl EidClient for EidMlsClient {
         &mut self,
         member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
-    ) -> Result<Self::EvolvementProvider, EidError>
-    where
-        Self: Sized,
-    {
+    ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
         let (mls_out, welcome) = group
             .add_members(&backend.mls_backend, &[member.get_pk()])
@@ -88,7 +94,22 @@ impl EidClient for EidMlsClient {
     where
         Self: Sized,
     {
-        todo!()
+        let group = &mut self.state.group;
+
+        // TODO: this will change massively with the new openmls version, as you have to supply a
+        // node id and not a key package reference then
+        let kp_ref = member
+            .get_pk()
+            .hash_ref(backend.mls_backend.crypto())
+            .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
+        let (mls_out, welcome) = group
+            .remove_members(&backend.mls_backend, &[kp_ref])
+            .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
+        let evolvement = EidMlsEvolvement {
+            message: mls_out,
+            welcome,
+        };
+        Ok(evolvement)
     }
 
     fn update(
