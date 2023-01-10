@@ -36,6 +36,7 @@ where
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
         BackendProvider = B,
+        MemberProvider = C::MemberProvider,
     >,
     C::EvolvementProvider: Debug,
 {
@@ -49,6 +50,7 @@ where
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
         BackendProvider = B,
+        MemberProvider = C::MemberProvider,
     >,
     C::EvolvementProvider: Debug,
 {
@@ -74,6 +76,7 @@ where
     assert_eq!(2, members.len());
 
     transcript.add_evolvement(add_alice_evolvement.clone());
+    assert_eq!(transcript.get_members(), members);
 
     // Try to add Alice a second time
     let member_in_eid_error = client
@@ -93,6 +96,7 @@ where
     transcript.add_evolvement(add_bob_evolvement.clone());
 
     let members = client.get_members().expect("failed to get members");
+    assert_eq!(transcript.get_members(), members);
     assert!(members.contains(&bob));
     assert_eq!(3, members.len())
 }
@@ -105,6 +109,7 @@ where
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
         BackendProvider = B,
+        MemberProvider = C::MemberProvider,
     >,
     C::EvolvementProvider: Debug,
 {
@@ -120,6 +125,10 @@ where
         .expect("Failed to apply state");
 
     transcript.add_evolvement(evolvement_add.clone());
+    assert_eq!(
+        transcript.get_members(),
+        client.get_members().expect("failed to get members")
+    );
 
     let evolvement_remove = client
         .remove(&alice, backend)
@@ -130,6 +139,10 @@ where
 
     assert!(evolvement_add.is_valid_successor(&evolvement_remove));
     transcript.add_evolvement(evolvement_remove.clone());
+    assert_eq!(
+        transcript.get_members(),
+        client.get_members().expect("could not get members")
+    );
 
     // Try to remove Alice a second time
     let member_not_in_eid_error = client
@@ -152,6 +165,7 @@ where
         EvolvementProvider = C::EvolvementProvider,
         StateProvider = C::TranscriptStateProvider,
         BackendProvider = B,
+        MemberProvider = C::MemberProvider,
     >,
     C::EvolvementProvider: Debug,
 {
@@ -165,6 +179,10 @@ where
         .evolve(update_evolvement_1.clone(), backend)
         .expect("Failed to apply update on client state");
     transcript.add_evolvement(update_evolvement_1.clone());
+    assert_eq!(
+        transcript.get_members(),
+        client.get_members().expect("failed to get members")
+    );
 
     let members_after_update_1 = client.get_members().expect("failed to get members");
 
@@ -179,6 +197,10 @@ where
         .expect("Failed to apply update on client state");
     assert!(update_evolvement_1.is_valid_successor(&update_evolvement_2));
     transcript.add_evolvement(update_evolvement_2.clone());
+    assert_eq!(
+        transcript.get_members(),
+        client.get_members().expect("failed to get members")
+    );
 
     let members_after_update_2 = client.get_members().expect("failed to get members");
 
