@@ -1,5 +1,6 @@
 use mls_assist::group::Group as AssistedGroup;
-use openmls::prelude::{Ciphersuite, Extension, LifetimeExtension, OpenMlsCryptoProvider};
+use openmls::prelude::Ciphersuite;
+use openmls::prelude::OpenMlsCryptoProvider;
 
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
@@ -115,17 +116,17 @@ impl EidClient for EidMlsClient {
             &backend.mls_backend,
             ciphersuite.signature_algorithm(),
         );
-        let extensions = vec![Extension::LifeTime(LifetimeExtension::new(
-            60 * 60 * 24 * 90, // Maximum lifetime of 90 days, expressed in seconds
-        ))];
-        let key_bundle = create_store_key_package(
-            ciphersuite,
-            &credential_bundle,
-            &backend.mls_backend,
-            extensions,
-        );
+
+        let extensions = vec![
+            // todo limit key lifetime
+            // Extension::LifeTime(LifetimeExtension::new(
+            // 60 * 60 * 24 * 90, // Maximum lifetime of 90 days, expressed in seconds
+            // ))
+        ];
+        let key_bundle =
+            create_store_key_package(ciphersuite, &credential_bundle, &backend.mls_backend);
 
         // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
-        key_bundle.key_package().clone()
+        key_bundle.clone()
     }
 }

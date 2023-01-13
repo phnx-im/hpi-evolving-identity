@@ -11,7 +11,7 @@ pub(crate) fn create_store_credential(
         signature_scheme,
         backend,
     )
-        .expect("Could not create CredentialBundle");
+    .expect("Could not create CredentialBundle");
 
     let credential = credential_bundle.credential().clone();
     backend
@@ -42,7 +42,7 @@ pub(crate) fn create_store_key_package(
     )
         .expect("Could not create KeyPackage");
 
-    let key_package = key_package_bundle.key_package().clone();
+    /*
     backend
         .key_store()
         .store(
@@ -50,9 +50,10 @@ pub(crate) fn create_store_key_package(
                 .hash_ref(backend.crypto())
                 .expect("Could not hash KeyPackage")
                 .as_slice(),
-            &key_package_bundle,
+            &kp,
         )
         .expect("Storing KeyPackage failed");
+     */
 
     return key_package_bundle;
 }
