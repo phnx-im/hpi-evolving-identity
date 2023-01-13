@@ -100,9 +100,11 @@ impl EidClient for EidMlsClient {
     }
 
     fn export_transcript_state(&self) -> Self::TranscriptStateProvider {
-        let group_info = self.state.group.export_group_context();
+        // let group_info = self.state.group.export_group_context();
+        todo!()
     }
 
+    #[cfg(feature = "test")]
     fn generate_pubkey(
         backend: &Self::BackendProvider,
     ) -> <Self::MemberProvider as Member>::PubkeyProvider {
