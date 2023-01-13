@@ -7,3 +7,10 @@ edition = "2021"
 
 [dependencies]
 eid_traits = { version = "0.1.0", path = "../traits" }
+openmls = "0.4.1"
+openmls_rust_crypto = "0.1.0"
+thiserror = "1.0"
+mls-assist = { git = "https://github.com/phnx-im/mls-assist.git" }
+
+[features]
+test = []

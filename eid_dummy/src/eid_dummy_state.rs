@@ -1,24 +1,36 @@
-use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use eid_traits::state::EidState;
-use eid_traits::types::{EidError, Member};
+use eid_traits::types::EidError;
+
+use crate::eid_dummy_backend::EidDummyBackend;
+use crate::eid_dummy_evolvement::EidDummyEvolvement;
+use crate::eid_dummy_member::EidDummyMember;
+use crate::eid_dummy_transcript::EidDummyTranscript;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct EidDummyState {
-    pub(crate) members: Vec<Member>,
+    pub(crate) members: Vec<EidDummyMember>,
 }
 
-impl EidState<EidDummyEvolvement> for EidDummyState {
-    fn from_log(evolvements: &[EidDummyEvolvement]) -> Result<Self, EidError> {
-        let evolvement = evolvements.last().unwrap();
-        match &evolvement {
-            EidDummyEvolvement::Update { members }
-            | EidDummyEvolvement::Add { members }
-            | EidDummyEvolvement::Remove { members } => Ok(EidDummyState {
-                members: members.clone(),
-            }),
+impl EidState for EidDummyState {
+    type EvolvementProvider = EidDummyEvolvement;
+    type MemberProvider = EidDummyMember;
+    type BackendProvider = EidDummyBackend;
+    fn apply_log(
+        &mut self,
+        evolvements: Vec<EidDummyEvolvement>,
+        backend: &EidDummyBackend,
+    ) -> Result<(), EidError> {
+        if let Some(evolvement) = evolvements.last() {
+            self.apply(evolvement.clone(), backend)?;
         }
+        Ok(())
     }
-    fn apply(&mut self, evolvement: &EidDummyEvolvement) -> Result<(), EidError> {
+
+    fn apply(
+        &mut self,
+        evolvement: EidDummyEvolvement,
+        _backend: &EidDummyBackend,
+    ) -> Result<(), EidError> {
         match &evolvement {
             EidDummyEvolvement::Update { members }
             | EidDummyEvolvement::Add { members }
@@ -28,13 +40,10 @@ impl EidState<EidDummyEvolvement> for EidDummyState {
             }
         }
     }
-    fn verify(&self) -> Result<bool, EidError> {
+    fn verify_member(&self, _: &EidDummyMember) -> Result<bool, EidError> {
         Ok(true)
     }
-    fn verify_client(&self, _: &Member) -> Result<bool, EidError> {
-        Ok(true)
-    }
-    fn get_members(&self) -> Result<Vec<Member>, EidError> {
+    fn get_members(&self) -> Result<Vec<EidDummyMember>, EidError> {
         Ok(self.members.clone())
     }
 }

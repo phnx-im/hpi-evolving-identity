@@ -1,192 +1,209 @@
-pub use eid_dummy::eid_dummy_client::EidDummyClient;
-use eid_dummy::eid_dummy_keystore::EidDummyKeystore;
-use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
-use eid_traits::client::EidClient;
-use eid_traits::evolvement::Evolvement;
-use eid_traits::state::EidState;
-use eid_traits::transcript::Transcript;
-use eid_traits::types::EidError;
-use eid_traits::types::Member;
-pub use rstest::*;
-pub use rstest_reuse::{self, *};
-use std::fmt::Debug;
-
 #[macro_use]
 extern crate lazy_static;
 
+use std::fmt::Debug;
+
+pub use rstest::*;
+pub use rstest_reuse::{self, *};
+
+use eid_dummy::eid_dummy_backend::EidDummyBackend;
+pub use eid_dummy::eid_dummy_client::EidDummyClient;
+use eid_dummy::eid_dummy_transcript::EidDummyTranscript;
+use eid_mls::eid_mls_backend::EidMlsBackend;
+use eid_mls::eid_mls_client::EidMlsClient;
+use eid_mls::eid_mls_transcript::EidMlsTranscript;
+use eid_traits::client::EidClient;
+use eid_traits::evolvement::Evolvement;
+use eid_traits::member::Member;
+use eid_traits::transcript::EidTranscript;
+use eid_traits::types::EidError;
+
 lazy_static! {
-    static ref DUMMY_KEYSTORE: EidDummyKeystore = EidDummyKeystore::default();
+    static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();
+    static ref MLS_BACKEND: EidMlsBackend = EidMlsBackend::default();
 }
 
 #[template]
-#[rstest(client, _transcript,
-    case::EIDDummy(&mut EidDummyClient::create_eid(&DUMMY_KEYSTORE).expect("creation failed"), EidDummyTranscript::default()),
+#[rstest(client, _transcript, backend,
+case::EidDummy(& mut EidDummyClient::create_eid("test_key".as_bytes().to_vec(), & DUMMY_BACKEND).expect("creation failed"), EidDummyTranscript::default(), & DUMMY_BACKEND),
+case::EidMls(& mut EidMlsClient::create_eid(EidMlsClient::generate_pubkey(& MLS_BACKEND), & MLS_BACKEND).expect("creation failed"), EidMlsTranscript::default(), & MLS_BACKEND),
 )]
 #[allow(non_snake_case)]
-pub fn eid_clients<C, T>(client: &mut C, _transcript: T)
+pub fn eid_clients<C, T, B>(client: &mut C, _transcript: T, backend: &B)
 where
-    C: EidClient,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
+    C: EidClient<BackendProvider = B>,
+    T: EidTranscript<
+        EvolvementProvider = C::EvolvementProvider,
+        StateProvider = C::TranscriptStateProvider,
+        BackendProvider = B,
+        MemberProvider = C::MemberProvider,
+    >,
+    C::EvolvementProvider: Debug,
 {
 }
 
 #[apply(eid_clients)]
-fn create<'a, C, T>(client: &mut C, _transcript: T)
+fn add<C, T, B>(client: &mut C, _transcript: T, backend: &B)
 where
-    C: EidClient<'a>,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
-    <C as EidClient<'a>>::StateProvider: Debug,
-{
-    let members = client.state().get_members().expect("failed to get members");
-    // create transcript, trusting the client's state
-    let transcript = T::new(client.state().clone(), vec![]);
-    assert_eq!(
-        &mut transcript.trusted_state(),
-        client.state(),
-        "initial states of transcript and client do not match"
-    );
-    assert_eq!(members.len(), 1);
-    assert!(client.state().verify().unwrap());
-}
-
-#[apply(eid_clients)]
-fn add<'a, C, T>(client: &mut C, _transcript: T)
-where
-    C: EidClient<'a>,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
-    <C as EidClient<'a>>::StateProvider: Debug,
+    C: EidClient<BackendProvider = B>,
+    T: EidTranscript<
+        EvolvementProvider = C::EvolvementProvider,
+        StateProvider = C::TranscriptStateProvider,
+        BackendProvider = B,
+        MemberProvider = C::MemberProvider,
+    >,
+    C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().clone(), vec![]);
+    let mut transcript = T::new(client.export_transcript_state(), vec![], backend)
+        .expect("Failed to create transcript");
 
     // Create Alice as a member with a random pk
-    let pk_alice = (0..256).map(|_| rand::random::<u8>()).collect();
-    let alice = Member::new(pk_alice);
-    let add_alice_evolvement = client.add(&alice).expect("failed to add member");
+    let cred_alice = C::generate_pubkey(backend);
+    let alice = Member::new(cred_alice);
+    let add_alice_evolvement = client.add(&alice, backend).expect("failed to add member");
+
+    // member list length unchanged before evolving
+    let members = client.get_members().expect("failed to get members");
+    assert_eq!(1, members.len());
+
     client
-        .evolve(&add_alice_evolvement)
+        .evolve(add_alice_evolvement.clone(), backend)
         .expect("Failed to apply state");
 
-    assert!(client.state().verify().unwrap());
-    let members = client.state().get_members().expect("failed to get members");
+    let members = client.get_members().expect("failed to get members");
     assert!(members.contains(&alice));
     assert_eq!(2, members.len());
 
     transcript.add_evolvement(add_alice_evolvement.clone());
+    assert_eq!(transcript.get_members(), members);
 
     // Try to add Alice a second time
-    let member_in_eid_error = client.add(&alice).expect_err("Adding member a second time");
+    let member_in_eid_error = client
+        .add(&alice, backend)
+        .expect_err("Adding member a second time");
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
     // Add Bob
-    let pk_bob = (0..256).map(|_| rand::random::<u8>()).collect();
-    let bob = Member::new(pk_bob);
-    let add_bob_evolvement = client.add(&bob).expect("failed to add member");
+    let cred_bob = C::generate_pubkey(backend);
+    let bob = Member::new(cred_bob);
+    let add_bob_evolvement = client.add(&bob, backend).expect("failed to add member");
     client
-        .evolve(&add_bob_evolvement)
+        .evolve(add_bob_evolvement.clone(), backend)
         .expect("Failed to apply state");
 
     assert!(add_alice_evolvement.is_valid_successor(&add_bob_evolvement));
     transcript.add_evolvement(add_bob_evolvement.clone());
 
-    let members = client.state().get_members().expect("failed to get members");
-    assert!(client.state().verify().unwrap());
+    let members = client.get_members().expect("failed to get members");
+    assert_eq!(transcript.get_members(), members);
     assert!(members.contains(&bob));
     assert_eq!(3, members.len())
 }
 
 #[apply(eid_clients)]
-fn remove<'a, C, T>(client: &mut C, _transcript: T)
+fn remove<C, T, B>(client: &mut C, _transcript: T, backend: &B)
 where
-    C: EidClient<'a>,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
-    <C as EidClient<'a>>::StateProvider: Debug,
+    C: EidClient<BackendProvider = B>,
+    T: EidTranscript<
+        EvolvementProvider = C::EvolvementProvider,
+        StateProvider = C::TranscriptStateProvider,
+        BackendProvider = B,
+        MemberProvider = C::MemberProvider,
+    >,
+    C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().clone(), vec![]);
+    let mut transcript = T::new(client.export_transcript_state(), vec![], backend)
+        .expect("Failed to create transcript");
 
-    let pk = (0..256).map(|_| rand::random::<u8>()).collect();
-    let alice = Member::new(pk);
-    let evolvement_add = client.add(&alice).expect("failed to add member");
+    let cred = C::generate_pubkey(backend);
+    let alice = Member::new(cred);
+    let evolvement_add = client.add(&alice, backend).expect("failed to add member");
     client
-        .evolve(&evolvement_add)
+        .evolve(evolvement_add.clone(), backend)
         .expect("Failed to apply state");
-    assert!(client.state().verify().unwrap());
 
     transcript.add_evolvement(evolvement_add.clone());
+    assert_eq!(
+        transcript.get_members(),
+        client.get_members().expect("failed to get members")
+    );
 
-    let evolvement_remove = client.remove(&alice).expect("failed to remove member");
+    let evolvement_remove = client
+        .remove(&alice, backend)
+        .expect("failed to remove member");
     client
-        .evolve(&evolvement_remove)
+        .evolve(evolvement_remove.clone(), backend)
         .expect("Failed to apply remove on client state");
 
     assert!(evolvement_add.is_valid_successor(&evolvement_remove));
     transcript.add_evolvement(evolvement_remove.clone());
+    assert_eq!(
+        transcript.get_members(),
+        client.get_members().expect("could not get members")
+    );
 
     // Try to remove Alice a second time
     let member_not_in_eid_error = client
-        .remove(&alice)
+        .remove(&alice, backend)
         .expect_err("Removing non-existent member");
     assert!(matches!(
         member_not_in_eid_error,
         EidError::InvalidMemberError(..)
     ));
-
-    let state = client.state();
-    let members = state.get_members().expect("failed to get members");
-    assert!(state.verify().unwrap());
+    let members = client.get_members().expect("failed to get members");
     assert!(!members.contains(&alice));
     assert_eq!(1, members.len());
 }
 
 #[apply(eid_clients)]
-fn update<'a, C, T>(client: &mut C, _transcript: T)
+fn update<C, T, B>(client: &mut C, _transcript: T, backend: &B)
 where
-    C: EidClient<'a>,
-    T: Transcript<C::EvolvementProvider, C::StateProvider>,
-    <C as EidClient<'a>>::StateProvider: Debug,
+    C: EidClient<BackendProvider = B>,
+    T: EidTranscript<
+        EvolvementProvider = C::EvolvementProvider,
+        StateProvider = C::TranscriptStateProvider,
+        BackendProvider = B,
+        MemberProvider = C::MemberProvider,
+    >,
+    C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript = T::new(client.state().clone(), vec![]);
-    let alice_pk_before_update_1 =
-        client.state().get_members().expect("failed to get members")[0].pk();
+    let mut transcript = T::new(client.export_transcript_state(), vec![], backend)
+        .expect("Failed to create transcript");
+    let alice_before_update_1 = &client.get_members().expect("failed to get members")[0];
 
-    let update_evolvement_1 = client.update().expect("Updating client keys failed");
+    let update_evolvement_1 = client.update(backend).expect("Updating client keys failed");
     client
-        .evolve(&update_evolvement_1)
+        .evolve(update_evolvement_1.clone(), backend)
         .expect("Failed to apply update on client state");
     transcript.add_evolvement(update_evolvement_1.clone());
+    assert_eq!(
+        transcript.get_members(),
+        client.get_members().expect("failed to get members")
+    );
 
-    let pks_after_update_1 = client
-        .state()
-        .get_members()
-        .expect("failed to get members")
-        .iter()
-        .map(|m| m.pk())
-        .collect::<Vec<_>>();
+    let members_after_update_1 = client.get_members().expect("failed to get members");
 
-    assert!(client.state().verify().unwrap());
-    assert!(!pks_after_update_1.contains(&alice_pk_before_update_1));
-    assert_eq!(1, pks_after_update_1.len());
+    assert!(!members_after_update_1.contains(alice_before_update_1));
+    assert_eq!(1, members_after_update_1.len());
 
     // Update Alice a second time
-    let alice_pk_before_update_2 = pks_after_update_1[0].clone();
-    let update_evolvement_2 = client.update().expect("Updating client keys failed");
+    let alice_before_update_2 = &members_after_update_1[0];
+    let update_evolvement_2 = client.update(backend).expect("Updating client keys failed");
     client
-        .evolve(&update_evolvement_2)
+        .evolve(update_evolvement_2.clone(), backend)
         .expect("Failed to apply update on client state");
     assert!(update_evolvement_1.is_valid_successor(&update_evolvement_2));
     transcript.add_evolvement(update_evolvement_2.clone());
+    assert_eq!(
+        transcript.get_members(),
+        client.get_members().expect("failed to get members")
+    );
 
-    let pks_after_update_2 = client
-        .state()
-        .get_members()
-        .expect("failed to get members")
-        .iter()
-        .map(|m| m.pk())
-        .collect::<Vec<_>>();
+    let members_after_update_2 = client.get_members().expect("failed to get members");
 
-    assert!(client.state().verify().unwrap());
-    assert!(!pks_after_update_2.contains(&alice_pk_before_update_2));
-    assert_eq!(1, pks_after_update_2.len());
+    assert!(!members_after_update_2.contains(alice_before_update_2));
+    assert_eq!(1, members_after_update_2.len());
 }

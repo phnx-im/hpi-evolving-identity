@@ -1,12 +1,14 @@
 use eid_traits::evolvement::Evolvement;
-use eid_traits::types::Member;
+
+use crate::eid_dummy_member::EidDummyMember;
 
 #[derive(Debug, Clone)]
 pub enum EidDummyEvolvement {
-    Add { members: Vec<Member> },
-    Update { members: Vec<Member> },
-    Remove { members: Vec<Member> },
+    Add { members: Vec<EidDummyMember> },
+    Update { members: Vec<EidDummyMember> },
+    Remove { members: Vec<EidDummyMember> },
 }
+
 impl Default for EidDummyEvolvement {
     fn default() -> Self {
         Self::Add { members: vec![] }
