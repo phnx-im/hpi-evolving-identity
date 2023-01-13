@@ -58,6 +58,7 @@ pub trait EidClient {
 
     fn export_transcript_state(&self) -> Self::TranscriptStateProvider;
 
+    #[cfg(feature = "test")]
     fn generate_pubkey(
         backend: &Self::BackendProvider,
     ) -> <Self::MemberProvider as Member>::PubkeyProvider;

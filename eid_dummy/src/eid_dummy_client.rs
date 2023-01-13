@@ -20,6 +20,7 @@ impl EidClient for EidDummyClient {
     type MemberProvider = EidDummyMember;
     type BackendProvider = EidDummyBackend;
 
+    #[cfg(feature = "test")]
     fn generate_pubkey(
         _backend: &Self::BackendProvider,
     ) -> <Self::MemberProvider as Member>::PubkeyProvider {
