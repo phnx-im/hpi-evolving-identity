@@ -1,4 +1,9 @@
-use openmls::prelude::{Ciphersuite, CredentialBundle, CredentialType, Extension, KeyPackageBundle, OpenMlsCryptoProvider, OpenMlsKeyStore, SignatureScheme, TlsSerializeTrait};
+use openmls::key_packages::KeyPackageBuilder;
+use openmls::prelude::KeyPackage;
+use openmls::prelude::{
+    Ciphersuite, CredentialBundle, CredentialType, CryptoConfig, Extension, OpenMlsCryptoProvider,
+    OpenMlsKeyStore, ProtocolVersion, SignatureScheme, TlsSerializeTrait,
+};
 
 pub(crate) fn create_store_credential(
     identifier: String,
@@ -32,22 +37,23 @@ pub(crate) fn create_store_key_package(
     ciphersuite: Ciphersuite,
     credential_bundle: &CredentialBundle,
     backend: &impl OpenMlsCryptoProvider,
-    extensions: Vec<Extension>,
-) -> KeyPackageBundle {
-    let key_package_bundle = KeyPackageBundle::new(
-        &[ciphersuite],
-        credential_bundle,
-        backend,
-        extensions.clone(),
-    )
+) -> KeyPackage {
+    let kp = KeyPackageBuilder::new()
+        .build(
+            CryptoConfig {
+                ciphersuite,
+                version: ProtocolVersion::default(),
+            },
+            backend,
+            credential_bundle,
+        )
         .expect("Could not create KeyPackage");
 
     /*
     backend
         .key_store()
         .store(
-            key_package
-                .hash_ref(backend.crypto())
+            kp.hash_ref(backend.crypto())
                 .expect("Could not hash KeyPackage")
                 .as_slice(),
             &kp,
@@ -55,5 +61,5 @@ pub(crate) fn create_store_key_package(
         .expect("Storing KeyPackage failed");
      */
 
-    return key_package_bundle;
+    return kp;
 }
