@@ -5,7 +5,7 @@ use eid_traits::evolvement::Evolvement;
 
 #[derive(Debug)]
 pub struct EidMlsEvolvement {
-    pub(crate) message: MlsMessageOut,
+    pub(crate) message: ProtocolMessage,
     pub(crate) welcome: Option<MlsMessageOut>,
 }
 

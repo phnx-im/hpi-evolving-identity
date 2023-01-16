@@ -46,15 +46,12 @@ impl EidState for EidMlsClientState {
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        let parsed_message = self
+        let processed_message = self
             .group
-            .parse_message(evolvement.message.into(), &backend.mls_backend)
-            .map_err(|_| EidError::ParseMessageError)?;
-        let verified_message = self
-            .group
-            .process_unverified_message(parsed_message, None, &backend.mls_backend)
-            .map_err(|_| EidError::UnverifiedMessageError)?;
-        self.apply_processed_message(verified_message)?;
+            .process_message(&backend.mls_backend, message_in)
+            .map_err(|_| EidError::ProcessMessageError)?;
+
+        self.apply_processed_message(processed_message)?;
 
         Ok(())
     }

@@ -41,7 +41,7 @@ impl EidClient for EidMlsClient {
             .add_members(&backend.mls_backend, &[identity])
             .map_err(|error| EidError::AddMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement {
-            message: mls_out,
+            message: mls_out.into(),
             welcome: Some(welcome),
         };
         Ok(evolvement)
@@ -61,7 +61,7 @@ impl EidClient for EidMlsClient {
             .remove_members(&backend.mls_backend, &[member.member.index])
             .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement {
-            message: mls_out,
+            message: mls_out.into(),
             welcome,
         };
         Ok(evolvement)
