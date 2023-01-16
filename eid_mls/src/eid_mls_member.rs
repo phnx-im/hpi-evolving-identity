@@ -1,10 +1,11 @@
 use openmls::prelude::KeyPackage;
+use openmls::prelude::Member as MlsMember;
 
 use eid_traits::member::Member;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct EidMlsMember {
-    pub(crate) key_package: KeyPackage,
+    pub(crate) member: MlsMember,
 }
 
 impl PartialEq for EidMlsMember {

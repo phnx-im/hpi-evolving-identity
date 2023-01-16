@@ -1,4 +1,7 @@
+use std::process::id;
+
 use mls_assist::group::Group as AssistedGroup;
+use openmls::key_packages::KeyPackage;
 use openmls::prelude::Ciphersuite;
 use openmls::prelude::OpenMlsCryptoProvider;
 
@@ -23,6 +26,7 @@ impl EidClient for EidMlsClient {
     type MemberProvider = EidMlsMember;
     type TranscriptStateProvider = EidMlsTranscriptState;
     type BackendProvider = EidMlsBackend;
+    type InitialIdentityProvider = KeyPackage;
 
     fn create_eid(
         cred: <Self::MemberProvider as Member>::PubkeyProvider,
@@ -38,7 +42,7 @@ impl EidClient for EidMlsClient {
     ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
         let (mls_out, welcome) = group
-            .add_members(&backend.mls_backend, &[member.get_pk()])
+            .add_members(&backend.mls_backend, &[identity])
             .map_err(|error| EidError::AddMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement {
             message: mls_out,

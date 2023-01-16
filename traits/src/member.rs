@@ -1,9 +1,9 @@
 use std::fmt::Debug;
 
 pub trait Member: PartialEq + Debug {
-    type PubkeyProvider;
+    type IdentityProvider;
 
-    fn new(cred: Self::PubkeyProvider) -> Self;
+    fn new(id: Self::IdentityProvider) -> Self;
 
-    fn get_pk(&self) -> Self::PubkeyProvider;
+    fn get_identity(&self) -> Self::IdentityProvider;
 }
