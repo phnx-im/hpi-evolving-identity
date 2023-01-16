@@ -1,5 +1,6 @@
+use mls_assist::group::Group as AssistedGroup;
 use openmls::key_packages::KeyPackage;
-use openmls::prelude::Ciphersuite;
+use openmls::prelude::{Ciphersuite, MlsMessageIn};
 
 use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
@@ -75,7 +76,7 @@ impl EidClient for EidMlsClient {
             .propose_self_update(&backend.mls_backend, None)
             .map_err(|error| EidError::UpdateMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement {
-            message: mls_out,
+            message: mls_out.into(),
             welcome: None,
         };
         Ok(evolvement)

@@ -13,4 +13,4 @@ thiserror = "1.0"
 mls-assist = { git = "https://github.com/phnx-im/mls-assist-student", branch = "feat/constructors" }
 
 [features]
-test = []
+test = ["openmls/test-utils"]

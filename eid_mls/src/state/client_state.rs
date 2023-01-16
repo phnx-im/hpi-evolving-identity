@@ -1,7 +1,10 @@
+use openmls::framing::MlsMessageIn;
+use openmls::framing::ProcessedMessageContent::StagedCommitMessage;
+use openmls::prelude::{MlsGroup, ProcessedMessage, ProtocolMessage};
+
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
-use openmls::prelude::{MlsGroup, ProcessedMessage};
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
@@ -14,14 +17,11 @@ pub struct EidMlsClientState {
 
 impl EidMlsState for EidMlsClientState {
     fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
-        match message {
-            ProcessedMessage::ApplicationMessage(_) | ProcessedMessage::ProposalMessage(_) => {
-                Err(EidError::InvalidMessageError)
-            }
-            ProcessedMessage::StagedCommitMessage(staged_commit) => self
-                .group
-                .merge_staged_commit(*staged_commit)
-                .map_err(|_| EidError::ApplyCommitError),
+        if let StagedCommitMessage(staged_commit) = message.content() {
+            self.group.merge_staged_commit(**staged_commit);
+            Ok(())
+        } else {
+            Err(EidError::InvalidMessageError)
         }
     }
 }

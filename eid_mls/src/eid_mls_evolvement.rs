@@ -1,3 +1,4 @@
+use openmls::framing::{ProtocolMessage, PublicMessage};
 use openmls::prelude::MlsMessageOut;
 
 use eid_traits::evolvement::Evolvement;
