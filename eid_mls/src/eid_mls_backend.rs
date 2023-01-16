@@ -1,5 +1,6 @@
-use eid_traits::backend::EidBackend;
 use openmls_rust_crypto::OpenMlsRustCrypto;
+
+use eid_traits::backend::EidBackend;
 
 pub struct EidMlsBackend {
     pub(crate) mls_backend: OpenMlsRustCrypto,
@@ -8,7 +9,7 @@ pub struct EidMlsBackend {
 impl Default for EidMlsBackend {
     fn default() -> Self {
         Self {
-            mls_backend: OpenMlsRustCrypto::default()
+            mls_backend: OpenMlsRustCrypto::default(),
         }
     }
 }

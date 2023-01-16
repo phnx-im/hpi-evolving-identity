@@ -10,8 +10,7 @@ eid_traits = { version = "0.1.0", path = "../traits" }
 openmls = { git = "https://github.com/openmls/openmls.git" }
 openmls_rust_crypto = { git = "https://github.com/openmls/openmls.git" }
 thiserror = "1.0"
-mls-assist = { git = "https://github.com/phnx-im/mls-assist.git" }
+mls-assist = { git = "https://github.com/phnx-im/mls-assist-student", branch = "feat/constructors" }
 
 [features]
-default = []
 test = []

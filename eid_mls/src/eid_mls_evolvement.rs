@@ -1,11 +1,11 @@
+use openmls::prelude::MlsMessageOut;
+
 use eid_traits::evolvement::Evolvement;
-use openmls::framing::MlsMessageOut;
-use openmls::prelude::Welcome;
 
 #[derive(Debug)]
 pub struct EidMlsEvolvement {
     pub(crate) message: MlsMessageOut,
-    pub(crate) welcome: Option<Welcome>,
+    pub(crate) welcome: Option<MlsMessageOut>,
 }
 
 impl Clone for EidMlsEvolvement {
