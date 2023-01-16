@@ -1,7 +1,7 @@
 use openmls::key_packages::KeyPackageBuilder;
 use openmls::prelude::KeyPackage;
 use openmls::prelude::{
-    Ciphersuite, CredentialBundle, CredentialType, CryptoConfig, Extension, OpenMlsCryptoProvider,
+    Ciphersuite, CredentialBundle, CredentialType, CryptoConfig, OpenMlsCryptoProvider,
     OpenMlsKeyStore, ProtocolVersion, SignatureScheme, TlsSerializeTrait,
 };
 

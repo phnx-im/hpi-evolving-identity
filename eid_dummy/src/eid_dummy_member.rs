@@ -2,7 +2,7 @@ use eid_traits::member::Member;
 
 #[derive(Debug, Clone, Eq)]
 pub struct EidDummyMember {
-    pk: Vec<u8>,
+    pub(crate) pk: Vec<u8>,
 }
 
 impl PartialEq for EidDummyMember {

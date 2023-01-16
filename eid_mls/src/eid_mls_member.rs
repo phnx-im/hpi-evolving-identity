@@ -8,20 +8,14 @@ pub struct EidMlsMember {
     pub(crate) member: MlsMember,
 }
 
-impl PartialEq for EidMlsMember {
-    fn eq(&self, other: &Self) -> bool {
-        todo!()
-    }
-}
-
 impl Member for EidMlsMember {
-    type PubkeyProvider = KeyPackage;
+    type IdentityProvider = MlsMember;
 
-    fn new(key_package: KeyPackage) -> Self {
-        Self { key_package }
+    fn new(member: MlsMember) -> Self {
+        Self { member }
     }
 
-    fn get_pk(&self) -> Self::PubkeyProvider {
-        self.key_package.clone()
+    fn get_identity(&self) -> Self::IdentityProvider {
+        self.member.clone()
     }
 }
