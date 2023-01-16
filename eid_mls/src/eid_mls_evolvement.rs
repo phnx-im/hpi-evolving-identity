@@ -1,21 +1,17 @@
-use openmls::framing::{ProtocolMessage, PublicMessage};
+use openmls::framing::{MlsMessageIn, ProtocolMessage, PublicMessage};
 use openmls::prelude::MlsMessageOut;
 
 use eid_traits::evolvement::Evolvement;
 
-#[derive(Debug)]
-pub struct EidMlsEvolvement {
-    pub(crate) message: ProtocolMessage,
-    pub(crate) welcome: Option<MlsMessageOut>,
-}
-
-impl Clone for EidMlsEvolvement {
-    fn clone(&self) -> Self {
-        EidMlsEvolvement {
-            message: self.message.clone(),
-            welcome: self.welcome.clone(),
-        }
-    }
+#[derive(Debug, Clone)]
+pub enum EidMlsEvolvement {
+    OUT {
+        message: MlsMessageOut,
+        welcome: Option<MlsMessageOut>,
+    },
+    IN {
+        message: MlsMessageIn,
+    },
 }
 
 impl Evolvement for EidMlsEvolvement {

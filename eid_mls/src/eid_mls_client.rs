@@ -40,7 +40,7 @@ impl EidClient for EidMlsClient {
         let (mls_out, welcome) = group
             .add_members(&backend.mls_backend, &[identity])
             .map_err(|error| EidError::AddMemberError(error.to_string()))?;
-        let evolvement = EidMlsEvolvement {
+        let evolvement = EidMlsEvolvement::OUT {
             message: mls_out.into(),
             welcome: Some(welcome),
         };
@@ -60,7 +60,7 @@ impl EidClient for EidMlsClient {
         let (mls_out, welcome) = group
             .remove_members(&backend.mls_backend, &[member.member.index])
             .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
-        let evolvement = EidMlsEvolvement {
+        let evolvement = EidMlsEvolvement::OUT {
             message: mls_out.into(),
             welcome,
         };
@@ -75,7 +75,7 @@ impl EidClient for EidMlsClient {
         let mls_out = group
             .propose_self_update(&backend.mls_backend, None)
             .map_err(|error| EidError::UpdateMemberError(error.to_string()))?;
-        let evolvement = EidMlsEvolvement {
+        let evolvement = EidMlsEvolvement::OUT {
             message: mls_out.into(),
             welcome: None,
         };

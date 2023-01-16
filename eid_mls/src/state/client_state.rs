@@ -46,14 +46,18 @@ impl EidState for EidMlsClientState {
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        let processed_message = self
-            .group
-            .process_message(&backend.mls_backend, message_in)
-            .map_err(|_| EidError::ProcessMessageError)?;
+        if let EidMlsEvolvement::IN { message: mls_in } = evolvement {
+            let processed_message = self
+                .group
+                .process_message(&backend.mls_backend, mls_in)
+                .map_err(|_| EidError::ProcessMessageError)?;
 
-        self.apply_processed_message(processed_message)?;
+            self.apply_processed_message(processed_message)?;
 
-        Ok(())
+            Ok(())
+        } else {
+            Err(EidError::InvalidMessageError)
+        }
     }
 
     fn verify_member(&self, member: &Self::MemberProvider) -> Result<bool, EidError> {
