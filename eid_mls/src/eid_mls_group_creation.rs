@@ -1,7 +1,6 @@
 use openmls::group::MlsGroupConfig;
 use openmls::prelude::{
-    GroupId, KeyPackage, MlsGroup, OpenMlsCryptoProvider, SenderRatchetConfiguration,
-    PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
+    KeyPackage, MlsGroup, SenderRatchetConfiguration, PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
 };
 
 use eid_traits::types::EidError;

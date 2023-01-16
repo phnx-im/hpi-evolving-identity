@@ -1,4 +1,3 @@
-use openmls::prelude::KeyPackage;
 use openmls::prelude::Member as MlsMember;
 
 use eid_traits::member::Member;

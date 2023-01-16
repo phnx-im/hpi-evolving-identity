@@ -1,12 +1,7 @@
-use std::process::id;
-
-use mls_assist::group::Group as AssistedGroup;
 use openmls::key_packages::KeyPackage;
 use openmls::prelude::Ciphersuite;
-use openmls::prelude::OpenMlsCryptoProvider;
 
 use eid_traits::client::EidClient;
-use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
