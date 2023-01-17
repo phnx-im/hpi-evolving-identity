@@ -58,7 +58,7 @@ impl EidMlsTranscript {
         backend: &EidMlsBackend,
     ) -> Result<(), EidError> {
         self.current_state.apply_log(log.clone(), backend)?;
-        self.log.append(&mut log)?;
+        self.log.append(&mut log);
         Ok(())
     }
 }
