@@ -65,10 +65,10 @@ impl EidState for EidMlsClientState {
     }
 
     fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
-        let key_packages = self.group.members();
-        let members: Vec<EidMlsMember> = key_packages
-            .iter()
-            .map(|kp| EidMlsMember::new((*kp).clone()))
+        let members: Vec<EidMlsMember> = self
+            .group
+            .members()
+            .map(|m| EidMlsMember::new(m.clone()))
             .collect();
         Ok(members)
     }
