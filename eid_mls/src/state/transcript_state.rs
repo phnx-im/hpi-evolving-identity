@@ -11,7 +11,7 @@ use super::state_trait::EidMlsState;
 
 /// Eid Mls Transcript State
 pub struct EidMlsTranscriptState {
-    group: AssistedGroup,
+    pub(crate) group: AssistedGroup,
 }
 
 impl EidState for EidMlsTranscriptState {
@@ -59,3 +59,9 @@ impl PartialEq<Self> for EidMlsTranscriptState {
 }
 
 impl EidMlsState for EidMlsTranscriptState {}
+
+impl EidMlsTranscriptState {
+    pub(crate) fn new(group: AssistedGroup) -> Self {
+        EidMlsTranscriptState { group }
+    }
+}
