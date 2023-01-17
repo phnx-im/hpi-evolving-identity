@@ -1,3 +1,4 @@
+use eid_traits::state::EidState;
 use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
 
@@ -23,7 +24,13 @@ impl EidTranscript for EidMlsTranscript {
         log: Vec<Self::EvolvementProvider>,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        todo!()
+        let mut transcript = EidMlsTranscript {
+            trusted_state,
+            current_state: trusted_state.clone(),
+            log: vec![],
+        };
+        transcript.apply_log(log, backend)?;
+        Ok(transcript)
     }
 
     fn add_evolvement(&mut self, evolvement: Self::EvolvementProvider) {
