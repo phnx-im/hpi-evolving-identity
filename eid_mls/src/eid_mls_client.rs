@@ -10,6 +10,7 @@ use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_key_creation::{create_store_credential, create_store_key_package};
 use crate::eid_mls_member::EidMlsMember;
+use crate::eid_mls_transcript::EidMlsTranscript;
 use crate::state::client_state::EidMlsClientState;
 use crate::state::transcript_state::EidMlsTranscriptState;
 
@@ -23,6 +24,9 @@ impl EidClient for EidMlsClient {
     type TranscriptStateProvider = EidMlsTranscriptState;
     type BackendProvider = EidMlsBackend;
     type InitialIdentityProvider = KeyPackage;
+
+    #[cfg(feature = "test")]
+    type TranscriptProvider = EidMlsTranscript;
 
     fn create_eid(
         identity: Self::InitialIdentityProvider,

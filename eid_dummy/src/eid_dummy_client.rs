@@ -7,6 +7,7 @@ use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::EidDummyMember;
 use crate::eid_dummy_state::EidDummyState;
+use crate::eid_dummy_transcript::EidDummyTranscript;
 
 pub struct EidDummyClient {
     state: EidDummyState,
@@ -20,6 +21,10 @@ impl EidClient for EidDummyClient {
     type TranscriptStateProvider = EidDummyState;
     type BackendProvider = EidDummyBackend;
     type InitialIdentityProvider = EidDummyMember;
+
+    // We're only requiring this for tests since we don't want to unnecessarily restrict transcript tue transcript type.
+    #[cfg(feature = "test")]
+    type TranscriptProvider = EidDummyTranscript;
 
     fn create_eid(
         identity: Self::InitialIdentityProvider,

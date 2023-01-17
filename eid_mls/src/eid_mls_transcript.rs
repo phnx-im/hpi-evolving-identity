@@ -6,12 +6,10 @@ use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 use crate::state::transcript_state::EidMlsTranscriptState;
 
-pub struct EidMlsTranscript {}
-
-impl Default for EidMlsTranscript {
-    fn default() -> Self {
-        Self {}
-    }
+pub struct EidMlsTranscript {
+    trusted_state: EidMlsTranscriptState,
+    current_state: EidMlsTranscriptState,
+    log: Vec<EidMlsEvolvement>,
 }
 
 impl EidTranscript for EidMlsTranscript {
