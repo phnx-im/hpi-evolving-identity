@@ -60,7 +60,7 @@ where
 
     // Create Alice as a member with a random pk
     let alice = C::generate_initial_id(backend);
-    let add_alice_evolvement = client.add(&alice, backend).expect("failed to add member");
+    let add_alice_evolvement = client.add(alice, backend).expect("failed to add member");
 
     // member list length unchanged before evolving
     let members = client.get_members().expect("failed to get members");
@@ -85,7 +85,7 @@ where
 
     // Add Bob
     let bob = C::generate_initial_id(backend);
-    let add_bob_evolvement = client.add(&bob, backend).expect("failed to add member");
+    let add_bob_evolvement = client.add(bob, backend).expect("failed to add member");
     client
         .evolve(add_bob_evolvement.clone(), backend)
         .expect("Failed to apply state");
@@ -116,7 +116,7 @@ where
         .expect("Failed to create transcript");
 
     let alice = C::generate_initial_id(backend);
-    let evolvement_add = client.add(&alice, backend).expect("failed to add member");
+    let evolvement_add = client.add(alice, backend).expect("failed to add member");
     client
         .evolve(evolvement_add.clone(), backend)
         .expect("Failed to apply state");
