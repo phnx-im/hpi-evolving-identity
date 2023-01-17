@@ -42,3 +42,15 @@ impl EidTranscript for EidMlsTranscript {
         todo!()
     }
 }
+
+impl EidMlsTranscript {
+    fn apply_log(
+        &mut self,
+        mut log: Vec<Self::EvolvementProvider>,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
+        self.current_state.apply_log(log.clone(), backend)?;
+        self.log.append(&mut log)?;
+        Ok(())
+    }
+}

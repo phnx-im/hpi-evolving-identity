@@ -15,7 +15,7 @@ pub trait EidClient {
     type BackendProvider: EidBackend;
     type InitialIdentityProvider;
 
-    // We're only requiring this for tests since we don't want to unnecessarily restrict transcript tue transcript type.
+    // We're only requiring this for tests since we don't want to unnecessarily restrict the transcript type.
     #[cfg(feature = "test")]
     type TranscriptProvider: EidTranscript<
         EvolvementProvider = Self::EvolvementProvider,
