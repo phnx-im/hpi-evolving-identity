@@ -1,6 +1,6 @@
-use openmls::framing::MlsMessageIn;
 use openmls::framing::ProcessedMessageContent::StagedCommitMessage;
-use openmls::prelude::{MlsGroup, ProcessedMessage, ProtocolMessage};
+use openmls::framing::{MlsMessageIn, MlsMessageInBody, ProcessedMessageContent};
+use openmls::prelude::{MlsGroup, ProcessedMessage, ProtocolMessage, StagedCommit};
 
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
@@ -47,14 +47,26 @@ impl EidState for EidMlsClientState {
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
         if let EidMlsEvolvement::IN { message: mls_in } = evolvement {
-            let processed_message = self
-                .group
-                .process_message(&backend.mls_backend, mls_in)
-                .map_err(|_| EidError::ProcessMessageError)?;
+            let body = mls_in.extract();
+            return match body {
+                MlsMessageInBody::PrivateMessage(_) => Err(EidError::ProcessMessageError),
+                MlsMessageInBody::Welcome(_)
+                | MlsMessageInBody::GroupInfo(_)
+                | MlsMessageInBody::KeyPackage(_) => {
+                    todo!()
+                }
+                MlsMessageInBody::PublicMessage(msg) => {
+                    let protocol_message = ProtocolMessage::PublicMessage(msg);
+                    let processed_message = self
+                        .group
+                        .process_message(&backend.mls_backend, protocol_message)
+                        .map_err(|_| EidError::ProcessMessageError)?;
 
-            self.apply_processed_message(processed_message)?;
+                    self.apply_processed_message(processed_message)?;
 
-            Ok(())
+                    Ok(())
+                }
+            };
         } else {
             Err(EidError::InvalidMessageError)
         }
