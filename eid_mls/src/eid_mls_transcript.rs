@@ -33,8 +33,14 @@ impl EidTranscript for EidMlsTranscript {
         Ok(transcript)
     }
 
-    fn add_evolvement(&mut self, evolvement: Self::EvolvementProvider) {
-        todo!()
+    fn add_evolvement(
+        &mut self,
+        evolvement: Self::EvolvementProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
+        self.current_state.apply(evolvement.clone(), backend)?;
+        self.log.push(evolvement);
+        Ok(())
     }
 
     fn trusted_state(&self) -> Self::StateProvider {

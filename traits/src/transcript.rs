@@ -22,7 +22,11 @@ pub trait EidTranscript {
         Self: Sized;
 
     /// Add a new entry on top of the existing [Evolvement]s in the transcript.
-    fn add_evolvement(&mut self, evolvement: Self::EvolvementProvider);
+    fn add_evolvement(
+        &mut self,
+        evolvement: Self::EvolvementProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError>;
 
     /// Returns the trusted state.
     fn trusted_state(&self) -> Self::StateProvider;

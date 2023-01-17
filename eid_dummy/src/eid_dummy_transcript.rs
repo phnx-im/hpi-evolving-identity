@@ -35,7 +35,11 @@ impl EidTranscript for EidDummyTranscript {
         Ok(transcript)
     }
 
-    fn add_evolvement(&mut self, evolvement: EidDummyEvolvement) {
+    fn add_evolvement(
+        &mut self,
+        evolvement: EidDummyEvolvement,
+        _backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
         self.log.push(evolvement.clone());
         match evolvement {
             EidDummyEvolvement::Update { members }
