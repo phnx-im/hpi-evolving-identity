@@ -17,8 +17,8 @@ pub struct EidMlsClientState {
 
 impl EidMlsState for EidMlsClientState {
     fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
-        if let StagedCommitMessage(staged_commit) = message.content() {
-            self.group.merge_staged_commit(**staged_commit);
+        if let StagedCommitMessage(staged_commit_ref) = message.into_content() {
+            self.group.merge_staged_commit(*staged_commit_ref);
             Ok(())
         } else {
             Err(EidError::InvalidMessageError)
