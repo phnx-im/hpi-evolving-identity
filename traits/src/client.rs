@@ -67,7 +67,10 @@ pub trait EidClient {
     /// Get all clients which are members of the EID.
     fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError>;
 
-    fn export_transcript_state(&self) -> Self::TranscriptStateProvider;
+    fn export_transcript_state(
+        &self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::TranscriptStateProvider, EidError>;
 
     #[cfg(feature = "test")]
     fn generate_initial_id(backend: &Self::BackendProvider) -> Self::InitialIdentityProvider;

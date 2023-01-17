@@ -117,8 +117,11 @@ impl EidClient for EidDummyClient {
     fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
         self.state.get_members()
     }
-    fn export_transcript_state(&self) -> EidDummyState {
-        self.state.clone()
+    fn export_transcript_state(
+        &self,
+        _backend: &Self::BackendProvider,
+    ) -> Result<EidDummyState, EidError> {
+        Ok(self.state.clone())
     }
 
     #[cfg(feature = "test")]

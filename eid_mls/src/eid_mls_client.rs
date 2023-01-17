@@ -1,6 +1,9 @@
 use mls_assist::group::Group as AssistedGroup;
+use openmls::framing::MlsMessageInBody;
 use openmls::key_packages::KeyPackage;
-use openmls::prelude::{Ciphersuite, MlsMessageIn};
+use openmls::prelude::{
+    Ciphersuite, GroupInfo, MlsMessageIn, TlsDeserializeTrait, TlsSerializeTrait,
+};
 
 use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
@@ -98,9 +101,34 @@ impl EidClient for EidMlsClient {
         self.state.get_members()
     }
 
-    fn export_transcript_state(&self) -> Self::TranscriptStateProvider {
-        // let group_info = self.state.group.export_group_context();
-        todo!()
+    fn export_transcript_state(
+        &self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::TranscriptStateProvider, EidError> {
+        let mls_out = self
+            .state
+            .group
+            .export_group_info(&backend.mls_backend, false)
+            .map_err(|_| EidError::ExportGroupInfoError)?;
+        let mls_out_bytes = mls_out
+            .to_bytes()
+            .map_err(|_| EidError::ExportGroupInfoError)?;
+        let mls_in = MlsMessageIn::try_from_bytes(&mls_out_bytes)
+            .map_err(|_| EidError::ExportGroupInfoError)?;
+        if let MlsMessageInBody::GroupInfo(verifiable_group_info) = mls_in.extract() {
+            let group_info = verifiable_group_info.into();
+            let leaf_node = self
+                .state
+                .group
+                .own_leaf()
+                .ok_or(EidError::InvalidMemberError("Cannot export leaf".into()))?;
+
+            let group = AssistedGroup::new(group_info, leaf_node.clone());
+
+            Ok(EidMlsTranscriptState::new(group))
+        } else {
+            Err(EidError::ExportGroupInfoError)
+        }
     }
 
     #[cfg(feature = "test")]

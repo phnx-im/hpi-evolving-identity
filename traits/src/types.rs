@@ -16,6 +16,7 @@ pub enum EidError {
     InvalidMessageError,
     ApplyCommitError,
     UpdateMemberError(String),
+    ExportGroupInfoError,
 }
 
 impl Display for EidError {

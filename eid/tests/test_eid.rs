@@ -14,7 +14,6 @@ use eid_mls::eid_mls_client::EidMlsClient;
 use eid_mls::eid_mls_transcript::EidMlsTranscript;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
-use eid_traits::member::Member;
 use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
 
@@ -43,9 +42,14 @@ where
     C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript =
-        C::TranscriptProvider::new(client.export_transcript_state(), vec![], backend)
-            .expect("Failed to create transcript");
+    let mut transcript = C::TranscriptProvider::new(
+        client
+            .export_transcript_state(backend)
+            .expect("failed to export transcript state"),
+        vec![],
+        backend,
+    )
+    .expect("Failed to create transcript");
 
     // Create Alice as a member with a random pk
     let alice = C::generate_initial_id(backend);
@@ -95,9 +99,14 @@ where
     C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript =
-        C::TranscriptProvider::new(client.export_transcript_state(), vec![], backend)
-            .expect("Failed to create transcript");
+    let mut transcript = C::TranscriptProvider::new(
+        client
+            .export_transcript_state(backend)
+            .expect("failed to export transcript state"),
+        vec![],
+        backend,
+    )
+    .expect("Failed to create transcript");
 
     let alice = C::generate_initial_id(backend);
     let evolvement_add = client.add(alice, backend).expect("failed to add member");
@@ -145,9 +154,14 @@ where
     C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
-    let mut transcript =
-        C::TranscriptProvider::new(client.export_transcript_state(), vec![], backend)
-            .expect("Failed to create transcript");
+    let mut transcript = C::TranscriptProvider::new(
+        client
+            .export_transcript_state(backend)
+            .expect("failed to export transcript state"),
+        vec![],
+        backend,
+    )
+    .expect("Failed to create transcript");
     let alice_before_update_1 = &client.get_members().expect("failed to get members")[0];
 
     let update_evolvement_1 = client.update(backend).expect("Updating client keys failed");
