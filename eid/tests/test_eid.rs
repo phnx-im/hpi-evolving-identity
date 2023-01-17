@@ -25,8 +25,8 @@ lazy_static! {
 
 #[template]
 #[rstest(client, _transcript, backend,
-case::EidDummy(& mut EidDummyClient::create_eid("test_key".as_bytes().to_vec(), & DUMMY_BACKEND).expect("creation failed"), EidDummyTranscript::default(), & DUMMY_BACKEND),
-case::EidMls(& mut EidMlsClient::create_eid(EidMlsClient::generate_pubkey(& MLS_BACKEND), & MLS_BACKEND).expect("creation failed"), EidMlsTranscript::default(), & MLS_BACKEND),
+case::EidDummy(& mut EidDummyClient::create_eid("test_key".as_bytes().to_vec(), & DUMMY_BACKEND).expect("creation failed"), & DUMMY_BACKEND),
+case::EidMls(& mut EidMlsClient::create_eid(EidMlsClient::generate_pubkey(& MLS_BACKEND), & MLS_BACKEND).expect("creation failed"), & MLS_BACKEND),
 )]
 #[allow(non_snake_case)]
 pub fn eid_clients<C, T, B>(client: &mut C, _transcript: T, backend: &B)
@@ -43,16 +43,14 @@ where
 }
 
 #[apply(eid_clients)]
-fn add<C, T, B>(client: &mut C, _transcript: T, backend: &B)
-where
-    C: EidClient<BackendProvider = B>,
-    T: EidTranscript<
-        EvolvementProvider = C::EvolvementProvider,
-        StateProvider = C::TranscriptStateProvider,
-        BackendProvider = B,
-        MemberProvider = C::MemberProvider,
-    >,
-    C::EvolvementProvider: Debug,
+fn add<C, B>(client: &mut C, backend: &B)
+    where
+        C: EidClient<BackendProvider=B,
+            TranscriptProvider::EvolvementProvider=C::EvolvementProvider,
+            TranscriptProvider::StateProvider=C::TranscriptStateProvider,
+            TranscriptProvider::BackendProvider=B,
+            TranscriptProvider::MemberProvider=C::MemberProvider>,
+        C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
     let mut transcript = T::new(client.export_transcript_state(), vec![], backend)

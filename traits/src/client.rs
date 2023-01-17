@@ -2,6 +2,7 @@ use crate::backend::EidBackend;
 use crate::evolvement::Evolvement;
 use crate::member::Member;
 use crate::state::EidState;
+use crate::transcript::EidTranscript;
 use crate::types::EidError;
 
 pub trait EidClient {
@@ -13,6 +14,10 @@ pub trait EidClient {
     >;
     type BackendProvider: EidBackend;
     type InitialIdentityProvider;
+
+    // We're only requiring this for tests since we don't want to unnecessarily restrict transcript tue transcript type.
+    #[cfg(feature = "test")]
+    type TranscriptProvider: EidTranscript;
 
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(
