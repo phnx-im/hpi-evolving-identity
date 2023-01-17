@@ -42,6 +42,7 @@ impl EidTranscript for EidDummyTranscript {
             | EidDummyEvolvement::Add { members }
             | EidDummyEvolvement::Remove { members } => self.current_state.members = members,
         }
+        Ok(())
     }
 
     fn trusted_state(&self) -> EidDummyState {
