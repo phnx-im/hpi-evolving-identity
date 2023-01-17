@@ -17,7 +17,12 @@ pub trait EidClient {
 
     // We're only requiring this for tests since we don't want to unnecessarily restrict transcript tue transcript type.
     #[cfg(feature = "test")]
-    type TranscriptProvider: EidTranscript;
+    type TranscriptProvider: EidTranscript<
+        EvolvementProvider = Self::EvolvementProvider,
+        StateProvider = Self::TranscriptStateProvider,
+        BackendProvider = Self::BackendProvider,
+        MemberProvider = Self::MemberProvider,
+    >;
 
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(
