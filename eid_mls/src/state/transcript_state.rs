@@ -1,4 +1,5 @@
 use mls_assist::group::Group as AssistedGroup;
+use openmls::framing::ProcessedMessage;
 
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
@@ -58,7 +59,15 @@ impl PartialEq<Self> for EidMlsTranscriptState {
     }
 }
 
-impl EidMlsState for EidMlsTranscriptState {}
+impl EidMlsState for EidMlsTranscriptState {
+    fn apply_processed_message(
+        &mut self,
+        message: ProcessedMessage,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
+        todo!()
+    }
+}
 
 impl EidMlsTranscriptState {
     pub(crate) fn new(group: AssistedGroup) -> Self {

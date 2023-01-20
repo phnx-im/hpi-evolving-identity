@@ -16,9 +16,15 @@ pub struct EidMlsClientState {
 }
 
 impl EidMlsState for EidMlsClientState {
-    fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
+    fn apply_processed_message(
+        &mut self,
+        message: ProcessedMessage,
+        backend: &EidMlsBackend,
+    ) -> Result<(), EidError> {
         if let StagedCommitMessage(staged_commit_ref) = message.into_content() {
-            self.group.merge_staged_commit(*staged_commit_ref);
+            self.group
+                .merge_staged_commit(&backend.mls_backend, *staged_commit_ref)
+                .map_err(|_| EidError::ApplyCommitError)?;
             Ok(())
         } else {
             Err(EidError::InvalidMessageError)
@@ -62,7 +68,7 @@ impl EidState for EidMlsClientState {
                         .process_message(&backend.mls_backend, protocol_message)
                         .map_err(|_| EidError::ProcessMessageError)?;
 
-                    self.apply_processed_message(processed_message)?;
+                    self.apply_processed_message(processed_message, &backend)?;
 
                     Ok(())
                 }
