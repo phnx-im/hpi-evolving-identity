@@ -1,4 +1,5 @@
 use eid_traits::state::EidState;
+use eid_traits::transcript::EidExportedTranscriptState;
 use eid_traits::types::EidError;
 
 use crate::eid_dummy_backend::EidDummyBackend;
@@ -45,5 +46,14 @@ impl EidState for EidDummyState {
     }
     fn get_members(&self) -> Result<Vec<EidDummyMember>, EidError> {
         Ok(self.members.clone())
+    }
+}
+
+impl EidExportedTranscriptState for EidDummyState {
+    type TranscriptStateProvider = EidDummyState;
+    type BackendProvider = EidDummyBackend;
+
+    fn into_transcript_state(self, _backend: &EidDummyBackend) -> Result<EidDummyState, EidError> {
+        Ok(self.clone())
     }
 }

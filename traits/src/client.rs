@@ -2,6 +2,7 @@ use crate::backend::EidBackend;
 use crate::evolvement::Evolvement;
 use crate::member::Member;
 use crate::state::EidState;
+use crate::transcript::EidExportedTranscriptState;
 use crate::transcript::EidTranscript;
 use crate::types::EidError;
 
@@ -11,6 +12,10 @@ pub trait EidClient {
     type TranscriptStateProvider: EidState<
         EvolvementProvider = Self::EvolvementProvider,
         MemberProvider = Self::MemberProvider,
+    >;
+    type ExportedTranscriptStateProvider: EidExportedTranscriptState<
+        TranscriptStateProvider = Self::TranscriptStateProvider,
+        BackendProvider = Self::BackendProvider,
     >;
     type BackendProvider: EidBackend;
     type InitialIdentityProvider;
@@ -70,7 +75,7 @@ pub trait EidClient {
     fn export_transcript_state(
         &self,
         backend: &Self::BackendProvider,
-    ) -> Result<Self::TranscriptStateProvider, EidError>;
+    ) -> Result<Self::ExportedTranscriptStateProvider, EidError>;
 
     #[cfg(feature = "test")]
     fn generate_initial_id(backend: &Self::BackendProvider) -> Self::InitialIdentityProvider;

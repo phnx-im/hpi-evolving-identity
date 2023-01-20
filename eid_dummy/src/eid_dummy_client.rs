@@ -19,6 +19,7 @@ impl EidClient for EidDummyClient {
     type EvolvementProvider = EidDummyEvolvement;
     type MemberProvider = EidDummyMember;
     type TranscriptStateProvider = EidDummyState;
+    type ExportedTranscriptStateProvider = EidDummyState;
     type BackendProvider = EidDummyBackend;
     type InitialIdentityProvider = EidDummyMember;
 

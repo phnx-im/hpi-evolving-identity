@@ -14,7 +14,7 @@ use eid_mls::eid_mls_client::EidMlsClient;
 use eid_mls::eid_mls_transcript::EidMlsTranscript;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
-use eid_traits::transcript::EidTranscript;
+use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
 
 lazy_static! {
@@ -45,7 +45,9 @@ where
     let mut transcript = C::TranscriptProvider::new(
         client
             .export_transcript_state(backend)
-            .expect("failed to export transcript state"),
+            .expect("failed to export transcript state")
+            .into_transcript_state(backend)
+            .expect("failed to create transcript state"),
         vec![],
         backend,
     )

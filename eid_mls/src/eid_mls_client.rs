@@ -105,31 +105,23 @@ impl EidClient for EidMlsClient {
     fn export_transcript_state(
         &self,
         backend: &Self::BackendProvider,
-    ) -> Result<Self::TranscriptStateProvider, EidError> {
+    ) -> Result<Self::ExportedTranscriptStateProvider, EidError> {
         let mls_out = self
             .state
             .group
             .export_group_info(&backend.mls_backend, false)
             .map_err(|_| EidError::ExportGroupInfoError)?;
-        let mls_out_bytes = mls_out
-            .to_bytes()
-            .map_err(|_| EidError::ExportGroupInfoError)?;
-        let mls_in = MlsMessageIn::try_from_bytes(&mls_out_bytes)
-            .map_err(|_| EidError::ExportGroupInfoError)?;
-        if let MlsMessageInBody::GroupInfo(verifiable_group_info) = mls_in.extract() {
-            let group_info = verifiable_group_info.into();
-            let leaf_node = self
-                .state
-                .group
-                .own_leaf()
-                .ok_or(EidError::InvalidMemberError("Cannot export leaf".into()))?;
+        let leaf_node = self
+            .state
+            .group
+            .own_leaf()
+            .ok_or(EidError::InvalidMemberError("Cannot export leaf".into()))?
+            .clone();
 
-            let group = AssistedGroup::new(group_info, leaf_node.clone());
-
-            Ok(EidMlsTranscriptState::new(group))
-        } else {
-            Err(EidError::ExportGroupInfoError)
-        }
+        Ok(EidMlsExportedTranscriptState::OUT {
+            group_info: mls_out,
+            leaf_node,
+        })
     }
 
     #[cfg(feature = "test")]

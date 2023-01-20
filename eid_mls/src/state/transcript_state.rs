@@ -1,7 +1,10 @@
+use eid_traits::backend::EidBackend;
 use mls_assist::group::Group as AssistedGroup;
-use openmls::framing::ProcessedMessage;
+use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
+use openmls::prelude::{LeafNode, MlsMessageInBody, Verifiable};
 
 use eid_traits::state::EidState;
+use eid_traits::transcript::EidExportedTranscriptState;
 use eid_traits::types::EidError;
 
 use crate::eid_mls_backend::EidMlsBackend;
@@ -72,5 +75,51 @@ impl EidMlsState for EidMlsTranscriptState {
 impl EidMlsTranscriptState {
     pub(crate) fn new(group: AssistedGroup) -> Self {
         EidMlsTranscriptState { group }
+    }
+}
+
+pub enum EidMlsExportedTranscriptState {
+    IN {
+        group_info: MlsMessageIn,
+        leaf_node: LeafNode,
+    },
+    OUT {
+        group_info: MlsMessageOut,
+        leaf_node: LeafNode,
+    },
+}
+
+impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
+    type TranscriptStateProvider = EidMlsTranscriptState;
+    type BackendProvider = EidMlsBackend;
+
+    fn into_transcript_state(
+        self,
+        backend: &EidMlsBackend,
+    ) -> Result<Self::TranscriptStateProvider, EidError> {
+        if let EidMlsExportedTranscriptState::IN {
+            group_info: message_in,
+            leaf_node,
+        } = self
+        {
+            if let MlsMessageInBody::GroupInfo(verifiable_group_info) = message_in.extract() {
+                let group_info = verifiable_group_info
+                    .verify(
+                        &backend.mls_backend,
+                        // todo: should we take the key out of the leaf node or take a separate one as function argument?
+                        leaf_node.signature_key(),
+                        backend.ciphersuite.signature_algorithm(),
+                    )
+                    .map_err(|_| EidError::UnverifiedMessageError)?;
+
+                let group = AssistedGroup::new(group_info, leaf_node.clone());
+
+                Ok(EidMlsTranscriptState::new(group))
+            } else {
+                Err(EidError::ExportGroupInfoError)
+            }
+        } else {
+            Err(EidError::InvalidMessageError)
+        }
     }
 }

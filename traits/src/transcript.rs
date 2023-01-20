@@ -37,3 +37,15 @@ pub trait EidTranscript {
     ///Return the current members (i.e, after the latest [Evolvement])
     fn get_members(&self) -> Vec<Self::MemberProvider>;
 }
+
+/// State that is exported by the client and sent over the wire. The only function it needs
+/// to implement is the conversion to a transcript state.
+pub trait EidExportedTranscriptState {
+    type TranscriptStateProvider: EidState;
+    type BackendProvider: EidBackend;
+
+    fn into_transcript_state(
+        self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::TranscriptStateProvider, EidError>;
+}
