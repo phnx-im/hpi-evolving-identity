@@ -5,5 +5,6 @@ pub trait Member: PartialEq + Debug {
 
     fn new(id: Self::IdentityProvider) -> Self;
 
+    #[cfg(feature = "test")]
     fn get_identity(&self) -> Self::IdentityProvider;
 }

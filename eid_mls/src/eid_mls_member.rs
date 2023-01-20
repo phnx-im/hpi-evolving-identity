@@ -1,14 +1,16 @@
-use openmls::prelude::Member as MlsMember;
+use openmls::prelude::{KeyPackage, Member as MlsMember};
 
 use eid_traits::member::Member;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct EidMlsMember {
-    pub(crate) member: MlsMember,
+    // TODO: do we need a constant identifier here?
+    pub(crate) mls_member: Option<MlsMember>,
+    pub(crate) key_package: KeyPackage,
 }
 
 impl Member for EidMlsMember {
-    type IdentityProvider = MlsMember;
+    type IdentityProvider = KeyPackage;
 
     fn new(key_package: Self::IdentityProvider) -> Self {
         Self {

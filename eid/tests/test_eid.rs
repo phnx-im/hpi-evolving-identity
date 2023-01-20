@@ -11,9 +11,9 @@ pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_member::EidDummyMember;
 use eid_mls::eid_mls_backend::EidMlsBackend;
 use eid_mls::eid_mls_client::EidMlsClient;
-use eid_mls::eid_mls_transcript::EidMlsTranscript;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
+use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
 
@@ -55,7 +55,7 @@ where
 
     // Create Alice as a member with a random pk
     let alice = C::generate_initial_id(backend);
-    let add_alice_evolvement = client.add(alice, backend).expect("failed to add member");
+    let add_alice_evolvement = client.add(&alice, backend).expect("failed to add member");
 
     // member list length unchanged before evolving
     let members = client.get_members();
@@ -108,7 +108,9 @@ where
     let mut transcript = C::TranscriptProvider::new(
         client
             .export_transcript_state(backend)
-            .expect("failed to export transcript state"),
+            .expect("failed to export transcript state")
+            .into_transcript_state(backend)
+            .expect("failed to create transcript state"),
         vec![],
         backend,
     )
@@ -197,7 +199,7 @@ where
         .expect("Failed to add evolvement");
     assert_eq!(transcript.get_members(), client.get_members());
 
-    let members_after_update_2 = client.get_members().expect("failed to get members");
+    let members_after_update_2 = client.get_members();
 
     assert!(!members_after_update_2.contains(alice_before_update_2));
     assert_eq!(1, members_after_update_2.len());

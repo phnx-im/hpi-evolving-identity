@@ -20,26 +20,25 @@ impl EidClient for EidMlsClient {
     type TranscriptStateProvider = EidMlsTranscriptState;
     type ExportedTranscriptStateProvider = EidMlsExportedTranscriptState;
     type BackendProvider = EidMlsBackend;
-    type InitialIdentityProvider = KeyPackage;
 
     #[cfg(feature = "test")]
     type TranscriptProvider = EidMlsTranscript;
 
     fn create_eid(
-        identity: Self::InitialIdentityProvider,
+        initial_member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        Self::create_mls_eid(backend, &identity)
+        Self::create_mls_eid(backend, &initial_member)
     }
 
     fn add(
         &mut self,
-        identity: Self::InitialIdentityProvider,
+        member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
         let (mls_out, welcome) = group
-            .add_members(&backend.mls_backend, &[identity])
+            .add_members(&backend.mls_backend, &[member.key_package.clone()])
             .map_err(|error| EidError::AddMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement::OUT {
             message: mls_out.into(),
@@ -97,7 +96,7 @@ impl EidClient for EidMlsClient {
         Ok(self.state.apply(evolvement, backend)?)
     }
 
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
+    fn get_members(&self) -> Vec<Self::MemberProvider> {
         self.state.get_members()
     }
 
@@ -137,6 +136,9 @@ impl EidClient for EidMlsClient {
             create_store_key_package(ciphersuite, &credential_bundle, &backend.mls_backend);
 
         // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
-        key_bundle.clone()
+        EidMlsMember {
+            mls_member: None,
+            key_package: key_bundle.clone(),
+        }
     }
 }
