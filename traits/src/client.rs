@@ -18,7 +18,6 @@ pub trait EidClient {
         BackendProvider = Self::BackendProvider,
     >;
     type BackendProvider: EidBackend;
-    type InitialIdentityProvider;
 
     // We're only requiring this for tests since we don't want to unnecessarily restrict the transcript type.
     #[cfg(feature = "test")]
@@ -31,7 +30,7 @@ pub trait EidClient {
 
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(
-        identity: Self::InitialIdentityProvider,
+        initial_member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where
@@ -40,7 +39,7 @@ pub trait EidClient {
     /// Create an [Evolvement] to add a member to the EID.
     fn add(
         &mut self,
-        identity: Self::InitialIdentityProvider,
+        member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>
     where
@@ -70,7 +69,7 @@ pub trait EidClient {
     ) -> Result<(), EidError>;
 
     /// Get all clients which are members of the EID.
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError>;
+    fn get_members(&self) -> Vec<Self::MemberProvider>;
 
     fn export_transcript_state(
         &self,

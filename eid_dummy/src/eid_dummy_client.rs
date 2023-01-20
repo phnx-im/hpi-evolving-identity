@@ -21,7 +21,6 @@ impl EidClient for EidDummyClient {
     type TranscriptStateProvider = EidDummyState;
     type ExportedTranscriptStateProvider = EidDummyState;
     type BackendProvider = EidDummyBackend;
-    type InitialIdentityProvider = EidDummyMember;
 
     // We're only requiring this for tests since we don't want to unnecessarily restrict transcript tue transcript type.
     #[cfg(feature = "test")]

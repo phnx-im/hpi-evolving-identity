@@ -12,6 +12,7 @@ use crate::state::state_trait::EidMlsState;
 
 pub struct EidMlsClientState {
     pub(crate) group: MlsGroup,
+    pub(crate) members: Vec<EidMlsMember>,
 }
 
 impl EidMlsState for EidMlsClientState {
@@ -81,12 +82,7 @@ impl EidState for EidMlsClientState {
         self.get_members().contains(member)
     }
 
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
-        let members: Vec<EidMlsMember> = self
-            .group
-            .members()
-            .map(|m| EidMlsMember::new(m.clone()))
-            .collect();
-        Ok(members)
+    fn get_members(&self) -> Vec<Self::MemberProvider> {
+        self.members.clone()
     }
 }

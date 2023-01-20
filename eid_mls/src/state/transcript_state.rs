@@ -42,7 +42,7 @@ impl EidState for EidMlsTranscriptState {
         todo!()
     }
 
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
+    fn get_members(&self) -> Vec<Self::MemberProvider> {
         todo!()
     }
 }
