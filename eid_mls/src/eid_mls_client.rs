@@ -1,10 +1,3 @@
-use mls_assist::group::Group as AssistedGroup;
-use openmls::framing::MlsMessageInBody;
-use openmls::key_packages::KeyPackage;
-use openmls::prelude::{
-    Ciphersuite, GroupInfo, MlsMessageIn, TlsDeserializeTrait, TlsSerializeTrait,
-};
-
 use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
@@ -65,14 +58,20 @@ impl EidClient for EidMlsClient {
     {
         let group = &mut self.state.group;
 
-        let (mls_out, welcome) = group
-            .remove_members(&backend.mls_backend, &[member.member.index])
-            .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
-        let evolvement = EidMlsEvolvement::OUT {
-            message: mls_out.into(),
-            welcome,
-        };
-        Ok(evolvement)
+        if let Some(mls_member) = &member.mls_member {
+            let (mls_out, welcome) = group
+                .remove_members(&backend.mls_backend, &[mls_member.index])
+                .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
+            let evolvement = EidMlsEvolvement::OUT {
+                message: mls_out.into(),
+                welcome,
+            };
+            Ok(evolvement)
+        } else {
+            Err(EidError::InvalidMemberError(
+                "Member not in MLS Group".into(),
+            ))
+        }
     }
 
     fn update(
@@ -125,7 +124,7 @@ impl EidClient for EidMlsClient {
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::InitialIdentityProvider {
+    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::MemberProvider {
         let ciphersuite = backend.ciphersuite;
         let identifier = String::from("id01"); // TODO: yeah, idk ...
         let credential_bundle = create_store_credential(

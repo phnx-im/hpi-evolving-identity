@@ -1,8 +1,7 @@
+use openmls::framing::MlsMessageInBody;
 use openmls::framing::ProcessedMessageContent::StagedCommitMessage;
-use openmls::framing::{MlsMessageIn, MlsMessageInBody, ProcessedMessageContent};
-use openmls::prelude::{MlsGroup, ProcessedMessage, ProtocolMessage, StagedCommit};
+use openmls::prelude::{MlsGroup, ProcessedMessage, ProtocolMessage};
 
-use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
@@ -78,8 +77,8 @@ impl EidState for EidMlsClientState {
         }
     }
 
-    fn verify_member(&self, member: &Self::MemberProvider) -> Result<bool, EidError> {
-        Ok(self.get_members()?.contains(member))
+    fn verify_member(&self, member: &Self::MemberProvider) -> bool {
+        self.get_members().contains(member)
     }
 
     fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {

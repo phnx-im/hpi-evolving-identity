@@ -1,4 +1,3 @@
-use eid_traits::backend::EidBackend;
 use mls_assist::group::Group as AssistedGroup;
 use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
 use openmls::prelude::{LeafNode, MlsMessageInBody, Verifiable};
@@ -39,7 +38,7 @@ impl EidState for EidMlsTranscriptState {
         todo!()
     }
 
-    fn verify_member(&self, _: &Self::MemberProvider) -> Result<bool, EidError> {
+    fn verify_member(&self, _: &Self::MemberProvider) -> bool {
         todo!()
     }
 

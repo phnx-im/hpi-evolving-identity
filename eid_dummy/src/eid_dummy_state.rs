@@ -5,7 +5,6 @@ use eid_traits::types::EidError;
 use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::EidDummyMember;
-use crate::eid_dummy_transcript::EidDummyTranscript;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct EidDummyState {
@@ -44,8 +43,8 @@ impl EidState for EidDummyState {
     fn verify_member(&self, _: &EidDummyMember) -> Result<bool, EidError> {
         Ok(true)
     }
-    fn get_members(&self) -> Result<Vec<EidDummyMember>, EidError> {
-        Ok(self.members.clone())
+    fn get_members(&self) -> Vec<EidDummyMember> {
+        self.members.clone()
     }
 }
 

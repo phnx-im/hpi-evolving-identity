@@ -78,5 +78,5 @@ pub trait EidClient {
     ) -> Result<Self::ExportedTranscriptStateProvider, EidError>;
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::InitialIdentityProvider;
+    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::MemberProvider;
 }
