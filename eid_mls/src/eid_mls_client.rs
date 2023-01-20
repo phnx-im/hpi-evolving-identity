@@ -15,7 +15,7 @@ use crate::eid_mls_key_creation::{create_store_credential, create_store_key_pack
 use crate::eid_mls_member::EidMlsMember;
 use crate::eid_mls_transcript::EidMlsTranscript;
 use crate::state::client_state::EidMlsClientState;
-use crate::state::transcript_state::EidMlsTranscriptState;
+use crate::state::transcript_state::{EidMlsExportedTranscriptState, EidMlsTranscriptState};
 
 pub struct EidMlsClient {
     pub(crate) state: EidMlsClientState,
@@ -25,6 +25,7 @@ impl EidClient for EidMlsClient {
     type EvolvementProvider = EidMlsEvolvement;
     type MemberProvider = EidMlsMember;
     type TranscriptStateProvider = EidMlsTranscriptState;
+    type ExportedTranscriptStateProvider = EidMlsExportedTranscriptState;
     type BackendProvider = EidMlsBackend;
     type InitialIdentityProvider = KeyPackage;
 
@@ -133,7 +134,7 @@ impl EidClient for EidMlsClient {
 
     #[cfg(feature = "test")]
     fn generate_initial_id(backend: &Self::BackendProvider) -> Self::InitialIdentityProvider {
-        let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
+        let ciphersuite = backend.ciphersuite;
         let identifier = String::from("id01"); // TODO: yeah, idk ...
         let credential_bundle = create_store_credential(
             identifier,
