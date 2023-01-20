@@ -23,7 +23,9 @@ pub trait EidMlsState: EidState {
         Ok(())
     }
 
-    fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
-        todo!()
-    }
+    fn apply_processed_message(
+        &mut self,
+        message: ProcessedMessage,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError>;
 }
