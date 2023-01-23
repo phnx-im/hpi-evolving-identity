@@ -43,24 +43,7 @@ where
     C: EidClient<BackendProvider = B>,
     C::EvolvementProvider: Debug,
 {
-    let exported_state_result = client.export_transcript_state(backend);
-    let exported_state = exported_state_result.expect("failed to export transcript state");
-    // Create transcript, trusting the client's state
-    let mut serialized = exported_state
-        .tls_serialize_detached()
-        .expect("Failed to serialize");
-    let imported_state = <C as EidClient>::ExportedTranscriptStateProvider::tls_deserialize(
-        &mut serialized.as_slice(),
-    )
-    .expect("failed to deserialize");
-    let mut transcript = C::TranscriptProvider::new(
-        imported_state
-            .into_transcript_state(backend)
-            .expect("failed to create transcript state"),
-        vec![],
-        backend,
-    )
-    .expect("Failed to create transcript");
+    let mut transcript = build_transcript(client, backend);
 
     // Create Alice as a member with a random pk
     let alice = C::generate_initial_id(backend);
@@ -212,6 +195,34 @@ where
 
     assert!(!members_after_update_2.contains(alice_before_update_2));
     assert_eq!(1, members_after_update_2.len());
+}
+
+/// Create transcript, trusting the client's state
+#[cfg(feature = "test")]
+fn build_transcript<C, B>(client: &C, backend: &B) -> C::TranscriptProvider
+where
+    C: EidClient<BackendProvider = B>,
+{
+    let exported_state = client
+        .export_transcript_state(backend)
+        .expect("failed to export transcript state");
+
+    let mut serialized = exported_state
+        .tls_serialize_detached()
+        .expect("Failed to serialize");
+
+    let imported_state =
+        C::ExportedTranscriptStateProvider::tls_deserialize(&mut serialized.as_slice())
+            .expect("failed to deserialize");
+
+    C::TranscriptProvider::new(
+        imported_state
+            .into_transcript_state(backend)
+            .expect("failed to create transcript state"),
+        vec![],
+        backend,
+    )
+    .expect("Failed to create transcript")
 }
 
 #[test]
