@@ -43,6 +43,8 @@ where
     C: EidClient<BackendProvider = B>,
     C::EvolvementProvider: Debug,
 {
+    let exported_state_result = client.export_transcript_state(backend);
+    let exported_state = exported_state_result.expect("failed to export transcript state");
     // Create transcript, trusting the client's state
     let mut serialized = exported_state
         .tls_serialize_detached()

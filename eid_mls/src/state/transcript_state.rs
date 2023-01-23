@@ -80,6 +80,7 @@ impl EidMlsTranscriptState {
 #[derive(TlsSize, TlsDeserialize, TlsSerialize)]
 #[repr(u8)]
 pub enum EidMlsExportedTranscriptState {
+    #[tls_codec(discriminant = 1)]
     IN {
         group_info: MlsMessageIn,
         leaf_node: LeafNode,

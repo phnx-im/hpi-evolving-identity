@@ -1,6 +1,7 @@
 use eid_traits::member::Member;
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
 
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone, Eq, TlsSerialize, TlsDeserialize, TlsSize)]
 pub struct EidDummyMember {
     pub(crate) pk: Vec<u8>,
 }
