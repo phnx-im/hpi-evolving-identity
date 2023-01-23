@@ -6,11 +6,11 @@ use eid_traits::state::EidState;
 use eid_traits::transcript::EidExportedTranscriptState;
 use eid_traits::types::EidError;
 
+use super::state_trait::EidMlsState;
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
-
-use super::state_trait::EidMlsState;
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
 
 /// Eid Mls Transcript State
 pub struct EidMlsTranscriptState {
@@ -77,11 +77,14 @@ impl EidMlsTranscriptState {
     }
 }
 
+#[derive(TlsSize, TlsDeserialize, TlsSerialize)]
+#[repr(u8)]
 pub enum EidMlsExportedTranscriptState {
     IN {
         group_info: MlsMessageIn,
         leaf_node: LeafNode,
     },
+    #[tls_codec(discriminant = 1)]
     OUT {
         group_info: MlsMessageOut,
         leaf_node: LeafNode,

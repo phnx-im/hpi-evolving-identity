@@ -17,6 +17,8 @@ use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
 
+use tls_codec::{Deserialize, Serialize};
+
 lazy_static! {
     static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();
     static ref MLS_BACKEND: EidMlsBackend = EidMlsBackend::default();
@@ -42,10 +44,15 @@ where
     C::EvolvementProvider: Debug,
 {
     // Create transcript, trusting the client's state
+    let mut serialized = exported_state
+        .tls_serialize_detached()
+        .expect("Failed to serialize");
+    let imported_state = <C as EidClient>::ExportedTranscriptStateProvider::tls_deserialize(
+        &mut serialized.as_slice(),
+    )
+    .expect("failed to deserialize");
     let mut transcript = C::TranscriptProvider::new(
-        client
-            .export_transcript_state(backend)
-            .expect("failed to export transcript state")
+        imported_state
             .into_transcript_state(backend)
             .expect("failed to create transcript state"),
         vec![],
@@ -203,4 +210,15 @@ where
 
     assert!(!members_after_update_2.contains(alice_before_update_2));
     assert_eq!(1, members_after_update_2.len());
+}
+
+#[test]
+fn test_mls_add() {
+    let backend = &MLS_BACKEND;
+    let client = &mut EidMlsClient::create_eid(
+        &EidMlsClient::generate_initial_id(&MLS_BACKEND),
+        &MLS_BACKEND,
+    )
+    .expect("creation failed");
+    add(client, backend);
 }

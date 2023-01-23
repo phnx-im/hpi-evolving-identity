@@ -11,6 +11,7 @@ openmls = { git = "https://github.com/openmls/openmls.git" }
 openmls_rust_crypto = { git = "https://github.com/openmls/openmls.git" }
 thiserror = "1.0"
 mls-assist = { git = "https://github.com/phnx-im/mls-assist-student.git", rev = "b6e9290c76b2426bee5d3af5cb85b25c63862b4a" }
+tls_codec = "0.2.0"
 
 [features]
 test = ["openmls/test-utils"]

@@ -5,6 +5,7 @@ use crate::state::EidState;
 use crate::transcript::EidExportedTranscriptState;
 use crate::transcript::EidTranscript;
 use crate::types::EidError;
+use tls_codec::{Deserialize, Serialize};
 
 pub trait EidClient {
     type EvolvementProvider: Evolvement;
@@ -14,9 +15,10 @@ pub trait EidClient {
         MemberProvider = Self::MemberProvider,
     >;
     type ExportedTranscriptStateProvider: EidExportedTranscriptState<
-        TranscriptStateProvider = Self::TranscriptStateProvider,
-        BackendProvider = Self::BackendProvider,
-    >;
+            TranscriptStateProvider = Self::TranscriptStateProvider,
+            BackendProvider = Self::BackendProvider,
+        > + Serialize
+        + Deserialize;
     type BackendProvider: EidBackend;
 
     // We're only requiring this for tests since we don't want to unnecessarily restrict the transcript type.

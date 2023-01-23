@@ -6,7 +6,9 @@ use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::EidDummyMember;
 
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, TlsDeserialize, TlsSerialize, TlsSize)]
 pub struct EidDummyState {
     pub(crate) members: Vec<EidDummyMember>,
 }
