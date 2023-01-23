@@ -1,9 +1,9 @@
-use eid_traits::types::EidError;
 use openmls::group::MlsGroupConfig;
 use openmls::prelude::{
-    GroupId, KeyPackage, MlsGroup, OpenMlsCryptoProvider, SenderRatchetConfiguration,
-    PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
+    KeyPackage, MlsGroup, SenderRatchetConfiguration, PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
 };
+
+use eid_traits::types::EidError;
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_client::EidMlsClient;
@@ -23,16 +23,10 @@ impl EidMlsClient {
             .wire_format_policy(PURE_PLAINTEXT_WIRE_FORMAT_POLICY)
             .build();
 
-        let mls_group = MlsGroup::new(
-            &backend.mls_backend,
-            &mls_group_config,
-            GroupId::from_slice(b"group01"), // TODO: set some actual identifier
-            key_package
-                .hash_ref(backend.mls_backend.crypto())
-                .expect("Could not hash KeyPackage")
-                .as_slice(),
-        )
-        .expect("Could not create MlsGroup");
+        let signature_key = key_package.leaf_node().signature_key();
+
+        let mls_group = MlsGroup::new(&backend.mls_backend, &mls_group_config, signature_key)
+            .expect("Could not create MlsGroup");
 
         Ok(Self {
             state: EidMlsClientState { group: mls_group },

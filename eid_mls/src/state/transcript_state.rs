@@ -1,5 +1,4 @@
 use mls_assist::group::Group as AssistedGroup;
-use openmls::group::MlsGroup;
 
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;

@@ -4,7 +4,6 @@ use eid_traits::types::EidError;
 use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::EidDummyMember;
-use crate::eid_dummy_transcript::EidDummyTranscript;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct EidDummyState {

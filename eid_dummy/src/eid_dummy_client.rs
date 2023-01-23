@@ -15,54 +15,30 @@ pub struct EidDummyClient {
 }
 
 impl EidClient for EidDummyClient {
-    type TranscriptStateProvider = EidDummyState;
     type EvolvementProvider = EidDummyEvolvement;
     type MemberProvider = EidDummyMember;
+    type TranscriptStateProvider = EidDummyState;
     type BackendProvider = EidDummyBackend;
-
-    #[cfg(feature = "test")]
-    fn generate_pubkey(
-        _backend: &Self::BackendProvider,
-    ) -> <Self::MemberProvider as Member>::PubkeyProvider {
-        (0..256).map(|_| rand::random::<u8>()).collect()
-    }
-    fn export_transcript_state(&self) -> EidDummyState {
-        self.state.clone()
-    }
+    type InitialIdentityProvider = EidDummyMember;
 
     fn create_eid(
-        cred: <Self::MemberProvider as Member>::PubkeyProvider,
+        identity: Self::InitialIdentityProvider,
         _backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        let members = vec![EidDummyMember::new(cred.clone())];
+        let members = vec![identity.clone()];
         let state = EidDummyState { members };
         Ok(EidDummyClient {
             state,
-            pk: cred,
+            pk: identity.get_identity(),
             pending_pk_update: None,
         })
     }
-
-    fn evolve(
-        &mut self,
-        evolvement: EidDummyEvolvement,
-        backend: &EidDummyBackend,
-    ) -> Result<(), EidError> {
-        // in case of update, change your own pk
-        if let EidDummyEvolvement::Update { members: _ } = &evolvement {
-            self.pk = self.pending_pk_update.clone().unwrap();
-            self.pending_pk_update = None;
-        }
-
-        self.state.apply(evolvement, backend)
-    }
-
     fn add(
         &mut self,
-        member: &EidDummyMember,
+        member: EidDummyMember,
         _backend: &EidDummyBackend,
     ) -> Result<EidDummyEvolvement, EidError> {
-        if self.state.members.contains(member) {
+        if self.state.members.contains(&member) {
             return Err(EidError::AddMemberError(String::from(
                 "Member already in EID",
             )));
@@ -74,6 +50,7 @@ impl EidClient for EidDummyClient {
         };
         Ok(evolvement)
     }
+
     fn remove(
         &mut self,
         member: &EidDummyMember,
@@ -96,6 +73,7 @@ impl EidClient for EidDummyClient {
         };
         Ok(evolvement)
     }
+
     fn update(&mut self, _backend: &EidDummyBackend) -> Result<EidDummyEvolvement, EidError> {
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
@@ -118,7 +96,30 @@ impl EidClient for EidDummyClient {
         Ok(evolvement)
     }
 
+    fn evolve(
+        &mut self,
+        evolvement: EidDummyEvolvement,
+        backend: &EidDummyBackend,
+    ) -> Result<(), EidError> {
+        // in case of update, change your own pk
+        if let EidDummyEvolvement::Update { members: _ } = &evolvement {
+            self.pk = self.pending_pk_update.clone().unwrap();
+            self.pending_pk_update = None;
+        }
+
+        self.state.apply(evolvement, backend)
+    }
     fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
         self.state.get_members()
+    }
+    fn export_transcript_state(&self) -> EidDummyState {
+        self.state.clone()
+    }
+
+    #[cfg(feature = "test")]
+    fn generate_initial_id(_backend: &Self::BackendProvider) -> Self::InitialIdentityProvider {
+        EidDummyMember {
+            pk: (0..256).map(|_| rand::random::<u8>()).collect(),
+        }
     }
 }

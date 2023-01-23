@@ -2,7 +2,7 @@ use eid_traits::member::Member;
 
 #[derive(Debug, Clone, Eq)]
 pub struct EidDummyMember {
-    pk: Vec<u8>,
+    pub(crate) pk: Vec<u8>,
 }
 
 impl PartialEq for EidDummyMember {
@@ -12,13 +12,13 @@ impl PartialEq for EidDummyMember {
 }
 
 impl Member for EidDummyMember {
-    type PubkeyProvider = Vec<u8>;
+    type IdentityProvider = Vec<u8>;
 
     fn new(cred: Vec<u8>) -> Self {
         EidDummyMember { pk: cred }
     }
 
-    fn get_pk(&self) -> Vec<u8> {
+    fn get_identity(&self) -> Vec<u8> {
         self.pk.clone()
     }
 }

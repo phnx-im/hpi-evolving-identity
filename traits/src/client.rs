@@ -12,10 +12,11 @@ pub trait EidClient {
         MemberProvider = Self::MemberProvider,
     >;
     type BackendProvider: EidBackend;
+    type InitialIdentityProvider;
 
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(
-        cred: <Self::MemberProvider as Member>::PubkeyProvider,
+        identity: Self::InitialIdentityProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where
@@ -24,7 +25,7 @@ pub trait EidClient {
     /// Create an [Evolvement] to add a member to the EID.
     fn add(
         &mut self,
-        member: &Self::MemberProvider,
+        identity: Self::InitialIdentityProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>
     where
@@ -59,7 +60,5 @@ pub trait EidClient {
     fn export_transcript_state(&self) -> Self::TranscriptStateProvider;
 
     #[cfg(feature = "test")]
-    fn generate_pubkey(
-        backend: &Self::BackendProvider,
-    ) -> <Self::MemberProvider as Member>::PubkeyProvider;
+    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::InitialIdentityProvider;
 }

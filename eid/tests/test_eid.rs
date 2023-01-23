@@ -59,9 +59,8 @@ where
         .expect("Failed to create transcript");
 
     // Create Alice as a member with a random pk
-    let cred_alice = C::generate_pubkey(backend);
-    let alice = Member::new(cred_alice);
-    let add_alice_evolvement = client.add(&alice, backend).expect("failed to add member");
+    let alice = C::generate_initial_id(backend);
+    let add_alice_evolvement = client.add(alice, backend).expect("failed to add member");
 
     // member list length unchanged before evolving
     let members = client.get_members().expect("failed to get members");
@@ -85,9 +84,8 @@ where
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
     // Add Bob
-    let cred_bob = C::generate_pubkey(backend);
-    let bob = Member::new(cred_bob);
-    let add_bob_evolvement = client.add(&bob, backend).expect("failed to add member");
+    let bob = C::generate_initial_id(backend);
+    let add_bob_evolvement = client.add(bob, backend).expect("failed to add member");
     client
         .evolve(add_bob_evolvement.clone(), backend)
         .expect("Failed to apply state");
@@ -117,9 +115,8 @@ where
     let mut transcript = T::new(client.export_transcript_state(), vec![], backend)
         .expect("Failed to create transcript");
 
-    let cred = C::generate_pubkey(backend);
-    let alice = Member::new(cred);
-    let evolvement_add = client.add(&alice, backend).expect("failed to add member");
+    let alice = C::generate_initial_id(backend);
+    let evolvement_add = client.add(alice, backend).expect("failed to add member");
     client
         .evolve(evolvement_add.clone(), backend)
         .expect("Failed to apply state");

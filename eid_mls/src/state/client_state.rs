@@ -1,7 +1,10 @@
+use openmls::framing::ProcessedMessageContent::StagedCommitMessage;
+use openmls::framing::{MlsMessageIn, MlsMessageInBody, ProcessedMessageContent};
+use openmls::prelude::{MlsGroup, ProcessedMessage, ProtocolMessage, StagedCommit};
+
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
-use openmls::prelude::{MlsGroup, ProcessedMessage};
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
@@ -14,14 +17,11 @@ pub struct EidMlsClientState {
 
 impl EidMlsState for EidMlsClientState {
     fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
-        match message {
-            ProcessedMessage::ApplicationMessage(_) | ProcessedMessage::ProposalMessage(_) => {
-                Err(EidError::InvalidMessageError)
-            }
-            ProcessedMessage::StagedCommitMessage(staged_commit) => self
-                .group
-                .merge_staged_commit(*staged_commit)
-                .map_err(|_| EidError::ApplyCommitError),
+        if let StagedCommitMessage(staged_commit_ref) = message.into_content() {
+            self.group.merge_staged_commit(*staged_commit_ref);
+            Ok(())
+        } else {
+            Err(EidError::InvalidMessageError)
         }
     }
 }
@@ -46,17 +46,30 @@ impl EidState for EidMlsClientState {
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        let parsed_message = self
-            .group
-            .parse_message(evolvement.message.into(), &backend.mls_backend)
-            .map_err(|_| EidError::ParseMessageError)?;
-        let verified_message = self
-            .group
-            .process_unverified_message(parsed_message, None, &backend.mls_backend)
-            .map_err(|_| EidError::UnverifiedMessageError)?;
-        self.apply_processed_message(verified_message)?;
+        if let EidMlsEvolvement::IN { message: mls_in } = evolvement {
+            let body = mls_in.extract();
+            return match body {
+                MlsMessageInBody::PrivateMessage(_) => Err(EidError::ProcessMessageError),
+                MlsMessageInBody::Welcome(_)
+                | MlsMessageInBody::GroupInfo(_)
+                | MlsMessageInBody::KeyPackage(_) => {
+                    todo!()
+                }
+                MlsMessageInBody::PublicMessage(msg) => {
+                    let protocol_message = ProtocolMessage::PublicMessage(msg);
+                    let processed_message = self
+                        .group
+                        .process_message(&backend.mls_backend, protocol_message)
+                        .map_err(|_| EidError::ProcessMessageError)?;
 
-        Ok(())
+                    self.apply_processed_message(processed_message)?;
+
+                    Ok(())
+                }
+            };
+        } else {
+            Err(EidError::InvalidMessageError)
+        }
     }
 
     fn verify_member(&self, member: &Self::MemberProvider) -> Result<bool, EidError> {
@@ -64,10 +77,10 @@ impl EidState for EidMlsClientState {
     }
 
     fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
-        let key_packages = self.group.members();
-        let members: Vec<EidMlsMember> = key_packages
-            .iter()
-            .map(|kp| EidMlsMember::new((*kp).clone()))
+        let members: Vec<EidMlsMember> = self
+            .group
+            .members()
+            .map(|m| EidMlsMember::new(m.clone()))
             .collect();
         Ok(members)
     }

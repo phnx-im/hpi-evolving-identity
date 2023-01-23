@@ -1,26 +1,20 @@
-use openmls::prelude::KeyPackage;
+use openmls::prelude::Member as MlsMember;
 
 use eid_traits::member::Member;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct EidMlsMember {
-    pub(crate) key_package: KeyPackage,
-}
-
-impl PartialEq for EidMlsMember {
-    fn eq(&self, other: &Self) -> bool {
-        todo!()
-    }
+    pub(crate) member: MlsMember,
 }
 
 impl Member for EidMlsMember {
-    type PubkeyProvider = KeyPackage;
+    type IdentityProvider = MlsMember;
 
-    fn new(key_package: KeyPackage) -> Self {
-        Self { key_package }
+    fn new(member: MlsMember) -> Self {
+        Self { member }
     }
 
-    fn get_pk(&self) -> Self::PubkeyProvider {
-        self.key_package.clone()
+    fn get_identity(&self) -> Self::IdentityProvider {
+        self.member.clone()
     }
 }
