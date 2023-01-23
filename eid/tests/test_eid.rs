@@ -96,17 +96,7 @@ where
     C: EidClient<BackendProvider = B>,
     C::EvolvementProvider: Debug,
 {
-    // Create transcript, trusting the client's state
-    let mut transcript = C::TranscriptProvider::new(
-        client
-            .export_transcript_state(backend)
-            .expect("failed to export transcript state")
-            .into_transcript_state(backend)
-            .expect("failed to create transcript state"),
-        vec![],
-        backend,
-    )
-    .expect("Failed to create transcript");
+    let mut transcript = build_transcript(client, backend);
 
     let alice = C::generate_initial_id(backend);
     let evolvement_add = client.add(&alice, backend).expect("failed to add member");
@@ -151,17 +141,7 @@ where
     C: EidClient<BackendProvider = B>,
     C::EvolvementProvider: Debug,
 {
-    // Create transcript, trusting the client's state
-    let mut transcript = C::TranscriptProvider::new(
-        client
-            .export_transcript_state(backend)
-            .expect("failed to export transcript state")
-            .into_transcript_state(backend)
-            .expect("failed to create transcript state"),
-        vec![],
-        backend,
-    )
-    .expect("Failed to create transcript");
+    let mut transcript = build_transcript(client, backend);
 
     let alice_before_update_1 = &client.get_members()[0];
 
