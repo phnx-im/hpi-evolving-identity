@@ -1,8 +1,7 @@
+use openmls::framing::MlsMessageInBody;
 use openmls::framing::ProcessedMessageContent::StagedCommitMessage;
-use openmls::framing::{MlsMessageIn, MlsMessageInBody, ProcessedMessageContent};
-use openmls::prelude::{MlsGroup, ProcessedMessage, ProtocolMessage, StagedCommit};
+use openmls::prelude::{MlsGroup, ProcessedMessage, ProtocolMessage};
 
-use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
@@ -13,12 +12,19 @@ use crate::state::state_trait::EidMlsState;
 
 pub struct EidMlsClientState {
     pub(crate) group: MlsGroup,
+    pub(crate) members: Vec<EidMlsMember>,
 }
 
 impl EidMlsState for EidMlsClientState {
-    fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
+    fn apply_processed_message(
+        &mut self,
+        message: ProcessedMessage,
+        backend: &EidMlsBackend,
+    ) -> Result<(), EidError> {
         if let StagedCommitMessage(staged_commit_ref) = message.into_content() {
-            self.group.merge_staged_commit(*staged_commit_ref);
+            self.group
+                .merge_staged_commit(&backend.mls_backend, *staged_commit_ref)
+                .map_err(|_| EidError::ApplyCommitError)?;
             Ok(())
         } else {
             Err(EidError::InvalidMessageError)
@@ -62,7 +68,7 @@ impl EidState for EidMlsClientState {
                         .process_message(&backend.mls_backend, protocol_message)
                         .map_err(|_| EidError::ProcessMessageError)?;
 
-                    self.apply_processed_message(processed_message)?;
+                    self.apply_processed_message(processed_message, &backend)?;
 
                     Ok(())
                 }
@@ -72,16 +78,11 @@ impl EidState for EidMlsClientState {
         }
     }
 
-    fn verify_member(&self, member: &Self::MemberProvider) -> Result<bool, EidError> {
-        Ok(self.get_members()?.contains(member))
+    fn verify_member(&self, member: &Self::MemberProvider) -> bool {
+        self.get_members().contains(member)
     }
 
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
-        let members: Vec<EidMlsMember> = self
-            .group
-            .members()
-            .map(|m| EidMlsMember::new(m.clone()))
-            .collect();
-        Ok(members)
+    fn get_members(&self) -> Vec<Self::MemberProvider> {
+        self.members.clone()
     }
 }

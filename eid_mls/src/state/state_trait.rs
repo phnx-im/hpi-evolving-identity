@@ -4,9 +4,9 @@ use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
 pub trait EidMlsState: EidState {
-    fn verify_member(&self, member: &Self::MemberProvider) -> Result<bool, EidError> {
-        let members = self.get_members()?;
-        Ok(members.contains(member))
+    fn verify_member(&self, member: &Self::MemberProvider) -> bool {
+        let members = self.get_members();
+        members.contains(member)
     }
 
     fn apply_log(
@@ -23,7 +23,9 @@ pub trait EidMlsState: EidState {
         Ok(())
     }
 
-    fn apply_processed_message(&mut self, message: ProcessedMessage) -> Result<(), EidError> {
-        todo!()
-    }
+    fn apply_processed_message(
+        &mut self,
+        message: ProcessedMessage,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError>;
 }

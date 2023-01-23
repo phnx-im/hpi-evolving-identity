@@ -1,7 +1,3 @@
-use mls_assist::group::Group as AssistedGroup;
-use openmls::key_packages::KeyPackage;
-use openmls::prelude::{Ciphersuite, MlsMessageIn};
-
 use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
@@ -10,8 +6,9 @@ use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_key_creation::{create_store_credential, create_store_key_package};
 use crate::eid_mls_member::EidMlsMember;
+use crate::eid_mls_transcript::EidMlsTranscript;
 use crate::state::client_state::EidMlsClientState;
-use crate::state::transcript_state::EidMlsTranscriptState;
+use crate::state::transcript_state::{EidMlsExportedTranscriptState, EidMlsTranscriptState};
 
 pub struct EidMlsClient {
     pub(crate) state: EidMlsClientState,
@@ -21,24 +18,27 @@ impl EidClient for EidMlsClient {
     type EvolvementProvider = EidMlsEvolvement;
     type MemberProvider = EidMlsMember;
     type TranscriptStateProvider = EidMlsTranscriptState;
+    type ExportedTranscriptStateProvider = EidMlsExportedTranscriptState;
     type BackendProvider = EidMlsBackend;
-    type InitialIdentityProvider = KeyPackage;
+
+    #[cfg(feature = "test")]
+    type TranscriptProvider = EidMlsTranscript;
 
     fn create_eid(
-        identity: Self::InitialIdentityProvider,
+        initial_member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        Self::create_mls_eid(backend, &identity)
+        Self::create_mls_eid(backend, &initial_member)
     }
 
     fn add(
         &mut self,
-        identity: Self::InitialIdentityProvider,
+        member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
         let (mls_out, welcome) = group
-            .add_members(&backend.mls_backend, &[identity])
+            .add_members(&backend.mls_backend, &[member.key_package.clone()])
             .map_err(|error| EidError::AddMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement::OUT {
             message: mls_out.into(),
@@ -57,14 +57,20 @@ impl EidClient for EidMlsClient {
     {
         let group = &mut self.state.group;
 
-        let (mls_out, welcome) = group
-            .remove_members(&backend.mls_backend, &[member.member.index])
-            .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
-        let evolvement = EidMlsEvolvement::OUT {
-            message: mls_out.into(),
-            welcome,
-        };
-        Ok(evolvement)
+        if let Some(mls_member) = &member.mls_member {
+            let (mls_out, welcome) = group
+                .remove_members(&backend.mls_backend, &[mls_member.index])
+                .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
+            let evolvement = EidMlsEvolvement::OUT {
+                message: mls_out.into(),
+                welcome,
+            };
+            Ok(evolvement)
+        } else {
+            Err(EidError::InvalidMemberError(
+                "Member not in MLS Group".into(),
+            ))
+        }
     }
 
     fn update(
@@ -90,18 +96,35 @@ impl EidClient for EidMlsClient {
         Ok(self.state.apply(evolvement, backend)?)
     }
 
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
+    fn get_members(&self) -> Vec<Self::MemberProvider> {
         self.state.get_members()
     }
 
-    fn export_transcript_state(&self) -> Self::TranscriptStateProvider {
-        // let group_info = self.state.group.export_group_context();
-        todo!()
+    fn export_transcript_state(
+        &self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::ExportedTranscriptStateProvider, EidError> {
+        let mls_out = self
+            .state
+            .group
+            .export_group_info(&backend.mls_backend, false)
+            .map_err(|_| EidError::ExportGroupInfoError)?;
+        let leaf_node = self
+            .state
+            .group
+            .own_leaf()
+            .ok_or(EidError::InvalidMemberError("Cannot export leaf".into()))?
+            .clone();
+
+        Ok(EidMlsExportedTranscriptState::OUT {
+            group_info: mls_out,
+            leaf_node,
+        })
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::InitialIdentityProvider {
-        let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519; // TODO: do we want to supply this as parameter as well?
+    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::MemberProvider {
+        let ciphersuite = backend.ciphersuite;
         let identifier = String::from("id01"); // TODO: yeah, idk ...
         let credential_bundle = create_store_credential(
             identifier,
@@ -113,6 +136,9 @@ impl EidClient for EidMlsClient {
             create_store_key_package(ciphersuite, &credential_bundle, &backend.mls_backend);
 
         // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
-        key_bundle.clone()
+        EidMlsMember {
+            mls_member: None,
+            key_package: key_bundle.clone(),
+        }
     }
 }

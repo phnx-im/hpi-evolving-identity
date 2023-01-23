@@ -26,8 +26,8 @@ pub trait EidState: Sized {
     ) -> Result<(), EidError>;
 
     /// Verify that a client is part of the EID.
-    fn verify_member(&self, member: &Self::MemberProvider) -> Result<bool, EidError>;
+    fn verify_member(&self, member: &Self::MemberProvider) -> bool;
 
     /// Get all clients which are members of the EID.
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError>;
+    fn get_members(&self) -> Vec<Self::MemberProvider>;
 }

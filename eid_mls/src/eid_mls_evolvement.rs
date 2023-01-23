@@ -1,4 +1,4 @@
-use openmls::framing::{MlsMessageIn, ProtocolMessage, PublicMessage};
+use openmls::framing::MlsMessageIn;
 use openmls::prelude::MlsMessageOut;
 
 use eid_traits::evolvement::Evolvement;
@@ -15,7 +15,7 @@ pub enum EidMlsEvolvement {
 }
 
 impl Evolvement for EidMlsEvolvement {
-    fn is_valid_successor(&self, previous: &Self) -> bool {
+    fn is_valid_successor(&self, _previous: &Self) -> bool {
         todo!()
     }
 }

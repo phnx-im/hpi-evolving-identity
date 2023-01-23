@@ -7,6 +7,7 @@ use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::EidDummyMember;
 use crate::eid_dummy_state::EidDummyState;
+use crate::eid_dummy_transcript::EidDummyTranscript;
 
 pub struct EidDummyClient {
     state: EidDummyState,
@@ -18,11 +19,15 @@ impl EidClient for EidDummyClient {
     type EvolvementProvider = EidDummyEvolvement;
     type MemberProvider = EidDummyMember;
     type TranscriptStateProvider = EidDummyState;
+    type ExportedTranscriptStateProvider = EidDummyState;
     type BackendProvider = EidDummyBackend;
-    type InitialIdentityProvider = EidDummyMember;
+
+    // We're only requiring this for tests since we don't want to unnecessarily restrict transcript tue transcript type.
+    #[cfg(feature = "test")]
+    type TranscriptProvider = EidDummyTranscript;
 
     fn create_eid(
-        identity: Self::InitialIdentityProvider,
+        identity: &Self::MemberProvider,
         _backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
         let members = vec![identity.clone()];
@@ -35,7 +40,7 @@ impl EidClient for EidDummyClient {
     }
     fn add(
         &mut self,
-        member: EidDummyMember,
+        member: &EidDummyMember,
         _backend: &EidDummyBackend,
     ) -> Result<EidDummyEvolvement, EidError> {
         if self.state.members.contains(&member) {
@@ -109,15 +114,18 @@ impl EidClient for EidDummyClient {
 
         self.state.apply(evolvement, backend)
     }
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError> {
+    fn get_members(&self) -> Vec<Self::MemberProvider> {
         self.state.get_members()
     }
-    fn export_transcript_state(&self) -> EidDummyState {
-        self.state.clone()
+    fn export_transcript_state(
+        &self,
+        _backend: &Self::BackendProvider,
+    ) -> Result<EidDummyState, EidError> {
+        Ok(self.state.clone())
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(_backend: &Self::BackendProvider) -> Self::InitialIdentityProvider {
+    fn generate_initial_id(_backend: &Self::BackendProvider) -> Self::MemberProvider {
         EidDummyMember {
             pk: (0..256).map(|_| rand::random::<u8>()).collect(),
         }

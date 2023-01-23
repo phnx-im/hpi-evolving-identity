@@ -35,13 +35,18 @@ impl EidTranscript for EidDummyTranscript {
         Ok(transcript)
     }
 
-    fn add_evolvement(&mut self, evolvement: EidDummyEvolvement) {
+    fn add_evolvement(
+        &mut self,
+        evolvement: EidDummyEvolvement,
+        _backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
         self.log.push(evolvement.clone());
         match evolvement {
             EidDummyEvolvement::Update { members }
             | EidDummyEvolvement::Add { members }
             | EidDummyEvolvement::Remove { members } => self.current_state.members = members,
         }
+        Ok(())
     }
 
     fn trusted_state(&self) -> EidDummyState {

@@ -2,6 +2,8 @@ use crate::backend::EidBackend;
 use crate::evolvement::Evolvement;
 use crate::member::Member;
 use crate::state::EidState;
+use crate::transcript::EidExportedTranscriptState;
+use crate::transcript::EidTranscript;
 use crate::types::EidError;
 
 pub trait EidClient {
@@ -11,12 +13,24 @@ pub trait EidClient {
         EvolvementProvider = Self::EvolvementProvider,
         MemberProvider = Self::MemberProvider,
     >;
+    type ExportedTranscriptStateProvider: EidExportedTranscriptState<
+        TranscriptStateProvider = Self::TranscriptStateProvider,
+        BackendProvider = Self::BackendProvider,
+    >;
     type BackendProvider: EidBackend;
-    type InitialIdentityProvider;
+
+    // We're only requiring this for tests since we don't want to unnecessarily restrict the transcript type.
+    #[cfg(feature = "test")]
+    type TranscriptProvider: EidTranscript<
+        EvolvementProvider = Self::EvolvementProvider,
+        StateProvider = Self::TranscriptStateProvider,
+        BackendProvider = Self::BackendProvider,
+        MemberProvider = Self::MemberProvider,
+    >;
 
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(
-        identity: Self::InitialIdentityProvider,
+        initial_member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where
@@ -25,7 +39,7 @@ pub trait EidClient {
     /// Create an [Evolvement] to add a member to the EID.
     fn add(
         &mut self,
-        identity: Self::InitialIdentityProvider,
+        member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>
     where
@@ -55,10 +69,13 @@ pub trait EidClient {
     ) -> Result<(), EidError>;
 
     /// Get all clients which are members of the EID.
-    fn get_members(&self) -> Result<Vec<Self::MemberProvider>, EidError>;
+    fn get_members(&self) -> Vec<Self::MemberProvider>;
 
-    fn export_transcript_state(&self) -> Self::TranscriptStateProvider;
+    fn export_transcript_state(
+        &self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::ExportedTranscriptStateProvider, EidError>;
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::InitialIdentityProvider;
+    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::MemberProvider;
 }

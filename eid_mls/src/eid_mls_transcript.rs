@@ -1,3 +1,4 @@
+use eid_traits::state::EidState;
 use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
 
@@ -6,12 +7,10 @@ use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 use crate::state::transcript_state::EidMlsTranscriptState;
 
-pub struct EidMlsTranscript {}
-
-impl Default for EidMlsTranscript {
-    fn default() -> Self {
-        Self {}
-    }
+pub struct EidMlsTranscript {
+    trusted_state: EidMlsTranscriptState,
+    current_state: EidMlsTranscriptState,
+    log: Vec<EidMlsEvolvement>,
 }
 
 impl EidTranscript for EidMlsTranscript {
@@ -25,22 +24,47 @@ impl EidTranscript for EidMlsTranscript {
         log: Vec<Self::EvolvementProvider>,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        todo!()
+        let mut transcript = EidMlsTranscript {
+            trusted_state: trusted_state.clone(),
+            current_state: trusted_state,
+            log: vec![],
+        };
+        transcript.apply_log(log, backend)?;
+        Ok(transcript)
     }
 
-    fn add_evolvement(&mut self, evolvement: Self::EvolvementProvider) {
-        todo!()
+    fn add_evolvement(
+        &mut self,
+        evolvement: Self::EvolvementProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
+        self.current_state.apply(evolvement.clone(), backend)?;
+        self.log.push(evolvement);
+        Ok(())
     }
 
     fn trusted_state(&self) -> Self::StateProvider {
-        todo!()
+        self.trusted_state.clone()
     }
 
     fn log(&self) -> Vec<Self::EvolvementProvider> {
-        todo!()
+        self.log.clone()
     }
 
     fn get_members(&self) -> Vec<Self::MemberProvider> {
+        // self.current_state.group.get_members()
         todo!()
+    }
+}
+
+impl EidMlsTranscript {
+    fn apply_log(
+        &mut self,
+        mut log: Vec<EidMlsEvolvement>,
+        backend: &EidMlsBackend,
+    ) -> Result<(), EidError> {
+        self.current_state.apply_log(log.clone(), backend)?;
+        self.log.append(&mut log);
+        Ok(())
     }
 }
