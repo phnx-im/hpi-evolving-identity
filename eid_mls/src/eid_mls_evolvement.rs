@@ -1,9 +1,11 @@
 use openmls::framing::MlsMessageIn;
 use openmls::prelude::MlsMessageOut;
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
 
 use eid_traits::evolvement::Evolvement;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, TlsSerialize, TlsDeserialize, TlsSize)]
+#[repr(u8)]
 pub enum EidMlsEvolvement {
     OUT {
         message: MlsMessageOut,
