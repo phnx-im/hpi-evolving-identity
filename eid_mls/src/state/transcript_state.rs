@@ -1,6 +1,8 @@
 use mls_assist::group::Group as AssistedGroup;
+use mls_assist::messages::assisted_messages::{AssistedCommit, AssistedGroupInfo, AssistedMessage};
 use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
-use openmls::prelude::{LeafNode, MlsMessageInBody, Verifiable};
+use openmls::prelude::{LeafNode, MlsMessageInBody, ProtocolMessage, Verifiable};
+use openmls::prelude_test::ContentType;
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
 
 use eid_traits::state::EidState;
@@ -26,10 +28,13 @@ impl EidState for EidMlsTranscriptState {
 
     fn apply_log(
         &mut self,
-        _: Vec<EidMlsEvolvement>,
+        log: Vec<EidMlsEvolvement>,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        todo!()
+        for evolvement in log {
+            self.apply(evolvement, backend)?;
+        }
+        Ok(())
     }
 
     fn apply(
@@ -37,7 +42,37 @@ impl EidState for EidMlsTranscriptState {
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        todo!()
+        if let EidMlsEvolvement::IN { message } = evolvement {
+            let body = message.extract();
+            if let MlsMessageInBody::PublicMessage(msg) = body {
+                let pub_msg = ProtocolMessage::PublicMessage(msg.clone());
+
+                let a_msg = match pub_msg.content_type() {
+                    ContentType::Application | ContentType::Proposal => {
+                        AssistedMessage::NonCommit(msg)
+                    }
+                    ContentType::Commit => {
+                        // TODO: How do we get the signature from a commit?
+                        let a_group_info = AssistedGroupInfo::Signature(Vec::new());
+                        let a_commit = AssistedCommit::new(msg, a_group_info);
+                        AssistedMessage::Commit(a_commit)
+                    }
+                };
+                // TODO: I guess we want to do something with this :D
+                let _processed_msg = self.group.process_message(a_msg);
+
+                Ok(())
+            } else {
+                Err(EidError::InvalidMessageError(format!(
+                    "Expected PublicMessage, got {:?}",
+                    body
+                )))
+            }
+        } else {
+            Err(EidError::InvalidMessageError(String::from(
+                "Expected EidMlsEvolvement::IN, got ::OUT",
+            )))
+        }
     }
 
     fn verify_member(&self, _: &Self::MemberProvider) -> bool {
