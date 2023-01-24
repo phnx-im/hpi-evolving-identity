@@ -42,7 +42,7 @@ impl EidState for EidMlsTranscriptState {
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        if let EidMlsEvolvement::IN { message } = evolvement {
+        if let EidMlsEvolvement::IN { message, .. } = evolvement {
             let body = message.extract();
             if let MlsMessageInBody::PublicMessage(msg) = body {
                 let pub_msg = ProtocolMessage::PublicMessage(msg.clone());
