@@ -56,7 +56,7 @@ where
         simulate_transfer(&add_alice_evolvement_out);
 
     client
-        .evolve(add_alice_evolvement.clone(), backend)
+        .evolve(add_alice_evolvement_in.clone(), backend)
         .expect("Failed to apply state");
 
     let members = client.get_members();
@@ -64,7 +64,7 @@ where
     assert_eq!(2, members.len());
 
     transcript
-        .add_evolvement(add_alice_evolvement.clone(), backend)
+        .add_evolvement(add_alice_evolvement_in.clone(), backend)
         .expect("Failed to add evolvement");
     assert_eq!(transcript.get_members(), members);
 
@@ -110,15 +110,16 @@ where
         .expect("Failed to apply state");
 
     transcript
-        .add_evolvement(evolvement_add.clone(), backend)
+        .add_evolvement(evolvement_add_in.clone(), backend)
         .expect("Failed to add evolvement");
     assert_eq!(transcript.get_members(), client.get_members());
 
-    let evolvement_remove = client
+    let evolvement_remove_out = client
         .remove(&alice, backend)
         .expect("failed to remove member");
+    let evolvement_remove_in: C::EvolvementProvider = simulate_transfer(&evolvement_remove_out);
     client
-        .evolve(evolvement_remove.clone(), backend)
+        .evolve(evolvement_remove_in.clone(), backend)
         .expect("Failed to apply remove on client state");
 
     assert!(evolvement_add_in.is_valid_successor(&evolvement_remove_in));
@@ -206,10 +207,11 @@ where
     .expect("Failed to create transcript")
 }
 
+/// Simulate transfer over the wire by simply serializing and deserializing once.
 #[cfg(feature = "test")]
 fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
     let serialized = input.tls_serialize_detached().expect("Failed to serialize");
-    O::tls_deserialize(&mut serialized.as_slice()).expect("failed to deserialize")
+    O::tls_deserialize(&mut serialized.as_slice()).expect("Failed to deserialize")
 }
 
 #[test]
