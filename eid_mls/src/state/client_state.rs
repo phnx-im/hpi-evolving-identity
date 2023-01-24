@@ -65,6 +65,7 @@ impl EidState for EidMlsClientState {
             if let MlsMessageInBody::PublicMessage(msg) = body {
                 let protocol_message = ProtocolMessage::PublicMessage(msg);
                 self.merge_or_apply_commit(protocol_message, backend)
+                
             } else {
                 Err(EidError::ProcessMessageError(
                     "Expected MlsMessageInBody::PublicMessage, got another variant".into(),
