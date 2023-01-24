@@ -26,7 +26,7 @@ lazy_static! {
 #[template]
 #[rstest(client, backend,
 case::EidDummy(& mut EidDummyClient::create_eid(&EidDummyMember::new("test_key".as_bytes().to_vec()),& DUMMY_BACKEND).expect("creation failed"), & DUMMY_BACKEND),
-case::EidMls(& mut EidMlsClient::create_eid(&EidMlsClient::generate_initial_id(&MLS_BACKEND), & MLS_BACKEND).expect("creation failed"), & MLS_BACKEND),
+case::EidMls(& mut EidMlsClient::create_eid(&EidMlsClient::generate_initial_id("test_id".into(), &MLS_BACKEND), & MLS_BACKEND).expect("creation failed"), & MLS_BACKEND),
 )]
 #[allow(non_snake_case)]
 pub fn eid_clients<C, B>(client: &mut C, backend: &B)
@@ -218,7 +218,7 @@ fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
 fn test_mls_add() {
     let backend = &MLS_BACKEND;
     let client = &mut EidMlsClient::create_eid(
-        &EidMlsClient::generate_initial_id(&MLS_BACKEND),
+        &EidMlsClient::generate_initial_id(String::from("client01"), &MLS_BACKEND),
         &MLS_BACKEND,
     )
     .expect("creation failed");
