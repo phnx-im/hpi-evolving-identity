@@ -3,7 +3,8 @@ use mls_assist::messages::assisted_messages::{AssistedCommit, AssistedGroupInfo,
 use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
 use openmls::prelude::{LeafNode, MlsMessageInBody, ProtocolMessage, Verifiable};
 use openmls::prelude_test::ContentType;
-use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+use std::io::{Read, Write};
+use tls_codec::{Deserialize, Error, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize};
 
 use eid_traits::state::EidState;
 use eid_traits::transcript::EidExportedTranscriptState;
@@ -12,6 +13,7 @@ use eid_traits::types::EidError;
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
+use crate::state::client_state::EidMlsClientState;
 
 use super::state_trait::EidMlsState;
 
@@ -19,6 +21,7 @@ use super::state_trait::EidMlsState;
 #[derive(Clone)]
 pub struct EidMlsTranscriptState {
     pub(crate) group: AssistedGroup,
+    pub(crate) members: Vec<EidMlsMember>,
 }
 
 impl EidState for EidMlsTranscriptState {

@@ -14,6 +14,7 @@ use crate::state::state_trait::EidMlsState;
 
 pub struct EidMlsClientState {
     pub(crate) group: MlsGroup,
+    // we have to maintain our own members list, because mls doesn't have a notion of identity
     pub(crate) members: Vec<EidMlsMember>,
 }
 
@@ -62,8 +63,8 @@ impl EidState for EidMlsClientState {
         } = evolvement
         {
             let body = mls_in.extract();
-            if let MlsMessageInBody::PublicMessage(msg) = body {
-                let protocol_message = ProtocolMessage::PublicMessage(msg);
+            if let MlsMessageInBody::PublicMessage(public_message) = body {
+                let protocol_message = ProtocolMessage::PublicMessage(public_message);
                 self.merge_or_apply_commit(protocol_message, backend)
                 
             } else {
