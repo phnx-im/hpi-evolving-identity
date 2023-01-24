@@ -78,9 +78,9 @@ where
         .evolve(add_bob_evolvement.clone(), backend)
         .expect("Failed to apply state");
 
-    assert!(add_alice_evolvement.is_valid_successor(&add_bob_evolvement));
+    assert!(add_alice_evolvement_in.is_valid_successor(&add_bob_evolvement_in));
     transcript
-        .add_evolvement(add_bob_evolvement.clone(), backend)
+        .add_evolvement(add_bob_evolvement_in.clone(), backend)
         .expect("Failed to add evolvement");
 
     let members = client.get_members();
@@ -98,9 +98,11 @@ where
     let mut transcript = build_transcript(client, backend);
 
     let alice = C::generate_initial_id(backend);
-    let evolvement_add = client.add(&alice, backend).expect("failed to add member");
+    let evolvement_add_out = client.add(&alice, backend).expect("failed to add member");
+    let evolvement_add_in: C::EvolvementProvider = simulate_transfer(&evolvement_add_out);
+
     client
-        .evolve(evolvement_add.clone(), backend)
+        .evolve(evolvement_add_in.clone(), backend)
         .expect("Failed to apply state");
 
     transcript
@@ -115,9 +117,9 @@ where
         .evolve(evolvement_remove.clone(), backend)
         .expect("Failed to apply remove on client state");
 
-    assert!(evolvement_add.is_valid_successor(&evolvement_remove));
+    assert!(evolvement_add_in.is_valid_successor(&evolvement_remove_in));
     transcript
-        .add_evolvement(evolvement_remove.clone(), backend)
+        .add_evolvement(evolvement_remove_in.clone(), backend)
         .expect("Failed to add evolvement");
     assert_eq!(transcript.get_members(), client.get_members());
 
@@ -186,7 +188,7 @@ where
         .export_transcript_state(backend)
         .expect("failed to export transcript state");
 
-    let imported_state: C::ExportedTranscriptStateProvider = simulate_transfer(exported_state);
+    let imported_state: C::ExportedTranscriptStateProvider = simulate_transfer(&exported_state);
 
     C::TranscriptProvider::new(
         imported_state
