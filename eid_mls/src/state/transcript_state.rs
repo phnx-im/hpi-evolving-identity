@@ -1,18 +1,20 @@
 use mls_assist::group::Group as AssistedGroup;
 use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
 use openmls::prelude::{LeafNode, MlsMessageInBody, Verifiable};
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
 
 use eid_traits::state::EidState;
 use eid_traits::transcript::EidExportedTranscriptState;
 use eid_traits::types::EidError;
 
-use super::state_trait::EidMlsState;
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
-use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+
+use super::state_trait::EidMlsState;
 
 /// Eid Mls Transcript State
+#[derive(Clone)]
 pub struct EidMlsTranscriptState {
     pub(crate) group: AssistedGroup,
 }
@@ -43,12 +45,6 @@ impl EidState for EidMlsTranscriptState {
     }
 
     fn get_members(&self) -> Vec<Self::MemberProvider> {
-        todo!()
-    }
-}
-
-impl Clone for EidMlsTranscriptState {
-    fn clone(&self) -> Self {
         todo!()
     }
 }
