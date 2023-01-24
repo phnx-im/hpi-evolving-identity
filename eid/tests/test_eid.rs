@@ -5,6 +5,7 @@ use std::fmt::Debug;
 
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
+use tls_codec::{Deserialize, Serialize};
 
 use eid_dummy::eid_dummy_backend::EidDummyBackend;
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
@@ -16,8 +17,6 @@ use eid_traits::evolvement::Evolvement;
 use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
-
-use tls_codec::{Deserialize, Serialize};
 
 lazy_static! {
     static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();
@@ -187,7 +186,7 @@ where
         .export_transcript_state(backend)
         .expect("failed to export transcript state");
 
-    let mut serialized = exported_state
+    let serialized = exported_state
         .tls_serialize_detached()
         .expect("Failed to serialize");
 
