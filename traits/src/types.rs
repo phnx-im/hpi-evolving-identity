@@ -13,7 +13,7 @@ pub enum EidError {
     InvalidMemberError(String),
     ProcessMessageError,
     UnverifiedMessageError,
-    InvalidMessageError,
+    InvalidMessageError(String),
     ApplyCommitError,
     UpdateMemberError(String),
     ExportGroupInfoError,

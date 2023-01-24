@@ -118,7 +118,9 @@ impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
                 Err(EidError::ExportGroupInfoError)
             }
         } else {
-            Err(EidError::InvalidMessageError)
+            Err(EidError::InvalidMessageError(String::from(
+                "Expected EidMlsExportedTranscriptState::IN, got ::OUT",
+            )))
         }
     }
 }

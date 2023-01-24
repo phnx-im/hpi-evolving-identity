@@ -27,7 +27,10 @@ impl EidMlsState for EidMlsClientState {
                 .map_err(|_| EidError::ApplyCommitError)?;
             Ok(())
         } else {
-            Err(EidError::InvalidMessageError)
+            Err(EidError::InvalidMessageError(format!(
+                // TODO
+                "Expected StagedCommitMessage, got XXX",
+            )))
         }
     }
 }
@@ -74,7 +77,9 @@ impl EidState for EidMlsClientState {
                 }
             };
         } else {
-            Err(EidError::InvalidMessageError)
+            Err(EidError::InvalidMessageError(String::from(
+                "Expected EidMlsEvolvement::IN, got ::OUT",
+            )))
         }
     }
 
