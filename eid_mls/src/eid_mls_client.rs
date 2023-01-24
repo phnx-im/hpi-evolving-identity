@@ -37,7 +37,7 @@ impl EidClient for EidMlsClient {
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
-        let (mls_out, welcome) = group
+        let (mls_out, welcome, _group_info) = group
             .add_members(&backend.mls_backend, &[member.key_package.clone()])
             .map_err(|error| EidError::AddMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement::OUT {
@@ -58,7 +58,7 @@ impl EidClient for EidMlsClient {
         let group = &mut self.state.group;
 
         if let Some(mls_member) = &member.mls_member {
-            let (mls_out, welcome) = group
+            let (mls_out, welcome, _group_info) = group
                 .remove_members(&backend.mls_backend, &[mls_member.index])
                 .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
             let evolvement = EidMlsEvolvement::OUT {
