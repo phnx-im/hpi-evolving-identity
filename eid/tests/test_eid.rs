@@ -186,13 +186,7 @@ where
         .export_transcript_state(backend)
         .expect("failed to export transcript state");
 
-    let serialized = exported_state
-        .tls_serialize_detached()
-        .expect("Failed to serialize");
-
-    let imported_state =
-        C::ExportedTranscriptStateProvider::tls_deserialize(&mut serialized.as_slice())
-            .expect("failed to deserialize");
+    let imported_state: C::ExportedTranscriptStateProvider = simulate_transfer(exported_state);
 
     C::TranscriptProvider::new(
         imported_state
@@ -202,6 +196,12 @@ where
         backend,
     )
     .expect("Failed to create transcript")
+}
+
+#[cfg(feature = "test")]
+fn simulate_transfer<I: Serialize, O: Deserialize>(input: I) -> O {
+    let serialized = input.tls_serialize_detached().expect("Failed to serialize");
+    O::tls_deserialize(&mut serialized.as_slice()).expect("failed to deserialize")
 }
 
 #[test]

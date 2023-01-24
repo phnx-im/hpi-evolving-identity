@@ -17,6 +17,7 @@ pub enum EidError {
     ApplyCommitError,
     UpdateMemberError(String),
     ExportGroupInfoError,
+    SerializationError(String),
 }
 
 impl Display for EidError {
