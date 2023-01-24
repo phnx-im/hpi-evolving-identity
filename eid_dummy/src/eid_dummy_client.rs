@@ -125,7 +125,7 @@ impl EidClient for EidDummyClient {
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(_backend: &Self::BackendProvider) -> Self::MemberProvider {
+    fn generate_initial_id(_id: String, _backend: &Self::BackendProvider) -> Self::MemberProvider {
         EidDummyMember {
             pk: (0..256).map(|_| rand::random::<u8>()).collect(),
         }
