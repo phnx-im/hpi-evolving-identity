@@ -123,7 +123,7 @@ impl EidClient for EidMlsClient {
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::MemberProvider {
+    fn generate_initial_id(id: String, backend: &Self::BackendProvider) -> Self::MemberProvider {
         let ciphersuite = backend.ciphersuite;
         let credential_bundle =
             create_store_credential(id, &backend.mls_backend, ciphersuite.signature_algorithm());

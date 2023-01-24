@@ -45,7 +45,7 @@ where
     let mut transcript = build_transcript(client, backend);
 
     // Create Alice as a member with a random pk
-    let alice = C::generate_initial_id(backend);
+    let alice = C::generate_initial_id("alice".into(), backend);
     let add_alice_evolvement_out = client.add(&alice, backend).expect("failed to add member");
 
     // member list length unchanged before evolving
@@ -75,7 +75,7 @@ where
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
     // Add Bob
-    let bob = C::generate_initial_id(backend);
+    let bob = C::generate_initial_id("bob".into(), backend);
     let add_bob_evolvement_out = client.add(&bob, backend).expect("failed to add member");
     let add_bob_evolvement_in: C::EvolvementProvider = simulate_transfer(&add_bob_evolvement_out);
     client
@@ -101,7 +101,7 @@ where
 {
     let mut transcript = build_transcript(client, backend);
 
-    let alice = C::generate_initial_id(backend);
+    let alice = C::generate_initial_id("alice".into(), backend);
     let evolvement_add_out = client.add(&alice, backend).expect("failed to add member");
     let evolvement_add_in: C::EvolvementProvider = simulate_transfer(&evolvement_add_out);
 

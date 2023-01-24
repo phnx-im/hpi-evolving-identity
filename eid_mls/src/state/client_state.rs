@@ -85,3 +85,39 @@ impl EidState for EidMlsClientState {
         self.members.clone()
     }
 }
+
+impl EidMlsClientState {
+    fn merge_or_apply_commit(
+        &mut self,
+        protocol_message: ProtocolMessage,
+        backend: &EidMlsBackend,
+    ) -> Result<(), EidError> {
+        let processed_message_result = self
+            .group
+            .process_message(&backend.mls_backend, protocol_message);
+
+        match processed_message_result {
+            Ok(processed_message) => {
+                self.apply_processed_message(processed_message, &backend)?;
+                Ok(())
+            }
+            Err(process_message_error) => {
+                if let ProcessMessageError::InvalidCommit(stage_commit_error) =
+                    process_message_error
+                {
+                    // if the commit belongs to ourselves, we can just merge the pending commit.
+                    if let StageCommitError::OwnCommit = stage_commit_error {
+                        self.group
+                            .merge_pending_commit(&backend.mls_backend)
+                            .map_err(|e| EidError::ApplyCommitError)?;
+                        return Ok(());
+                    }
+                }
+
+                Err(EidError::ProcessMessageError(
+                    "Failed to process message".into(),
+                ))
+            }
+        }
+    }
+}
