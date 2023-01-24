@@ -55,7 +55,10 @@ impl EidState for EidMlsClientState {
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        if let EidMlsEvolvement::IN { message: mls_in } = evolvement {
+        if let EidMlsEvolvement::IN {
+            message: mls_in, ..
+        } = evolvement
+        {
             let body = mls_in.extract();
             return match body {
                 MlsMessageInBody::PrivateMessage(_) => Err(EidError::ProcessMessageError),
