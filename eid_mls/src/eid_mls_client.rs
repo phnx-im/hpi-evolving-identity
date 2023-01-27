@@ -36,15 +36,19 @@ impl EidClient for EidMlsClient {
         member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError> {
-        let group = &mut self.state.group;
-        let (mls_out, welcome, _group_info) = group
-            .add_members(&backend.mls_backend, &[member.key_package.clone()])
-            .map_err(|error| EidError::AddMemberError(error.to_string()))?;
-        let evolvement = EidMlsEvolvement::OUT {
-            message: mls_out.into(),
-            welcome: Some(welcome),
-        };
-        Ok(evolvement)
+        if let Some(key_package) = member.key_package.clone() {
+            let group = &mut self.state.group;
+            let (mls_out, welcome, _group_info) = group
+                .add_members(&backend.mls_backend, &[key_package])
+                .map_err(|error| EidError::AddMemberError(error.to_string()))?;
+            let evolvement = EidMlsEvolvement::OUT {
+                message: mls_out.into(),
+                welcome: Some(welcome),
+            };
+            Ok(evolvement)
+        } else {
+            Err(EidError::AddMemberError("No key package provided".into()))
+        }
     }
 
     fn remove(
@@ -134,7 +138,8 @@ impl EidClient for EidMlsClient {
         // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
         EidMlsMember {
             mls_member: None,
-            key_package: key_bundle.clone(),
+            key_package: Some(key_bundle.clone()),
+            signature_key: key_bundle.leaf_node().signature_key().as_slice().to_vec(),
         }
     }
 }

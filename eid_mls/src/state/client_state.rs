@@ -1,7 +1,9 @@
+use mls_assist::group::LeafNode as AssistedLeafNode;
 use openmls::framing::MlsMessageInBody;
 use openmls::framing::ProcessedMessageContent::StagedCommitMessage;
+use openmls::prelude::{LeafNode, Member as MlsMember};
 use openmls::prelude::{
-    MlsGroup, ProcessMessageError, ProcessedMessage, ProtocolMessage, StageCommitError,
+    MlsGroup, Node, ProcessMessageError, ProcessedMessage, ProtocolMessage, StageCommitError,
 };
 
 use eid_traits::state::EidState;
@@ -14,8 +16,6 @@ use crate::state::state_trait::EidMlsState;
 
 pub struct EidMlsClientState {
     pub(crate) group: MlsGroup,
-    // we have to maintain our own members list, because mls doesn't have a notion of identity
-    pub(crate) members: Vec<EidMlsMember>,
 }
 
 impl EidMlsState for EidMlsClientState {
@@ -66,7 +66,6 @@ impl EidState for EidMlsClientState {
             if let MlsMessageInBody::PublicMessage(public_message) = body {
                 let protocol_message = ProtocolMessage::PublicMessage(public_message);
                 self.merge_or_apply_commit(protocol_message, backend)
-                
             } else {
                 Err(EidError::ProcessMessageError(
                     "Expected MlsMessageInBody::PublicMessage, got another variant".into(),
@@ -84,7 +83,14 @@ impl EidState for EidMlsClientState {
     }
 
     fn get_members(&self) -> Vec<Self::MemberProvider> {
-        self.members.clone()
+        // get members out of group state -> members leaf node sources which are not a key package but a commit, will be valid members
+        self.group
+            .members()
+            .filter(|member| self.has_member(member).unwrap_or(false))
+            .map(|member| {
+                EidMlsMember::from_existing(Some(member.clone()), member.signature_key.to_vec())
+            })
+            .collect()
     }
 }
 
@@ -121,5 +127,53 @@ impl EidMlsClientState {
                 ))
             }
         }
+    }
+
+    fn get_leaf_nodes(&self) -> Vec<LeafNode> {
+        let tree = self
+            .group
+            .export_ratchet_tree()
+            .iter()
+            .map(|node| node.clone().unwrap())
+            .collect::<Vec<Node>>();
+
+        let leaf_nodes = tree
+            .iter()
+            .filter_map(|node| match node {
+                Node::LeafNode(leaf_node) => Some(LeafNode::from(leaf_node.clone())),
+                Node::ParentNode(_) => None,
+            })
+            .collect();
+
+        leaf_nodes
+    }
+
+    /// Returns true if the member has cross-signed their addition to the group.
+    ///
+    /// # Arguments
+    ///
+    /// * `member`:
+    ///
+    /// returns: Result<bool, EidError>
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///
+    /// ```
+    fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
+        // Todo: It would be great if mls offers a get_member_by_index method
+        let leaf_nodes = self.get_leaf_nodes();
+
+        let index = member.index;
+
+        let leaf_node: &LeafNode =
+            leaf_nodes
+                .get(index.u32() as usize)
+                .ok_or(EidError::InvalidMemberError(
+                    "Member index doesn't have a matching node".into(),
+                ))?;
+        //leaf_node.credential()
+        Ok(leaf_node.parent_hash().is_some())
     }
 }
