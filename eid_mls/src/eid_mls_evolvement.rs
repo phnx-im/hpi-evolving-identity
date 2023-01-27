@@ -1,9 +1,9 @@
-use openmls::prelude::{MlsMessageIn, MlsMessageOut};
 use std::io::{Read, Write};
+
+use openmls::prelude::{MlsMessageIn, MlsMessageOut};
 use tls_codec::{Deserialize, Error as TlsError, Serialize, Size};
 
 use eid_traits::evolvement::Evolvement;
-use eid_traits::types::EidError;
 
 #[derive(Debug, Clone)]
 pub enum EidMlsEvolvement {

@@ -44,13 +44,18 @@ where
 {
     let mut transcript = build_transcript(client, backend);
 
+    // member list length unchanged before evolving
+    let members = client.get_members();
+
+    client
+        .cross_sign_membership(backend)
+        .expect("Cross signing failed");
+
+    assert_eq!(1, members.len());
+
     // Create Alice as a member with a random pk
     let alice = C::generate_initial_id("alice".into(), backend);
     let add_alice_evolvement_out = client.add(&alice, backend).expect("failed to add member");
-
-    // member list length unchanged before evolving
-    let members = client.get_members();
-    assert_eq!(1, members.len());
 
     let add_alice_evolvement_in: C::EvolvementProvider =
         simulate_transfer(&add_alice_evolvement_out);
