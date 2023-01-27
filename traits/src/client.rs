@@ -68,6 +68,11 @@ pub trait EidClient {
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError>;
 
+    fn cross_sign_membership(
+        &mut self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::EvolvementProvider, EidError>;
+
     /// Get all clients which are members of the EID.
     fn get_members(&self) -> Vec<Self::MemberProvider>;
 

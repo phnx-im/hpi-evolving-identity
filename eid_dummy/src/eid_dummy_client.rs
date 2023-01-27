@@ -5,7 +5,7 @@ use eid_traits::types::EidError;
 
 use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
-use crate::eid_dummy_member::EidDummyMember;
+use crate::eid_dummy_member::{EidDummyMember, BOOLEAN};
 use crate::eid_dummy_state::EidDummyState;
 use crate::eid_dummy_transcript::EidDummyTranscript;
 
@@ -80,19 +80,20 @@ impl EidClient for EidDummyClient {
     }
 
     fn update(&mut self, _backend: &EidDummyBackend) -> Result<EidDummyEvolvement, EidError> {
+        // create a member with your new pk
+        let mut new_pk = self.pk.to_vec();
+        new_pk[0] += 1;
+
+        // remember the new pk for later
+        self.pending_pk_update = Some(new_pk.clone());
+
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
         let myself = &EidDummyMember::new(self.pk.clone());
         new_members.retain(|m| myself != m);
 
-        // create a member with your new pk
-        let mut new_pk = self.pk.to_vec();
-        new_pk[0] += 1;
-        let member = EidDummyMember::new(new_pk.clone());
-
-        // remember the new pk for later
-        self.pending_pk_update = Some(new_pk);
-
+        let mut member = EidDummyMember::new(new_pk.clone());
+        member.cross_signed = BOOLEAN::TRUE;
         // create an evolvement with the new member
         new_members.push(member);
         let evolvement = EidDummyEvolvement::Update {
@@ -114,6 +115,15 @@ impl EidClient for EidDummyClient {
 
         self.state.apply(evolvement, backend)
     }
+
+    fn cross_sign_membership(
+        &mut self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::EvolvementProvider, EidError> {
+        // update yourself in the member list and set cross signed to true
+        self.update(backend)
+    }
+
     fn get_members(&self) -> Vec<Self::MemberProvider> {
         self.state.get_members()
     }
@@ -128,6 +138,7 @@ impl EidClient for EidDummyClient {
     fn generate_initial_id(_id: String, _backend: &Self::BackendProvider) -> Self::MemberProvider {
         EidDummyMember {
             pk: (0..256).map(|_| rand::random::<u8>()).collect(),
+            cross_signed: BOOLEAN::FALSE,
         }
     }
 }
