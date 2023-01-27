@@ -3,10 +3,12 @@ use openmls::prelude::{
     MlsGroup, SenderRatchetConfiguration, SignaturePublicKey, PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
 };
 
+use eid_traits::client::EidClient;
 use eid_traits::types::EidError;
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_client::EidMlsClient;
+use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 use crate::state::client_state::EidMlsClientState;
 

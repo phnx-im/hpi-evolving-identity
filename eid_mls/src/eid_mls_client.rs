@@ -82,8 +82,8 @@ impl EidClient for EidMlsClient {
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
-        let mls_out = group
-            .propose_self_update(&backend.mls_backend, None)
+        let (mls_out, _, _) = group
+            .self_update(&backend.mls_backend)
             .map_err(|error| EidError::UpdateMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement::OUT {
             message: mls_out.into(),
@@ -98,6 +98,13 @@ impl EidClient for EidMlsClient {
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
         Ok(self.state.apply(evolvement, backend)?)
+    }
+
+    fn cross_sign_membership(
+        &mut self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::EvolvementProvider, EidError> {
+        self.update(backend)
     }
 
     fn get_members(&self) -> Vec<Self::MemberProvider> {

@@ -8,6 +8,13 @@ pub struct EidDummyMember {
     pub(crate) cross_signed: BOOLEAN,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, TlsSerialize, TlsDeserialize, TlsSize)]
+#[repr(u8)]
+pub enum BOOLEAN {
+    TRUE = 1,
+    FALSE = 0,
+}
+
 impl PartialEq for EidDummyMember {
     fn eq(&self, other: &Self) -> bool {
         self.pk.eq(&other.pk)
@@ -18,7 +25,10 @@ impl Member for EidDummyMember {
     type IdentityProvider = Vec<u8>;
 
     fn new(cred: Vec<u8>) -> Self {
-        EidDummyMember { pk: cred }
+        EidDummyMember {
+            pk: cred,
+            cross_signed: BOOLEAN::FALSE,
+        }
     }
 
     fn get_identity(&self) -> Vec<u8> {
