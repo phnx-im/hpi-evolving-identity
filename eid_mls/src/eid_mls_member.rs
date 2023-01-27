@@ -26,8 +26,8 @@ impl Member for EidMlsMember {
     #[cfg(feature = "test")]
     fn get_identity(&self) -> Self::IdentityProvider {
         self.key_package
-            .expect("Doesn't contain key package")
             .clone()
+            .expect("Doesn't contain key package")
     }
 }
 

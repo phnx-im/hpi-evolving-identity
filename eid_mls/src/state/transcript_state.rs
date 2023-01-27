@@ -1,9 +1,10 @@
+use std::io::{Read, Write};
+
 use mls_assist::group::Group as AssistedGroup;
 use mls_assist::messages::assisted_messages::{AssistedCommit, AssistedGroupInfo, AssistedMessage};
 use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
 use openmls::prelude::{LeafNode, MlsMessageInBody, ProtocolMessage, Verifiable};
 use openmls::prelude_test::ContentType;
-use std::io::{Read, Write};
 use tls_codec::{Deserialize, Error, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize};
 
 use eid_traits::state::EidState;
@@ -21,7 +22,6 @@ use super::state_trait::EidMlsState;
 #[derive(Clone)]
 pub struct EidMlsTranscriptState {
     pub(crate) group: AssistedGroup,
-    pub(crate) members: Vec<EidMlsMember>,
 }
 
 impl EidState for EidMlsTranscriptState {
@@ -140,16 +140,16 @@ impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
         } = self
         {
             if let MlsMessageInBody::GroupInfo(verifiable_group_info) = message_in.extract() {
-                let group_info = verifiable_group_info
-                    .verify(
-                        &backend.mls_backend,
-                        // todo: should we take the key out of the leaf node or take a separate one as function argument?
-                        leaf_node.signature_key(),
-                        backend.ciphersuite.signature_algorithm(),
-                    )
-                    .map_err(|_| EidError::UnverifiedMessageError)?;
+                // let group_info = verifiable_group_info
+                //     .verify(
+                //         &backend.mls_backend,
+                //         // todo: should we take the key out of the leaf node or take a separate one as function argument?
+                //         leaf_node.signature_key(),
+                //         backend.ciphersuite.signature_algorithm(),
+                //     )
+                //     .map_err(|_| EidError::UnverifiedMessageError)?;
 
-                let group = AssistedGroup::new(group_info, leaf_node.clone());
+                let group = AssistedGroup::new();
 
                 Ok(EidMlsTranscriptState::new(group))
             } else {
