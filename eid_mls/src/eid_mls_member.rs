@@ -39,4 +39,12 @@ impl EidMlsMember {
     fn update_signature_key(&mut self, new_signature_key: Vec<u8>) {
         self.signature_key = new_signature_key;
     }
+
+    pub(crate) fn from_existing(mls_member: Option<MlsMember>, signature_key: Vec<u8>) -> Self {
+        Self {
+            mls_member: None,
+            key_package: None,
+            signature_key,
+        }
+    }
 }

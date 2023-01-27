@@ -1,5 +1,7 @@
 use openmls::group::MlsGroupConfig;
-use openmls::prelude::{MlsGroup, SenderRatchetConfiguration, PURE_PLAINTEXT_WIRE_FORMAT_POLICY};
+use openmls::prelude::{
+    MlsGroup, SenderRatchetConfiguration, SignaturePublicKey, PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
+};
 
 use eid_traits::types::EidError;
 
@@ -22,15 +24,20 @@ impl EidMlsClient {
             .wire_format_policy(PURE_PLAINTEXT_WIRE_FORMAT_POLICY)
             .build();
 
-        let signature_key = member.key_package.leaf_node().signature_key().clone();
+        let key_package = member
+            .key_package
+            .clone()
+            .ok_or(EidError::InvalidMemberError(
+                "No key package provided in member".into(),
+            ))?;
+
+        let signature_key = key_package.leaf_node().signature_key();
 
         let group = MlsGroup::new(&backend.mls_backend, &mls_group_config, &signature_key)
             .expect("Could not create MlsGroup");
 
-        let members = vec![member.clone()];
-
         Ok(Self {
-            state: EidMlsClientState { group, members },
+            state: EidMlsClientState { group },
         })
     }
 }
