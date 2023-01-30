@@ -11,6 +11,12 @@ pub struct EidMlsMember {
     pub(crate) signature_key: Vec<u8>,
 }
 
+impl PartialEq for EidMlsMember {
+    fn eq(&self, other: &Self) -> bool {
+        self.signature_key == other.signature_key
+    }
+}
+
 impl Member for EidMlsMember {
     type IdentityProvider = KeyPackage;
 
