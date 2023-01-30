@@ -55,6 +55,7 @@ where
 
     // Create Alice as a member with a random pk
     let alice = C::generate_initial_id("alice".into(), backend);
+    // TODO create a client for alice from welcome message.
     let add_alice_evolvement_out = client.add(&alice, backend).expect("failed to add member");
 
     let add_alice_evolvement_in: C::EvolvementProvider =
