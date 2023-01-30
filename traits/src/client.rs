@@ -36,6 +36,14 @@ pub trait EidClient {
     where
         Self: Sized;
 
+    /// Create the [EidClient] with the state of an existing EID that you are invited to.
+    fn create_from_invitation(
+        invitation: Self::EvolvementProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self, EidError>
+    where
+        Self: Sized;
+
     /// Create an [Evolvement] to add a member to the EID.
     fn add(
         &mut self,

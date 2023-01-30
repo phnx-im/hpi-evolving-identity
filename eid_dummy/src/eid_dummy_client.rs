@@ -1,3 +1,5 @@
+use serde_json::json_internal_vec;
+
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
 use eid_traits::state::EidState;
@@ -38,6 +40,29 @@ impl EidClient for EidDummyClient {
             pending_pk_update: None,
         })
     }
+
+    fn create_from_invitation(
+        invitation: Self::EvolvementProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self, EidError>
+    where
+        Self: Sized,
+    {
+        if let EidDummyEvolvement::Add {
+            members,
+            invited_pk,
+        } = invitation
+        {
+            Ok(Self {
+                state: EidDummyState { members },
+                pk: invited_pk,
+                pending_pk_update: None,
+            })
+        } else {
+            Err(EidError::InvalidInvitationError)
+        }
+    }
+
     fn add(
         &mut self,
         member: &EidDummyMember,
@@ -52,6 +77,7 @@ impl EidClient for EidDummyClient {
         new_state.members.push(member.clone());
         let evolvement = EidDummyEvolvement::Add {
             members: new_state.members,
+            invited_pk: member.pk.clone(),
         };
         Ok(evolvement)
     }

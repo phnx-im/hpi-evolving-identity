@@ -1,4 +1,10 @@
+use openmls::framing::MlsMessageIn;
+use openmls::messages::Welcome;
+use openmls::prelude::MlsGroup;
+use openmls::prelude_test::MlsMessageInBody;
+
 use eid_traits::client::EidClient;
+use eid_traits::evolvement::Evolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
@@ -29,6 +35,37 @@ impl EidClient for EidMlsClient {
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
         Self::create_mls_eid(backend, &initial_member)
+    }
+
+    fn create_from_invitation(
+        invitation: Self::EvolvementProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self, EidError>
+    where
+        Self: Sized,
+    {
+        if let EidMlsEvolvement::IN {
+            message: _,
+            welcome: option_message_in,
+        } = invitation
+        {
+            let message_in = option_message_in.ok_or(EidError::InvalidInvitationError)?;
+            let message_in_body = message_in.extract();
+            if let MlsMessageInBody::Welcome(welcome) = message_in_body {
+                let mls_group_config = Self::gen_group_config();
+                let mls_group = MlsGroup::new_from_welcome(
+                    &backend.mls_backend,
+                    &mls_group_config,
+                    welcome,
+                    None,
+                )
+                .map_err(|err| EidError::CreateGroupError(err.to_string()))?;
+                return Ok(Self {
+                    state: EidMlsClientState { group: mls_group },
+                });
+            }
+        }
+        Err(EidError::InvalidInvitationError)
     }
 
     fn add(
