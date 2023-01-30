@@ -42,7 +42,7 @@ impl EidMlsMember {
 
     pub(crate) fn from_existing(mls_member: Option<MlsMember>, signature_key: Vec<u8>) -> Self {
         Self {
-            mls_member: None,
+            mls_member,
             key_package: None,
             signature_key,
         }
