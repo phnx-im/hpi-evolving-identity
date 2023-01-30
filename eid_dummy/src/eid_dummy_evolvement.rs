@@ -28,8 +28,4 @@ impl Default for EidDummyEvolvement {
     }
 }
 
-impl Evolvement for EidDummyEvolvement {
-    fn is_valid_successor(&self, _previous: &Self) -> bool {
-        true
-    }
-}
+impl Evolvement for EidDummyEvolvement {}

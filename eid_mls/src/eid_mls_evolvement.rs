@@ -70,8 +70,4 @@ impl Deserialize for EidMlsEvolvement {
     }
 }
 
-impl Evolvement for EidMlsEvolvement {
-    fn is_valid_successor(&self, _previous: &Self) -> bool {
-        todo!()
-    }
-}
+impl Evolvement for EidMlsEvolvement {}
