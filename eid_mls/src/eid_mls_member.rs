@@ -3,7 +3,7 @@ use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
 
 use eid_traits::member::Member;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct EidMlsMember {
     // TODO: do we need a constant identifier here?
     pub(crate) mls_member: Option<MlsMember>,

@@ -45,9 +45,9 @@ where
     let mut transcript = build_transcript(client, backend);
 
     // member list length unchanged before evolving
-    let members = client.get_members();
+    let members_initial = client.get_members();
 
-    assert_eq!(0, members.len());
+    assert_eq!(0, members_initial.len());
 
     let cross_sign_evolvement_out = client
         .cross_sign_membership(backend)
@@ -58,28 +58,39 @@ where
     client
         .evolve(cross_sign_evolvement_in.clone(), backend)
         .expect("Failed to apply state");
-    let members = client.get_members();
-    assert_eq!(1, members.len());
+    let members_after_cross_sign = client.get_members();
+    assert_eq!(1, members_after_cross_sign.len());
 
     // Create Alice as a member with a random pk
     let alice = C::generate_initial_id("alice".into(), backend);
     let add_alice_evolvement_out = client.add(&alice, backend).expect("failed to add member");
-
     let add_alice_evolvement_in: C::EvolvementProvider =
         simulate_transfer(&add_alice_evolvement_out);
+    let mut alice_client = C::create_from_invitation(add_alice_evolvement_in.clone(), backend)
+        .expect("failed to create client from invitation");
+
+    let alice_cross_sign_evolvement_out = alice_client
+        .cross_sign_membership(backend)
+        .expect("failed to cross sign");
+    let alice_cross_sign_evolvement_in: C::EvolvementProvider =
+        simulate_transfer(&alice_cross_sign_evolvement_out);
 
     client
         .evolve(add_alice_evolvement_in.clone(), backend)
         .expect("Failed to apply state");
 
-    let members = client.get_members();
-    assert!(members.contains(&alice));
-    assert_eq!(2, members.len());
+    client
+        .evolve(alice_cross_sign_evolvement_in.clone(), backend)
+        .expect("Failed to apply state");
+
+    let members_after_alice_cross_sign = client.get_members();
+    assert!(members_after_alice_cross_sign.contains(&alice));
+    assert_eq!(2, members_after_alice_cross_sign.len());
 
     transcript
         .add_evolvement(add_alice_evolvement_in.clone(), backend)
         .expect("Failed to add evolvement");
-    assert_eq!(transcript.get_members(), members);
+    assert_eq!(transcript.get_members(), members_after_alice_cross_sign);
 
     // Try to add Alice a second time
     let member_in_eid_error = client
