@@ -18,6 +18,8 @@ pub enum EidError {
     UpdateMemberError(String),
     ExportGroupInfoError,
     SerializationError(String),
+    InvalidInvitationError,
+    CreateGroupError(String),
 }
 
 impl Display for EidError {

@@ -13,6 +13,14 @@ use crate::eid_mls_member::EidMlsMember;
 use crate::state::client_state::EidMlsClientState;
 
 impl EidMlsClient {
+    pub(crate) fn gen_group_config() -> MlsGroupConfig {
+        MlsGroupConfig::builder()
+            .sender_ratchet_configuration(SenderRatchetConfiguration::new(10, 2000))
+            .use_ratchet_tree_extension(true)
+            .wire_format_policy(PURE_PLAINTEXT_WIRE_FORMAT_POLICY)
+            .build()
+    }
+
     pub(crate) fn create_mls_eid(
         backend: &EidMlsBackend,
         member: &EidMlsMember,
@@ -20,11 +28,7 @@ impl EidMlsClient {
     where
         Self: Sized,
     {
-        let mls_group_config = MlsGroupConfig::builder()
-            .sender_ratchet_configuration(SenderRatchetConfiguration::new(10, 2000))
-            .use_ratchet_tree_extension(true)
-            .wire_format_policy(PURE_PLAINTEXT_WIRE_FORMAT_POLICY)
-            .build();
+        let mls_group_config = EidMlsClient::gen_group_config();
 
         let key_package = member
             .key_package
