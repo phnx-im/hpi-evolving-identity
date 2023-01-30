@@ -116,7 +116,7 @@ where
         .expect("Alice not found");
 
     let evolvement_remove_out = client
-        .remove(&alice, backend)
+        .remove(&alice_after_insert, backend)
         .expect("failed to remove member");
 
     let evolvement_remove_in: C::EvolvementProvider = simulate_transfer(&evolvement_remove_out);
@@ -133,10 +133,12 @@ where
     let member_not_in_eid_error = client
         .remove(&alice, backend)
         .expect_err("Removing non-existent member");
+
     assert!(matches!(
         member_not_in_eid_error,
         EidError::InvalidMemberError(..)
     ));
+
     let members = client.get_members();
     assert!(!members.contains(&alice));
     assert_eq!(1, members.len());
