@@ -22,7 +22,7 @@ impl PartialEq for EidDummyMember {
 }
 
 impl Member for EidDummyMember {
-    type IdentityProvider = Vec<u8>;
+    type CredentialProvider = Vec<u8>;
 
     fn new(cred: Vec<u8>) -> Self {
         EidDummyMember {
@@ -31,7 +31,7 @@ impl Member for EidDummyMember {
         }
     }
 
-    fn get_identity(&self) -> Vec<u8> {
+    fn get_credential(&self) -> Vec<u8> {
         self.pk.clone()
     }
 }
