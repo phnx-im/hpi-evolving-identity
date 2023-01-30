@@ -63,25 +63,7 @@ where
 
     // Create Alice as a member with a random pk
     let alice = C::generate_initial_id("alice".into(), backend);
-    let add_alice_evolvement_out = client.add(&alice, backend).expect("failed to add member");
-    let add_alice_evolvement_in: C::EvolvementProvider =
-        simulate_transfer(&add_alice_evolvement_out);
-    let mut alice_client = C::create_from_invitation(add_alice_evolvement_in.clone(), backend)
-        .expect("failed to create client from invitation");
-
-    let alice_cross_sign_evolvement_out = alice_client
-        .cross_sign_membership(backend)
-        .expect("failed to cross sign");
-    let alice_cross_sign_evolvement_in: C::EvolvementProvider =
-        simulate_transfer(&alice_cross_sign_evolvement_out);
-
-    client
-        .evolve(add_alice_evolvement_in.clone(), backend)
-        .expect("Failed to apply state");
-
-    client
-        .evolve(alice_cross_sign_evolvement_in.clone(), backend)
-        .expect("Failed to apply state");
+    add_and_cross_sign(client, alice.clone(), backend);
 
     let members_after_alice_cross_sign = client.get_members();
     assert!(members_after_alice_cross_sign.contains(&alice));
@@ -100,25 +82,7 @@ where
 
     // Add Bob
     let bob = C::generate_initial_id("bob".into(), backend);
-    let add_bob_evolvement_out = client.add(&bob, backend).expect("failed to add member");
-    let add_bob_evolvement_in: C::EvolvementProvider = simulate_transfer(&add_bob_evolvement_out);
-    client
-        .evolve(add_bob_evolvement_in.clone(), backend)
-        .expect("Failed to apply state");
-
-    let mut bob_client = C::create_from_invitation(add_bob_evolvement_in.clone(), backend)
-        .expect("failed to create client from invitation");
-
-    let bob_cross_sign_evolvement_out = bob_client
-        .cross_sign_membership(backend)
-        .expect("failed to cross sign");
-
-    let bob_cross_sign_evolvement_in: C::EvolvementProvider =
-        simulate_transfer(&bob_cross_sign_evolvement_out);
-
-    client
-        .evolve(bob_cross_sign_evolvement_in.clone(), backend)
-        .expect("Failed to apply state");
+    add_and_cross_sign(client, bob.clone(), backend);
 
     let members = client.get_members();
 
@@ -143,6 +107,12 @@ where
     let evolvement_add_out = client.add(&alice, backend).expect("failed to add member");
     let evolvement_add_in: C::EvolvementProvider = simulate_transfer(&evolvement_add_out);
 
+    let alice_after_insert = client
+        .get_members()
+        .into_iter()
+        .find(|member| member.clone() == alice)
+        .expect("Alice not found");
+
     client
         .evolve(evolvement_add_in.clone(), backend)
         .expect("Failed to apply state");
@@ -155,6 +125,7 @@ where
     let evolvement_remove_out = client
         .remove(&alice, backend)
         .expect("failed to remove member");
+
     let evolvement_remove_in: C::EvolvementProvider = simulate_transfer(&evolvement_remove_out);
     client
         .evolve(evolvement_remove_in.clone(), backend)
@@ -249,6 +220,32 @@ where
 fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
     let serialized = input.tls_serialize_detached().expect("Failed to serialize");
     O::tls_deserialize(&mut serialized.as_slice()).expect("Failed to deserialize")
+}
+
+fn add_and_cross_sign<C: EidClient>(
+    client: &mut C,
+    member: C::MemberProvider,
+    backend: &C::BackendProvider,
+) {
+    let add_evolvement_out = client.add(&member, backend).expect("failed to add member");
+    let add_evolvement_in: C::EvolvementProvider = simulate_transfer(&add_evolvement_out);
+
+    client
+        .evolve(add_evolvement_in.clone(), backend)
+        .expect("Failed to evolve");
+
+    let mut new_client = C::create_from_invitation(add_evolvement_in.clone(), backend)
+        .expect("failed to create client from invitation");
+
+    let cross_sign_evolvement_out = new_client
+        .cross_sign_membership(backend)
+        .expect("failed to cross sign");
+    let cross_sign_evolvement_in: C::EvolvementProvider =
+        simulate_transfer(&cross_sign_evolvement_out);
+
+    client
+        .evolve(cross_sign_evolvement_in, backend)
+        .expect("Failed to evolve");
 }
 
 #[test]
