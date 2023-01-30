@@ -18,9 +18,9 @@ impl PartialEq for EidMlsMember {
 }
 
 impl Member for EidMlsMember {
-    type IdentityProvider = KeyPackage;
+    type CredentialProvider = KeyPackage;
 
-    fn new(key_package: Self::IdentityProvider) -> Self {
+    fn new(key_package: Self::CredentialProvider) -> Self {
         let kp_signature_key = key_package.leaf_node().signature_key().as_slice().to_vec();
         Self {
             mls_member: None,
@@ -30,7 +30,7 @@ impl Member for EidMlsMember {
     }
 
     #[cfg(feature = "test")]
-    fn get_identity(&self) -> Self::IdentityProvider {
+    fn get_credential(&self) -> Self::CredentialProvider {
         self.key_package
             .clone()
             .expect("Doesn't contain key package")

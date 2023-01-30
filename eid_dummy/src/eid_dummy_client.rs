@@ -36,7 +36,7 @@ impl EidClient for EidDummyClient {
         let state = EidDummyState { members };
         Ok(EidDummyClient {
             state,
-            pk: identity.get_identity(),
+            pk: identity.pk.clone(),
             pending_pk_update: None,
         })
     }
