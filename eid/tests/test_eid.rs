@@ -47,10 +47,18 @@ where
     // member list length unchanged before evolving
     let members = client.get_members();
 
-    client
+    assert_eq!(0, members.len());
+
+    let cross_sign_evolvement_out = client
         .cross_sign_membership(backend)
         .expect("Cross signing failed");
+    let cross_sign_evolvement_in: C::EvolvementProvider =
+        simulate_transfer(&cross_sign_evolvement_out);
 
+    client
+        .evolve(cross_sign_evolvement_in.clone(), backend)
+        .expect("Failed to apply state");
+    let members = client.get_members();
     assert_eq!(1, members.len());
 
     // Create Alice as a member with a random pk
