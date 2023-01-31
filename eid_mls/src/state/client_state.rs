@@ -87,9 +87,7 @@ impl EidState for EidMlsClientState {
         self.group
             .members()
             .filter(|member| self.has_member(member).unwrap_or(false))
-            .map(|member| {
-                EidMlsMember::from_existing(Some(member.clone()), member.signature_key.to_vec())
-            })
+            .map(|member| EidMlsMember::from_existing(member.clone()))
             .collect()
     }
 }

@@ -2,6 +2,7 @@ use openmls::framing::MlsMessageIn;
 use openmls::messages::Welcome;
 use openmls::prelude::MlsMessageInBody;
 use openmls::prelude::{CredentialType, MlsGroup, SignaturePublicKey};
+use openmls_basic_credential::SignatureKeyPair;
 
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
@@ -18,7 +19,7 @@ use crate::state::transcript_state::{EidMlsExportedTranscriptState, EidMlsTransc
 
 pub struct EidMlsClient {
     pub(crate) state: EidMlsClientState,
-    pub(crate) pubkey: SignaturePublicKey,
+    pub(crate) keypair: SignatureKeyPair,
 }
 
 impl EidClient for EidMlsClient {
@@ -33,26 +34,25 @@ impl EidClient for EidMlsClient {
 
     fn create_eid(
         initial_member: &Self::MemberProvider,
+        key_pair: Self::KeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        let key_package = initial_member
-            .key_package
-            .ok_or(EidError::InvalidMemberError(
-                "No key package provided in member".into(),
-            ))?;
+        let key_package =
+            initial_member
+                .key_package
+                .clone()
+                .ok_or(EidError::InvalidMemberError(
+                    "No key package provided in member".into(),
+                ))?;
 
         let signature_key = key_package.leaf_node().signature_key();
 
-        Self::create_mls_eid(
-            backend,
-            signature_key.clone(),
-            initial_member.credential.clone(),
-        )
+        Self::create_mls_eid(backend, key_pair, initial_member.credential.clone())
     }
 
     fn create_from_invitation(
         invitation: Self::EvolvementProvider,
-        member: &Self::MemberProvider,
+        signature_keypair: Self::KeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where
@@ -76,7 +76,7 @@ impl EidClient for EidMlsClient {
                 .map_err(|err| EidError::CreateGroupError(err.to_string()))?;
                 return Ok(Self {
                     state: EidMlsClientState { group: mls_group },
-                    pubkey: member.signature_key.clone(),
+                    keypair: signature_keypair,
                 });
             }
         }

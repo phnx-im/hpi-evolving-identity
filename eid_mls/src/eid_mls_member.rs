@@ -1,3 +1,4 @@
+use openmls::credentials::Credential;
 use openmls::prelude::{CredentialWithKey, KeyPackage, Member as MlsMember, SignaturePublicKey};
 use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
 
@@ -14,7 +15,7 @@ pub struct EidMlsMember {
 
 impl PartialEq for EidMlsMember {
     fn eq(&self, other: &Self) -> bool {
-        self.signature_key == other.signature_key
+        self.credential.signature_key == other.credential.signature_key
     }
 }
 
@@ -26,15 +27,18 @@ impl Member for EidMlsMember {
         Self {
             mls_member: None,
             key_package: Some(key_package),
-            signature_key: kp_signature_key.clone(),
+            credential,
         }
     }
 
     #[cfg(feature = "test")]
     fn get_credential(&self) -> Self::CredentialProvider {
-        self.key_package
-            .clone()
-            .expect("Doesn't contain key package")
+        (
+            self.key_package
+                .clone()
+                .expect("Doesn't contain key package"),
+            self.credential.clone(),
+        )
     }
 }
 
@@ -47,10 +51,9 @@ impl EidMlsMember {
         self.signature_key = new_signature_key;
     }
 
-    pub(crate) fn from_existing(
-        mls_member: Option<MlsMember>,
-        signature_key: SignaturePublicKey,
-    ) -> Self {
+    pub(crate) fn from_existing(mls_member: MlsMember) -> Self {
+        let signature_key = mls_member.signature_key.clone().into();
+        let credential = mls_member.credential.clone();
         Self {
             mls_member,
             key_package: None,

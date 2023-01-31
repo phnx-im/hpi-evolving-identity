@@ -14,4 +14,4 @@ mls-assist = { git = "https://github.com/phnx-im/mls-assist-student.git", rev = 
 tls_codec = "0.2.0"
 
 [features]
-test = ["openmls/test-utils"]
+test = ["openmls/test-utils", "openmls_basic_credential/clonable"]

@@ -31,6 +31,7 @@ pub trait EidClient {
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(
         initial_member: &Self::MemberProvider,
+        key_pair: Self::KeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where

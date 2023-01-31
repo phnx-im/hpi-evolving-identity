@@ -21,12 +21,13 @@ use eid_traits::types::EidError;
 lazy_static! {
     static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();
     static ref MLS_BACKEND: EidMlsBackend = EidMlsBackend::default();
+    // static ref MLS_KEYPAIR: SignatureKeyPair = SignatureKeyPair::new();
 }
 
 #[template]
 #[rstest(client, backend,
-case::EidDummy(& mut EidDummyClient::create_eid(&EidDummyMember::new("test_key".as_bytes().to_vec()),& DUMMY_BACKEND).expect("creation failed"), & DUMMY_BACKEND),
-case::EidMls(& mut EidMlsClient::create_eid(&EidMlsClient::generate_initial_id("test_id".into(), &MLS_BACKEND), & MLS_BACKEND).expect("creation failed"), & MLS_BACKEND),
+case::EidDummy(& mut EidDummyClient::create_eid(& EidDummyMember::new("test_key".as_bytes().to_vec()), (), & DUMMY_BACKEND).expect("creation failed"), & DUMMY_BACKEND),
+case::EidMls(& mut EidMlsClient::create_eid(& EidMlsClient::generate_initial_id("test_id".into(), & MLS_BACKEND), MLS_KEYPAIR, & MLS_BACKEND).expect("creation failed"), & MLS_BACKEND),
 )]
 #[allow(non_snake_case)]
 pub fn eid_clients<C, B>(client: &mut C, backend: &B)
