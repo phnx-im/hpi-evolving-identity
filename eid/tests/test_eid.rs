@@ -12,11 +12,14 @@ pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_dummy::eid_dummy_member::EidDummyMember;
 use eid_mls::eid_mls_backend::EidMlsBackend;
 use eid_mls::eid_mls_client::EidMlsClient;
+use eid_mls::eid_mls_member::EidMlsMember;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
 use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
+use openmls::prelude::SignatureScheme;
+use openmls_basic_credential::SignatureKeyPair;
 
 lazy_static! {
     static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();

@@ -187,9 +187,12 @@ impl EidClient for EidMlsClient {
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(id: Vec<u8>, backend: &Self::BackendProvider) -> Self::MemberProvider {
+    fn generate_initial_member(
+        id: Vec<u8>,
+        backend: &Self::BackendProvider,
+    ) -> (Self::MemberProvider, Self::KeyProvider) {
         let ciphersuite = backend.ciphersuite;
-        let (cred_with_key, sig_pubkey) = create_store_credential(
+        let (cred_with_key, keypair) = create_store_credential(
             id,
             CredentialType::Basic,
             ciphersuite.signature_algorithm(),
@@ -200,14 +203,23 @@ impl EidClient for EidMlsClient {
             ciphersuite,
             cred_with_key.clone(),
             &backend.mls_backend,
-            &sig_pubkey,
+            &keypair,
         );
 
         // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
-        EidMlsMember {
-            mls_member: None,
-            key_package: Some(key_bundle.clone()),
-            credential: cred_with_key,
-        }
+        (
+            EidMlsMember {
+                mls_member: None,
+                key_package: Some(key_bundle.clone()),
+                credential: cred_with_key,
+            },
+            keypair,
+        )
+    }
+
+    #[cfg(feature = "test")]
+    fn generate_initial_client(id: Vec<u8>, backend: &Self::BackendProvider) -> Self {
+        let (member, keypair) = Self::generate_initial_member(id, backend);
+        Self::create_eid(&member, keypair, backend).expect("Could not create EID")
     }
 }
