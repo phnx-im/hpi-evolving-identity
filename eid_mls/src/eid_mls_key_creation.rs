@@ -1,15 +1,28 @@
-use openmls::key_packages::KeyPackageBuilder;
-use openmls::prelude::KeyPackage;
 use openmls::prelude::{
-    Ciphersuite, CredentialBundle, CredentialType, CryptoConfig, OpenMlsCryptoProvider,
-    OpenMlsKeyStore, ProtocolVersion, SignatureScheme, TlsSerializeTrait,
+    Ciphersuite, Credential, CredentialType, CredentialWithKey, CryptoConfig, Extensions,
+    KeyPackage, KeyPackageBuilder, OpenMlsCryptoProvider, ProtocolVersion, SignaturePublicKey,
+    SignatureScheme,
 };
 
 pub(crate) fn create_store_credential(
-    identifier: String,
+    identity: Vec<u8>,
+    credential_type: CredentialType,
+    signature_algorithm: SignatureScheme,
     backend: &impl OpenMlsCryptoProvider,
-    signature_scheme: SignatureScheme,
-) -> CredentialBundle {
+) -> (CredentialWithKey, SignaturePublicKey) {
+    let credential = Credential::new(identity, credential_type).unwrap();
+
+    let signature_keys = SignatureKeyPair::new(signature_algorithm).unwrap();
+    signature_keys.store(backend.key_store()).unwrap();
+
+    (
+        CredentialWithKey {
+            credential,
+            signature_key: signature_keys.to_public_vec().into(),
+        },
+        signature_keys,
+    )
+    /*
     let credential_bundle = CredentialBundle::new(
         identifier.into(),
         CredentialType::Basic,
@@ -30,22 +43,22 @@ pub(crate) fn create_store_credential(
         )
         .expect("Storing credential failed");
 
-    return credential_bundle;
+    return credential_bundle;*/
 }
 
 pub(crate) fn create_store_key_package(
     ciphersuite: Ciphersuite,
-    credential_bundle: &CredentialBundle,
+    credential_with_key: CredentialWithKey,
     backend: &impl OpenMlsCryptoProvider,
+    signer: &impl Signer,
 ) -> KeyPackage {
-    let kp = KeyPackageBuilder::new()
+    let kp = KeyPackage::builder()
+        .key_package_extensions(extensions)
         .build(
-            CryptoConfig {
-                ciphersuite,
-                version: ProtocolVersion::default(),
-            },
+            CryptoConfig::with_default_version(ciphersuite),
             backend,
-            credential_bundle,
+            signer,
+            credential_with_key,
         )
         .expect("Could not create KeyPackage");
 

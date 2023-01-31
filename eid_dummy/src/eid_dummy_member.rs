@@ -31,6 +31,7 @@ impl Member for EidDummyMember {
         }
     }
 
+    #[cfg(feature = "test")]
     fn get_credential(&self) -> Vec<u8> {
         self.pk.clone()
     }
