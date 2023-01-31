@@ -206,7 +206,6 @@ impl EidClient for EidMlsClient {
         EidMlsMember {
             mls_member: None,
             key_package: Some(key_bundle.clone()),
-            signature_key: key_bundle.leaf_node().signature_key().clone(),
             credential: cred_with_key,
         }
     }

@@ -3,6 +3,7 @@ use openmls::prelude::{
     CredentialWithKey, MlsGroup, SenderRatchetConfiguration, SignaturePublicKey,
     PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
 };
+use openmls_basic_credential::SignatureKeyPair;
 
 use eid_traits::client::EidClient;
 use eid_traits::types::EidError;
@@ -34,7 +35,7 @@ impl EidMlsClient {
 
         let group = MlsGroup::new(
             &backend.mls_backend,
-            &signature_key,
+            &keypair,
             &mls_group_config,
             credential,
         )

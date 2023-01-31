@@ -31,6 +31,7 @@ impl EidClient for EidDummyClient {
 
     fn create_eid(
         identity: &Self::MemberProvider,
+        _keypair: Self::KeyProvider,
         _backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
         let members = vec![identity.clone()];
