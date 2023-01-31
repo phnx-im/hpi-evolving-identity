@@ -45,7 +45,8 @@ impl EidClient for EidDummyClient {
 
     fn create_from_invitation(
         invitation: Self::EvolvementProvider,
-        backend: &Self::BackendProvider,
+        _keypair: Self::KeyProvider,
+        _backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where
         Self: Sized,
@@ -163,7 +164,7 @@ impl EidClient for EidDummyClient {
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(_id: String, _backend: &Self::BackendProvider) -> Self::MemberProvider {
+    fn generate_initial_id(_id: Vec<u8>, _backend: &Self::BackendProvider) -> Self::MemberProvider {
         EidDummyMember {
             pk: (0..256).map(|_| rand::random::<u8>()).collect(),
             cross_signed: BOOLEAN::FALSE,

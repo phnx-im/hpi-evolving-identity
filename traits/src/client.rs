@@ -18,6 +18,7 @@ pub trait EidClient {
         BackendProvider = Self::BackendProvider,
     >;
     type BackendProvider: EidBackend;
+    type KeyProvider;
 
     // We're only requiring this for tests since we don't want to unnecessarily restrict the transcript type.
     #[cfg(feature = "test")]
@@ -40,7 +41,7 @@ pub trait EidClient {
     /// Create the [EidClient] with the state of an existing EID that you are invited to.
     fn create_from_invitation(
         invitation: Self::EvolvementProvider,
-        member: Self::MemberProvider,
+        signature_keypair: Self::KeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where
@@ -92,5 +93,5 @@ pub trait EidClient {
     ) -> Result<Self::ExportedTranscriptStateProvider, EidError>;
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(id: String, backend: &Self::BackendProvider) -> Self::MemberProvider;
+    fn generate_initial_id(id: Vec<u8>, backend: &Self::BackendProvider) -> Self::MemberProvider;
 }

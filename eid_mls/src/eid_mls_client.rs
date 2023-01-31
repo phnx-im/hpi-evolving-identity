@@ -28,6 +28,7 @@ impl EidClient for EidMlsClient {
     type TranscriptStateProvider = EidMlsTranscriptState;
     type ExportedTranscriptStateProvider = EidMlsExportedTranscriptState;
     type BackendProvider = EidMlsBackend;
+    type KeyProvider = SignatureKeyPair;
 
     #[cfg(feature = "test")]
     type TranscriptProvider = EidMlsTranscript;
@@ -91,7 +92,7 @@ impl EidClient for EidMlsClient {
         if let Some(key_package) = member.key_package.clone() {
             let group = &mut self.state.group;
             let (mls_out, welcome, _group_info) = group
-                .add_members(&backend.mls_backend, &self.pubkey, &[key_package])
+                .add_members(&backend.mls_backend, &self.keypair, &[key_package])
                 .map_err(|error| EidError::AddMemberError(error.to_string()))?;
             let evolvement = EidMlsEvolvement::OUT {
                 message: mls_out.into(),
@@ -115,7 +116,7 @@ impl EidClient for EidMlsClient {
 
         if let Some(mls_member) = &member.mls_member {
             let (mls_out, welcome, _group_info) = group
-                .remove_members(&backend.mls_backend, &self.pubkey, &[mls_member.index])
+                .remove_members(&backend.mls_backend, &self.keypair, &[mls_member.index])
                 .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
             let evolvement = EidMlsEvolvement::OUT {
                 message: mls_out.into(),
@@ -135,7 +136,7 @@ impl EidClient for EidMlsClient {
     ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
         let (mls_out, _, _) = group
-            .self_update(&backend.mls_backend, &self.pubkey)
+            .self_update(&backend.mls_backend, &self.keypair)
             .map_err(|error| EidError::UpdateMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement::OUT {
             message: mls_out.into(),
@@ -170,7 +171,7 @@ impl EidClient for EidMlsClient {
         let mls_out = self
             .state
             .group
-            .export_group_info(&backend.mls_backend, &self.pubkey, false)
+            .export_group_info(&backend.mls_backend, &self.keypair, false)
             .map_err(|_| EidError::ExportGroupInfoError)?;
         let leaf_node = self
             .state

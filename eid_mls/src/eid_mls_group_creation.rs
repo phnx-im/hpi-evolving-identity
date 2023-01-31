@@ -25,7 +25,7 @@ impl EidMlsClient {
 
     pub(crate) fn create_mls_eid(
         backend: &EidMlsBackend,
-        signature_key: SignaturePublicKey,
+        keypair: SignatureKeyPair,
         credential: CredentialWithKey,
     ) -> Result<Self, EidError>
     where
@@ -43,7 +43,7 @@ impl EidMlsClient {
 
         Ok(Self {
             state: EidMlsClientState { group },
-            pubkey: signature_key.clone(),
+            keypair,
         })
     }
 }

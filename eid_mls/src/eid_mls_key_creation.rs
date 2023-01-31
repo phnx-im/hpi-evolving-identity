@@ -57,7 +57,7 @@ pub(crate) fn create_store_key_package(
     signer: &impl Signer,
 ) -> KeyPackage {
     let kp = KeyPackage::builder()
-        .key_package_extensions(extensions)
+        //.key_package_extensions(extensions)
         .build(
             CryptoConfig::with_default_version(ciphersuite),
             backend,
