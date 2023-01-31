@@ -164,10 +164,22 @@ impl EidClient for EidDummyClient {
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(_id: Vec<u8>, _backend: &Self::BackendProvider) -> Self::MemberProvider {
-        EidDummyMember {
-            pk: (0..256).map(|_| rand::random::<u8>()).collect(),
-            cross_signed: BOOLEAN::FALSE,
-        }
+    fn generate_initial_member(
+        _id: Vec<u8>,
+        _backend: &Self::BackendProvider,
+    ) -> (Self::MemberProvider, Self::KeyProvider) {
+        (
+            EidDummyMember {
+                pk: (0..256).map(|_| rand::random::<u8>()).collect(),
+                cross_signed: BOOLEAN::FALSE,
+            },
+            (),
+        )
+    }
+
+    #[cfg(feature = "test")]
+    fn generate_initial_client(id: Vec<u8>, backend: &Self::BackendProvider) -> Self {
+        let (member, keypair) = EidDummyClient::generate_initial_member("1".into(), backend);
+        EidDummyClient::create_eid(&member, keypair, backend).expect("Could not create EID")
     }
 }

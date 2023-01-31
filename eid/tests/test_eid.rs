@@ -21,13 +21,14 @@ use eid_traits::types::EidError;
 lazy_static! {
     static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();
     static ref MLS_BACKEND: EidMlsBackend = EidMlsBackend::default();
-    // static ref MLS_KEYPAIR: SignatureKeyPair = SignatureKeyPair::new();
+    //static ref MLS_MEMBER: (EidMlsMember, SignatureKeyPair) =
+    //    EidMlsClient::generate_initial_member("test_id".into(), &MLS_BACKEND);
 }
 
 #[template]
 #[rstest(client, backend,
 case::EidDummy(& mut EidDummyClient::create_eid(& EidDummyMember::new("test_key".as_bytes().to_vec()), (), & DUMMY_BACKEND).expect("creation failed"), & DUMMY_BACKEND),
-case::EidMls(& mut EidMlsClient::create_eid(& EidMlsClient::generate_initial_id("test_id".into(), & MLS_BACKEND), MLS_KEYPAIR, & MLS_BACKEND).expect("creation failed"), & MLS_BACKEND),
+case::EidMls(& mut EidMlsClient::generate_initial_client("test_id".into(), & MLS_BACKEND), & MLS_BACKEND),
 )]
 #[allow(non_snake_case)]
 pub fn eid_clients<C, B>(client: &mut C, backend: &B)
@@ -56,9 +57,9 @@ where
     assert_eq!(1, members_after_cross_sign.len());
 
     // Create Alice as a member with a random pk
-    let alice = C::generate_initial_id("alice".into(), backend);
+    let (alice, alice_kp) = C::generate_initial_member("alice".into(), backend);
     let (add_alice_evolvement, cross_sign_alice_evolvement) =
-        add_and_cross_sign(client, alice.clone(), backend);
+        add_and_cross_sign(client, alice.clone(), alice_kp, backend);
 
     let members_after_alice_cross_sign = client.get_members();
     assert!(members_after_alice_cross_sign.contains(&alice));
@@ -79,8 +80,8 @@ where
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
     // Add Bob
-    let bob = C::generate_initial_id("bob".into(), backend);
-    add_and_cross_sign(client, bob.clone(), backend);
+    let (bob, bob_kp) = C::generate_initial_member("bob".into(), backend);
+    add_and_cross_sign(client, bob.clone(), bob_kp, backend);
 
     let members = client.get_members();
 
@@ -101,9 +102,9 @@ where
 {
     let mut transcript = build_transcript(client, backend);
 
-    let alice = C::generate_initial_id("alice".into(), backend);
+    let (alice, keypair_alice) = C::generate_initial_member("alice".into(), backend);
     let (add_alice_evolvement, cross_sign_alice_evolvement) =
-        add_and_cross_sign(client, alice.clone(), backend);
+        add_and_cross_sign(client, alice.clone(), keypair_alice, backend);
 
     // TODO transcript
     //     .add_evolvement(evolvement_add_in.clone(), backend)
@@ -237,6 +238,7 @@ fn cross_sign<C: EidClient>(client: &mut C, backend: &C::BackendProvider) -> C::
 fn add_and_cross_sign<C: EidClient>(
     client: &mut C,
     member: C::MemberProvider,
+    keypair: C::KeyProvider,
     backend: &C::BackendProvider,
 ) -> (C::EvolvementProvider, C::EvolvementProvider) {
     let add_evolvement_out = client.add(&member, backend).expect("failed to add member");
@@ -246,7 +248,7 @@ fn add_and_cross_sign<C: EidClient>(
         .evolve(add_evolvement_in.clone(), backend)
         .expect("Failed to evolve");
 
-    let new_client = &mut C::create_from_invitation(add_evolvement_in.clone(), backend)
+    let new_client = &mut C::create_from_invitation(add_evolvement_in.clone(), keypair, backend)
         .expect("failed to create client from invitation");
 
     let cross_sign_evolvement_in = cross_sign(new_client, backend);
@@ -261,10 +263,9 @@ fn add_and_cross_sign<C: EidClient>(
 #[test]
 fn test_mls_update() {
     let backend = &MLS_BACKEND;
-    let client = &mut EidMlsClient::create_eid(
-        &EidMlsClient::generate_initial_id(String::from("client01"), &MLS_BACKEND),
-        &MLS_BACKEND,
-    )
-    .expect("creation failed");
+    let (member, keypair) =
+        EidMlsClient::generate_initial_member(Vec::from("client01"), &MLS_BACKEND);
+    let client =
+        &mut EidMlsClient::create_eid(&member, keypair, &MLS_BACKEND).expect("creation failed");
     update(client, backend);
 }
