@@ -1,4 +1,11 @@
+use openmls::framing::MlsMessageIn;
+use openmls::messages::Welcome;
+use openmls::prelude::MlsMessageInBody;
+use openmls::prelude::{CredentialType, MlsGroup, SignaturePublicKey};
+use openmls_basic_credential::SignatureKeyPair;
+
 use eid_traits::client::EidClient;
+use eid_traits::evolvement::Evolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
@@ -12,6 +19,7 @@ use crate::state::transcript_state::{EidMlsExportedTranscriptState, EidMlsTransc
 
 pub struct EidMlsClient {
     pub(crate) state: EidMlsClientState,
+    pub(crate) keypair: SignatureKeyPair,
 }
 
 impl EidClient for EidMlsClient {
@@ -20,15 +28,60 @@ impl EidClient for EidMlsClient {
     type TranscriptStateProvider = EidMlsTranscriptState;
     type ExportedTranscriptStateProvider = EidMlsExportedTranscriptState;
     type BackendProvider = EidMlsBackend;
+    type KeyProvider = SignatureKeyPair;
 
     #[cfg(feature = "test")]
     type TranscriptProvider = EidMlsTranscript;
 
     fn create_eid(
         initial_member: &Self::MemberProvider,
+        key_pair: Self::KeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        Self::create_mls_eid(backend, &initial_member)
+        let key_package =
+            initial_member
+                .key_package
+                .clone()
+                .ok_or(EidError::InvalidMemberError(
+                    "No key package provided in member".into(),
+                ))?;
+
+        let signature_key = key_package.leaf_node().signature_key();
+
+        Self::create_mls_eid(backend, key_pair, initial_member.credential.clone())
+    }
+
+    fn create_from_invitation(
+        invitation: Self::EvolvementProvider,
+        signature_keypair: Self::KeyProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self, EidError>
+    where
+        Self: Sized,
+    {
+        if let EidMlsEvolvement::IN {
+            message: _,
+            welcome: option_message_in,
+        } = invitation
+        {
+            let message_in = option_message_in.ok_or(EidError::InvalidInvitationError)?;
+            let message_in_body = message_in.extract();
+            if let MlsMessageInBody::Welcome(welcome) = message_in_body {
+                let mls_group_config = Self::gen_group_config();
+                let mls_group = MlsGroup::new_from_welcome(
+                    &backend.mls_backend,
+                    &mls_group_config,
+                    welcome,
+                    None,
+                )
+                .map_err(|err| EidError::CreateGroupError(err.to_string()))?;
+                return Ok(Self {
+                    state: EidMlsClientState { group: mls_group },
+                    keypair: signature_keypair,
+                });
+            }
+        }
+        Err(EidError::InvalidInvitationError)
     }
 
     fn add(
@@ -36,15 +89,19 @@ impl EidClient for EidMlsClient {
         member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError> {
-        let group = &mut self.state.group;
-        let (mls_out, welcome) = group
-            .add_members(&backend.mls_backend, &[member.key_package.clone()])
-            .map_err(|error| EidError::AddMemberError(error.to_string()))?;
-        let evolvement = EidMlsEvolvement::OUT {
-            message: mls_out.into(),
-            welcome: Some(welcome),
-        };
-        Ok(evolvement)
+        if let Some(key_package) = member.key_package.clone() {
+            let group = &mut self.state.group;
+            let (mls_out, welcome, _group_info) = group
+                .add_members(&backend.mls_backend, &self.keypair, &[key_package])
+                .map_err(|error| EidError::AddMemberError(error.to_string()))?;
+            let evolvement = EidMlsEvolvement::OUT {
+                message: mls_out.into(),
+                welcome: Some(welcome),
+            };
+            Ok(evolvement)
+        } else {
+            Err(EidError::AddMemberError("No key package provided".into()))
+        }
     }
 
     fn remove(
@@ -58,8 +115,8 @@ impl EidClient for EidMlsClient {
         let group = &mut self.state.group;
 
         if let Some(mls_member) = &member.mls_member {
-            let (mls_out, welcome) = group
-                .remove_members(&backend.mls_backend, &[mls_member.index])
+            let (mls_out, welcome, _group_info) = group
+                .remove_members(&backend.mls_backend, &self.keypair, &[mls_member.index])
                 .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
             let evolvement = EidMlsEvolvement::OUT {
                 message: mls_out.into(),
@@ -78,8 +135,8 @@ impl EidClient for EidMlsClient {
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
-        let mls_out = group
-            .propose_self_update(&backend.mls_backend, None)
+        let (mls_out, _, _) = group
+            .self_update(&backend.mls_backend, &self.keypair)
             .map_err(|error| EidError::UpdateMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement::OUT {
             message: mls_out.into(),
@@ -96,6 +153,13 @@ impl EidClient for EidMlsClient {
         Ok(self.state.apply(evolvement, backend)?)
     }
 
+    fn cross_sign_membership(
+        &mut self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::EvolvementProvider, EidError> {
+        self.update(backend)
+    }
+
     fn get_members(&self) -> Vec<Self::MemberProvider> {
         self.state.get_members()
     }
@@ -107,7 +171,7 @@ impl EidClient for EidMlsClient {
         let mls_out = self
             .state
             .group
-            .export_group_info(&backend.mls_backend, false)
+            .export_group_info(&backend.mls_backend, &self.keypair, false)
             .map_err(|_| EidError::ExportGroupInfoError)?;
         let leaf_node = self
             .state
@@ -123,22 +187,39 @@ impl EidClient for EidMlsClient {
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::MemberProvider {
+    fn generate_initial_member(
+        id: Vec<u8>,
+        backend: &Self::BackendProvider,
+    ) -> (Self::MemberProvider, Self::KeyProvider) {
         let ciphersuite = backend.ciphersuite;
-        let identifier = String::from("id01"); // TODO: yeah, idk ...
-        let credential_bundle = create_store_credential(
-            identifier,
-            &backend.mls_backend,
+        let (cred_with_key, keypair) = create_store_credential(
+            id,
+            CredentialType::Basic,
             ciphersuite.signature_algorithm(),
+            &backend.mls_backend,
         );
 
-        let key_bundle =
-            create_store_key_package(ciphersuite, &credential_bundle, &backend.mls_backend);
+        let key_bundle = create_store_key_package(
+            ciphersuite,
+            cred_with_key.clone(),
+            &backend.mls_backend,
+            &keypair,
+        );
 
         // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
-        EidMlsMember {
-            mls_member: None,
-            key_package: key_bundle.clone(),
-        }
+        (
+            EidMlsMember {
+                mls_member: None,
+                key_package: Some(key_bundle.clone()),
+                credential: cred_with_key,
+            },
+            keypair,
+        )
+    }
+
+    #[cfg(feature = "test")]
+    fn generate_initial_client(id: Vec<u8>, backend: &Self::BackendProvider) -> Self {
+        let (member, keypair) = Self::generate_initial_member(id, backend);
+        Self::create_eid(&member, keypair, backend).expect("Could not create EID")
     }
 }

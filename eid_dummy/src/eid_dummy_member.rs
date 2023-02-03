@@ -1,8 +1,18 @@
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+
 use eid_traits::member::Member;
 
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone, Eq, TlsSerialize, TlsDeserialize, TlsSize)]
 pub struct EidDummyMember {
     pub(crate) pk: Vec<u8>,
+    pub(crate) cross_signed: BOOLEAN,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, TlsSerialize, TlsDeserialize, TlsSize)]
+#[repr(u8)]
+pub enum BOOLEAN {
+    TRUE = 1,
+    FALSE = 0,
 }
 
 impl PartialEq for EidDummyMember {
@@ -12,13 +22,17 @@ impl PartialEq for EidDummyMember {
 }
 
 impl Member for EidDummyMember {
-    type IdentityProvider = Vec<u8>;
+    type CredentialProvider = Vec<u8>;
 
     fn new(cred: Vec<u8>) -> Self {
-        EidDummyMember { pk: cred }
+        EidDummyMember {
+            pk: cred,
+            cross_signed: BOOLEAN::FALSE,
+        }
     }
 
-    fn get_identity(&self) -> Vec<u8> {
+    #[cfg(feature = "test")]
+    fn get_credential(&self) -> Vec<u8> {
         self.pk.clone()
     }
 }

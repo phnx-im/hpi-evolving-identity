@@ -11,12 +11,15 @@ pub enum EidError {
     AddMemberError(String),
     RemoveMemberError(String),
     InvalidMemberError(String),
-    ProcessMessageError,
+    ProcessMessageError(String),
     UnverifiedMessageError,
-    InvalidMessageError,
+    InvalidMessageError(String),
     ApplyCommitError,
     UpdateMemberError(String),
     ExportGroupInfoError,
+    SerializationError(String),
+    InvalidInvitationError,
+    CreateGroupError(String),
 }
 
 impl Display for EidError {

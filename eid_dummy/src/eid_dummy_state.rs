@@ -1,3 +1,5 @@
+use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+
 use eid_traits::state::EidState;
 use eid_traits::transcript::EidExportedTranscriptState;
 use eid_traits::types::EidError;
@@ -6,7 +8,7 @@ use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::EidDummyMember;
 
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, TlsDeserialize, TlsSerialize, TlsSize)]
 pub struct EidDummyState {
     pub(crate) members: Vec<EidDummyMember>,
 }
@@ -33,7 +35,7 @@ impl EidState for EidDummyState {
     ) -> Result<(), EidError> {
         match &evolvement {
             EidDummyEvolvement::Update { members }
-            | EidDummyEvolvement::Add { members }
+            | EidDummyEvolvement::Add { members, .. }
             | EidDummyEvolvement::Remove { members } => {
                 self.members = members.clone();
                 Ok(())

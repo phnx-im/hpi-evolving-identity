@@ -9,6 +9,7 @@ path = "src/traits.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+tls_codec = "0.2.0"
 
 [features]
 test = []

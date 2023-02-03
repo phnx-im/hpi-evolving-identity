@@ -18,6 +18,7 @@ pub trait EidClient {
         BackendProvider = Self::BackendProvider,
     >;
     type BackendProvider: EidBackend;
+    type KeyProvider;
 
     // We're only requiring this for tests since we don't want to unnecessarily restrict the transcript type.
     #[cfg(feature = "test")]
@@ -31,6 +32,16 @@ pub trait EidClient {
     /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
     fn create_eid(
         initial_member: &Self::MemberProvider,
+        key_pair: Self::KeyProvider,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self, EidError>
+    where
+        Self: Sized;
+
+    /// Create the [EidClient] with the state of an existing EID that you are invited to.
+    fn create_from_invitation(
+        invitation: Self::EvolvementProvider,
+        signature_keypair: Self::KeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError>
     where
@@ -68,6 +79,11 @@ pub trait EidClient {
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError>;
 
+    fn cross_sign_membership(
+        &mut self,
+        backend: &Self::BackendProvider,
+    ) -> Result<Self::EvolvementProvider, EidError>;
+
     /// Get all clients which are members of the EID.
     fn get_members(&self) -> Vec<Self::MemberProvider>;
 
@@ -77,5 +93,11 @@ pub trait EidClient {
     ) -> Result<Self::ExportedTranscriptStateProvider, EidError>;
 
     #[cfg(feature = "test")]
-    fn generate_initial_id(backend: &Self::BackendProvider) -> Self::MemberProvider;
+    fn generate_initial_member(
+        id: Vec<u8>,
+        backend: &Self::BackendProvider,
+    ) -> (Self::MemberProvider, Self::KeyProvider);
+
+    #[cfg(feature = "test")]
+    fn generate_initial_client(id: Vec<u8>, backend: &Self::BackendProvider) -> Self;
 }

@@ -1,3 +1,5 @@
+use tls_codec::{Deserialize, Serialize};
+
 use crate::backend::EidBackend;
 use crate::evolvement::Evolvement;
 use crate::member::Member;
@@ -40,7 +42,7 @@ pub trait EidTranscript {
 
 /// State that is exported by the client and sent over the wire. The only function it needs
 /// to implement is the conversion to a transcript state.
-pub trait EidExportedTranscriptState {
+pub trait EidExportedTranscriptState: Serialize + Deserialize {
     type TranscriptStateProvider: EidState;
     type BackendProvider: EidBackend;
 

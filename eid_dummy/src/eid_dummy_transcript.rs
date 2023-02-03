@@ -43,7 +43,7 @@ impl EidTranscript for EidDummyTranscript {
         self.log.push(evolvement.clone());
         match evolvement {
             EidDummyEvolvement::Update { members }
-            | EidDummyEvolvement::Add { members }
+            | EidDummyEvolvement::Add { members, .. }
             | EidDummyEvolvement::Remove { members } => self.current_state.members = members,
         }
         Ok(())
