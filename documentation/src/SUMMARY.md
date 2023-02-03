@@ -1,7 +1,9 @@
 # Summary
 
 - [Concepts](concepts/concepts.md)
-- [User manual](user_manual/README.md)
+  - [Evolving Identity](concepts/concepts.md)
+  - [Evolving Identity using MLS](conepts/mls_eid.md)
+- [User Manual](user_manual/README.md)
   - [Creating EIDs](user_manual/create_eid.md)
   - [Adding members](user_manual/add_members.md)
   - [Joining from welcome message](user_manual/join_from_welcome.md)
