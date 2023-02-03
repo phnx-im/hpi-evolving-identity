@@ -3,6 +3,8 @@ use openmls_rust_crypto::OpenMlsRustCrypto;
 
 use eid_traits::backend::EidBackend;
 
+use crate::eid_mls_client::EidMlsClient;
+
 pub struct EidMlsBackend {
     pub(crate) mls_backend: OpenMlsRustCrypto,
     pub(crate) ciphersuite: Ciphersuite,
@@ -17,4 +19,7 @@ impl Default for EidMlsBackend {
     }
 }
 
-impl EidBackend for EidMlsBackend {}
+impl EidBackend for EidMlsBackend {
+    #[cfg(feature = "test")]
+    type ClientProvider = EidMlsClient;
+}
