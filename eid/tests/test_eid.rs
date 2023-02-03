@@ -25,20 +25,11 @@ case::EidDummy(& EidDummyBackend::default()),
 case::EidMls(& EidMlsBackend::default()),
 )]
 #[allow(non_snake_case)]
-pub fn eid_clients<C, B>(backend: &B)
-where
-    C: EidClient<BackendProvider = B>,
-    B: EidBackend<ClientProvider = C>,
-{
-}
+pub fn eid_clients<B: EidBackend>(backend: &B) {}
 
 #[apply(eid_clients)]
-fn add<C, B>(backend: &B)
-where
-    C: EidClient<BackendProvider = B>,
-    B: EidBackend<ClientProvider = C>,
-{
-    let client = &mut C::generate_initial_client("test_id".into(), backend);
+fn add<B: EidBackend>(backend: &B) {
+    let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
     // member list length unchanged before evolving
@@ -52,7 +43,7 @@ where
     assert_eq!(1, members_after_cross_sign.len());
 
     // Create Alice as a member with a random pk
-    let (alice, alice_kp) = C::generate_initial_member("alice".into(), backend);
+    let (alice, alice_kp) = B::ClientProvider::generate_initial_member("alice".into(), backend);
     let (add_alice_evolvement, cross_sign_alice_evolvement) =
         add_and_cross_sign(client, alice.clone(), alice_kp, backend);
 
@@ -75,7 +66,7 @@ where
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
     // Add Bob
-    let (bob, bob_kp) = C::generate_initial_member("bob".into(), backend);
+    let (bob, bob_kp) = B::ClientProvider::generate_initial_member("bob".into(), backend);
     add_and_cross_sign(client, bob.clone(), bob_kp, backend);
 
     let members = client.get_members();
@@ -90,15 +81,12 @@ where
 }
 
 #[apply(eid_clients)]
-fn remove<C, B>(backend: &B)
-where
-    C: EidClient<BackendProvider = B>,
-    B: EidBackend<ClientProvider = C>,
-{
-    let client = &mut C::generate_initial_client("test_id".into(), backend);
+fn remove<B: EidBackend>(backend: &B) {
+    let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
-    let (alice, keypair_alice) = C::generate_initial_member("alice".into(), backend);
+    let (alice, keypair_alice) =
+        B::ClientProvider::generate_initial_member("alice".into(), backend);
     let (add_alice_evolvement, cross_sign_alice_evolvement) =
         add_and_cross_sign(client, alice.clone(), keypair_alice, backend);
 
@@ -117,7 +105,8 @@ where
         .remove(&alice_after_insert, backend)
         .expect("failed to remove member");
 
-    let evolvement_remove_in: C::EvolvementProvider = simulate_transfer(&evolvement_remove_out);
+    let evolvement_remove_in: <B::ClientProvider as EidClient>::EvolvementProvider =
+        simulate_transfer(&evolvement_remove_out);
     client
         .evolve(evolvement_remove_in.clone(), backend)
         .expect("Failed to apply remove on client state");
@@ -143,12 +132,8 @@ where
 }
 
 #[apply(eid_clients)]
-fn update<C, B>(backend: &B)
-where
-    C: EidClient<BackendProvider = B>,
-    B: EidBackend<ClientProvider = C>,
-{
-    let client = &mut C::generate_initial_client("test_id".into(), backend);
+fn update<B: EidBackend>(backend: &B) {
+    let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
     let cross_sign_evolvement = cross_sign(client, backend);
@@ -156,7 +141,8 @@ where
     let alice_before_update_1 = &client.get_members()[0];
 
     let update_evolvement_1_out = client.update(backend).expect("Updating client keys failed");
-    let update_evolvement_1_in: C::EvolvementProvider = simulate_transfer(&update_evolvement_1_out);
+    let update_evolvement_1_in: <B::ClientProvider as EidClient>::EvolvementProvider =
+        simulate_transfer(&update_evolvement_1_out);
     client
         .evolve(update_evolvement_1_in.clone(), backend)
         .expect("Failed to apply update on client state");
@@ -173,7 +159,8 @@ where
     // Update Alice a second time
     let alice_before_update_2 = &members_after_update_1[0];
     let update_evolvement_2_out = client.update(backend).expect("Updating client keys failed");
-    let update_evolvement_2_in: C::EvolvementProvider = simulate_transfer(&update_evolvement_2_out);
+    let update_evolvement_2_in: <B::ClientProvider as EidClient>::EvolvementProvider =
+        simulate_transfer(&update_evolvement_2_out);
     client
         .evolve(update_evolvement_2_in.clone(), backend)
         .expect("Failed to apply update on client state");
