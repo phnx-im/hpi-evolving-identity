@@ -3,6 +3,8 @@ extern crate lazy_static;
 
 use std::fmt::Debug;
 
+use openmls::prelude::SignatureScheme;
+use openmls_basic_credential::SignatureKeyPair;
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
 use tls_codec::{Deserialize, Serialize};
@@ -18,8 +20,6 @@ use eid_traits::evolvement::Evolvement;
 use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
-use openmls::prelude::SignatureScheme;
-use openmls_basic_credential::SignatureKeyPair;
 
 lazy_static! {
     static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();
@@ -34,17 +34,17 @@ case::EidDummy(& mut EidDummyClient::create_eid(& EidDummyMember::new("test_key"
 case::EidMls(& mut EidMlsClient::generate_initial_client("test_id".into(), & MLS_BACKEND), & MLS_BACKEND),
 )]
 #[allow(non_snake_case)]
-pub fn eid_clients<C, B>(client: &mut C, backend: &B)
+pub fn eid_clients<C>(client: &mut C, backend: &C::BackendProvider)
 where
-    C: EidClient<BackendProvider = B>,
+    C: EidClient,
     C::EvolvementProvider: Debug,
 {
 }
 
 #[apply(eid_clients)]
-fn add<C, B>(client: &mut C, backend: &B)
+fn add<C>(client: &mut C, backend: &C::BackendProvider)
 where
-    C: EidClient<BackendProvider = B>,
+    C: EidClient,
     C::EvolvementProvider: Debug,
 {
     let mut transcript = build_transcript(client, backend);
@@ -98,9 +98,9 @@ where
 }
 
 #[apply(eid_clients)]
-fn remove<C, B>(client: &mut C, backend: &B)
+fn remove<C>(client: &mut C, backend: &C::BackendProvider)
 where
-    C: EidClient<BackendProvider = B>,
+    C: EidClient,
     C::EvolvementProvider: Debug,
 {
     let mut transcript = build_transcript(client, backend);
@@ -150,9 +150,9 @@ where
 }
 
 #[apply(eid_clients)]
-fn update<C, B>(client: &mut C, backend: &B)
+fn update<C>(client: &mut C, backend: &C::BackendProvider)
 where
-    C: EidClient<BackendProvider = B>,
+    C: EidClient,
     C::EvolvementProvider: Debug,
 {
     let mut transcript = build_transcript(client, backend);
@@ -197,9 +197,9 @@ where
 
 /// Create transcript, trusting the client's state
 #[cfg(feature = "test")]
-fn build_transcript<C, B>(client: &C, backend: &B) -> C::TranscriptProvider
+fn build_transcript<C>(client: &C, backend: &C::BackendProvider) -> C::TranscriptProvider
 where
-    C: EidClient<BackendProvider = B>,
+    C: EidClient,
 {
     let exported_state = client
         .export_transcript_state(backend)
