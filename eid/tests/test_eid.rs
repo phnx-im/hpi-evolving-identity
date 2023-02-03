@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
 use std::fmt::Debug;
 
 use openmls::prelude::SignatureScheme;
@@ -15,38 +12,33 @@ use eid_dummy::eid_dummy_member::EidDummyMember;
 use eid_mls::eid_mls_backend::EidMlsBackend;
 use eid_mls::eid_mls_client::EidMlsClient;
 use eid_mls::eid_mls_member::EidMlsMember;
+use eid_traits::backend::EidBackend;
 use eid_traits::client::EidClient;
 use eid_traits::evolvement::Evolvement;
 use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
 
-lazy_static! {
-    static ref DUMMY_BACKEND: EidDummyBackend = EidDummyBackend::default();
-    static ref MLS_BACKEND: EidMlsBackend = EidMlsBackend::default();
-    //static ref MLS_MEMBER: (EidMlsMember, SignatureKeyPair) =
-    //    EidMlsClient::generate_initial_member("test_id".into(), &MLS_BACKEND);
-}
-
 #[template]
-#[rstest(client, backend,
-case::EidDummy(& mut EidDummyClient::create_eid(& EidDummyMember::new("test_key".as_bytes().to_vec()), (), & DUMMY_BACKEND).expect("creation failed"), & DUMMY_BACKEND),
-case::EidMls(& mut EidMlsClient::generate_initial_client("test_id".into(), & MLS_BACKEND), & MLS_BACKEND),
+#[rstest(backend,
+case::EidDummy(& EidDummyBackend::default()),
+case::EidMls(& EidMlsBackend::default()),
 )]
 #[allow(non_snake_case)]
-pub fn eid_clients<C>(client: &mut C, backend: &C::BackendProvider)
+pub fn eid_clients<C, B>(backend: &B)
 where
-    C: EidClient,
-    C::EvolvementProvider: Debug,
+    C: EidClient<BackendProvider = B>,
+    B: EidBackend<ClientProvider = C>,
 {
 }
 
 #[apply(eid_clients)]
-fn add<C>(client: &mut C, backend: &C::BackendProvider)
+fn add<C, B>(backend: &B)
 where
-    C: EidClient,
-    C::EvolvementProvider: Debug,
+    C: EidClient<BackendProvider = B>,
+    B: EidBackend<ClientProvider = C>,
 {
+    let client = &mut C::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
     // member list length unchanged before evolving
@@ -98,11 +90,12 @@ where
 }
 
 #[apply(eid_clients)]
-fn remove<C>(client: &mut C, backend: &C::BackendProvider)
+fn remove<C, B>(backend: &B)
 where
-    C: EidClient,
-    C::EvolvementProvider: Debug,
+    C: EidClient<BackendProvider = B>,
+    B: EidBackend<ClientProvider = C>,
 {
+    let client = &mut C::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
     let (alice, keypair_alice) = C::generate_initial_member("alice".into(), backend);
@@ -150,11 +143,12 @@ where
 }
 
 #[apply(eid_clients)]
-fn update<C>(client: &mut C, backend: &C::BackendProvider)
+fn update<C, B>(backend: &B)
 where
-    C: EidClient,
-    C::EvolvementProvider: Debug,
+    C: EidClient<BackendProvider = B>,
+    B: EidBackend<ClientProvider = C>,
 {
+    let client = &mut C::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
     let cross_sign_evolvement = cross_sign(client, backend);
@@ -265,10 +259,6 @@ fn add_and_cross_sign<C: EidClient>(
 
 #[test]
 fn test_mls_update() {
-    let backend = &MLS_BACKEND;
-    let (member, keypair) =
-        EidMlsClient::generate_initial_member(Vec::from("client01"), &MLS_BACKEND);
-    let client =
-        &mut EidMlsClient::create_eid(&member, keypair, &MLS_BACKEND).expect("creation failed");
-    update(client, backend);
+    let backend = &EidMlsBackend::default();
+    update(backend);
 }

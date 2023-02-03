@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::backend::EidBackend;
 use crate::evolvement::Evolvement;
 use crate::member::Member;
@@ -7,7 +9,10 @@ use crate::transcript::EidTranscript;
 use crate::types::EidError;
 
 pub trait EidClient {
+    #[cfg(not(feature = "test"))]
     type EvolvementProvider: Evolvement;
+    #[cfg(feature = "test")]
+    type EvolvementProvider: Evolvement + Debug;
     type MemberProvider: Member;
     type TranscriptStateProvider: EidState<
         EvolvementProvider = Self::EvolvementProvider,
