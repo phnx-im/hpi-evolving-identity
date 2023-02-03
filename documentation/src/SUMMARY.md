@@ -1,6 +1,6 @@
 # Summary
 
-- [Concepts](concepts.md)
+- [Concepts](concepts/concepts.md)
 - [User manual](user_manual/README.md)
   - [Creating EIDs](user_manual/create_eid.md)
   - [Adding members](user_manual/add_members.md)
