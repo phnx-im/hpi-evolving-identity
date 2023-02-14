@@ -155,7 +155,9 @@ fn update<B: EidBackend>(backend: &B) {
 
     let members_after_update_1 = client.get_members();
 
-    assert!(!members_after_update_1.contains(alice_before_update_1));
+    let alice_after_update = members_after_update_1[0].clone();
+    assert!(members_after_update_1.contains(alice_before_update_1));
+    assert_ne!(alice_after_update.get_pk(), alice_before_update_1.get_pk());
     assert_eq!(1, members_after_update_1.len());
 
     // Update Alice a second time
@@ -173,6 +175,7 @@ fn update<B: EidBackend>(backend: &B) {
     // assert_eq!(transcript.get_members(), client.get_members());
 
     let members_after_update_2 = client.get_members();
+    let alice_after_update_2 = members_after_update_2[0].clone();
 
     assert!(!members_after_update_2.contains(alice_before_update_2));
     assert_eq!(1, members_after_update_2.len());

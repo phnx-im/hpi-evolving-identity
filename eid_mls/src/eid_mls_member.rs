@@ -30,13 +30,8 @@ impl Member for EidMlsMember {
     }
 
     #[cfg(feature = "test")]
-    fn get_credential(&self) -> Self::CredentialProvider {
-        (
-            self.key_package
-                .clone()
-                .expect("Doesn't contain key package"),
-            self.credential.clone(),
-        )
+    fn get_pk(&self) -> Vec<u8> {
+        self.credential.signature_key.as_slice().to_vec()
     }
 }
 
