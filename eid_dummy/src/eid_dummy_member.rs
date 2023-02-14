@@ -4,6 +4,7 @@ use eid_traits::member::Member;
 
 #[derive(Debug, Clone, Eq, TlsSerialize, TlsDeserialize, TlsSize)]
 pub struct EidDummyMember {
+    pub(crate) id: Vec<u8>,
     pub(crate) pk: Vec<u8>,
     pub(crate) cross_signed: BOOLEAN,
 }

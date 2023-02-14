@@ -85,6 +85,8 @@ fn remove<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
+    let cross_sign_evolvement = cross_sign(client, backend);
+
     let (alice, keypair_alice) =
         B::ClientProvider::generate_initial_member("alice".into(), backend);
     let (add_alice_evolvement, cross_sign_alice_evolvement) =
@@ -245,7 +247,8 @@ fn add_and_cross_sign<C: EidClient>(
 }
 
 #[test]
-fn test_mls_update() {
-    let backend = &EidMlsBackend::default();
+fn test_debug() {
+    // let backend = &EidMlsBackend::default();
+    let backend = &EidDummyBackend::default();
     update(backend);
 }

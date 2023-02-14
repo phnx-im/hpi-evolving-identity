@@ -9,7 +9,7 @@ use crate::eid_dummy_member::EidDummyMember;
 pub enum EidDummyEvolvement {
     Add {
         members: Vec<EidDummyMember>,
-        invited_pk: Vec<u8>,
+        invited_id: Vec<u8>,
     },
     Update {
         members: Vec<EidDummyMember>,
@@ -23,7 +23,7 @@ impl Default for EidDummyEvolvement {
     fn default() -> Self {
         Self::Add {
             members: vec![],
-            invited_pk: vec![],
+            invited_id: vec![],
         }
     }
 }

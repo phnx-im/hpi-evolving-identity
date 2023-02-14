@@ -53,12 +53,12 @@ impl EidState for EidMlsTranscriptState {
     ) -> Result<(), EidError> {
         if let EidMlsEvolvement::IN { message, .. } = evolvement {
             let body = message.extract();
-            if let MlsMessageInBody::PublicMessage(msg) = body {
-                let pub_msg = ProtocolMessage::PublicMessage(msg.clone());
-                let processed_message =
-                    self.group
-                        .process_message(&backend.mls_backend, pub_msg)
-                        .map_err(|e| EidError::ProcessMessageError(e.to_string()))?;
+            if let MlsMessageInBody::PublicMessage(public_message) = body {
+                let protocol_message = ProtocolMessage::PublicMessage(public_message);
+                let processed_message = self
+                    .group
+                    .process_message(&backend.mls_backend, protocol_message)
+                    .map_err(|e| EidError::ProcessMessageError(e.to_string()))?;
                 match processed_message.into_content() {
                     ProcessedMessageContent::ApplicationMessage(_)
                     | ProcessedMessageContent::ProposalMessage(_)
@@ -68,7 +68,6 @@ impl EidState for EidMlsTranscriptState {
                         ))
                     }
                     ProcessedMessageContent::StagedCommitMessage(staged_commit) => {
-                        // Merge the diff
                         self.group.merge_commit(*staged_commit);
                     }
                 };
