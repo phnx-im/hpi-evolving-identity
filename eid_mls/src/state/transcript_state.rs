@@ -69,9 +69,7 @@ impl EidState for EidMlsTranscriptState {
                     }
                     ProcessedMessageContent::StagedCommitMessage(staged_commit) => {
                         // Merge the diff
-                        self.group
-                            .merge_commit(*staged_commit)
-                            .map_err(|e| EidError::ApplyCommitError(e.to_string))?
+                        self.group.merge_commit(*staged_commit);
                     }
                 };
                 Ok(())
@@ -123,7 +121,7 @@ impl EidMlsTranscriptState {
     pub(crate) fn clone_serde(&self) -> Result<Self, EidError> {
         let serialized =
             serde_json::to_string(self).map_err(|e| EidError::SerializationError(e.to_string()))?;
-        let deserialized = serde_json::from_str(serialized.into())
+        let deserialized = serde_json::from_str(&serialized)
             .map_err(|e| EidError::DeserializationError(e.to_string()))?;
         Ok(deserialized)
     }
@@ -142,12 +140,15 @@ pub enum EidMlsExportedTranscriptState {
 
 impl Size for EidMlsExportedTranscriptState {
     fn tls_serialized_len(&self) -> usize {
-        match self {
-            Self::OUT { group_info, nodes } | Self::IN { group_info, nodes } => {
-                let len = group_info.tls_serialized_len();
-                let nodes_len = nodes.iter().map(|node| node.tls_serialized_len()).sum();
-                len + nodes_len
+        let nodes_len: usize = match self {
+            EidMlsExportedTranscriptState::IN { nodes, .. }
+            | EidMlsExportedTranscriptState::OUT { nodes, .. } => {
+                nodes.iter().map(|node| node.tls_serialized_len()).sum()
             }
+        };
+        match self {
+            Self::OUT { group_info, .. } => nodes_len + group_info.tls_serialized_len(),
+            Self::IN { group_info, .. } => nodes_len + group_info.tls_serialized_len(),
         }
     }
 }
@@ -197,11 +198,12 @@ impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
         {
             if let MlsMessageInBody::GroupInfo(verifiable_group_info) = message_in.extract() {
                 let (mut group, _extensions) = PublicGroup::from_external(
-                    backend,
+                    &backend.mls_backend,
                     nodes.to_vec(),
                     verifiable_group_info,
                     ProposalStore::new(),
-                );
+                )
+                .map_err(|e| EidError::CreateTranscriptStateError(e.to_string()))?;
 
                 Ok(EidMlsTranscriptState::new(group))
             } else {

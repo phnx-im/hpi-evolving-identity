@@ -21,6 +21,7 @@ pub enum EidError {
     SerializationError(String),
     InvalidInvitationError,
     CreateGroupError(String),
+    CreateTranscriptStateError(String)
 }
 
 impl Display for EidError {
