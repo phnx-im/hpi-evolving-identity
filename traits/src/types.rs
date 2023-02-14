@@ -15,7 +15,7 @@ pub enum EidError {
     ProcessMessageError(String),
     UnverifiedMessageError,
     InvalidMessageError(String),
-    ApplyCommitError,
+    ApplyCommitError(String),
     UpdateMemberError(String),
     ExportGroupInfoError,
     SerializationError(String),

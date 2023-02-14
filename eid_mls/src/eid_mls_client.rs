@@ -177,7 +177,7 @@ impl EidClient for EidMlsClient {
 
         Ok(EidMlsExportedTranscriptState::OUT {
             group_info: mls_out,
-            leaf_node,
+            nodes,
         })
     }
 

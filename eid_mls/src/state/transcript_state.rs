@@ -132,11 +132,11 @@ impl EidMlsTranscriptState {
 pub enum EidMlsExportedTranscriptState {
     IN {
         group_info: MlsMessageIn,
-        leaf_node: LeafNode,
+        nodes: Vec<Option<Node>>,
     },
     OUT {
         group_info: MlsMessageOut,
-        leaf_node: LeafNode,
+        nodes: Vec<Option<Node>>,
     },
 }
 
@@ -192,20 +192,16 @@ impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
     ) -> Result<Self::TranscriptStateProvider, EidError> {
         if let EidMlsExportedTranscriptState::IN {
             group_info: message_in,
-            leaf_node,
+            nodes,
         } = self
         {
             if let MlsMessageInBody::GroupInfo(verifiable_group_info) = message_in.extract() {
-                // let group_info = verifiable_group_info
-                //     .verify(
-                //         &backend.mls_backend,
-                //         // todo: should we take the key out of the leaf node or take a separate one as function argument?
-                //         leaf_node.signature_key(),
-                //         backend.ciphersuite.signature_algorithm(),
-                //     )
-                //     .map_err(|_| EidError::UnverifiedMessageError)?;
-
-                let group = AssistedGroup::new();
+                let (mut group, _extensions) = PublicGroup::from_external(
+                    backend,
+                    nodes.to_vec(),
+                    verifiable_group_info,
+                    ProposalStore::new(),
+                );
 
                 Ok(EidMlsTranscriptState::new(group))
             } else {

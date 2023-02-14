@@ -30,9 +30,6 @@ pub trait EidTranscript {
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError>;
 
-    /// Returns the trusted state.
-    fn trusted_state(&self) -> Self::StateProvider;
-
     /// Return the [Evolvement]s that happened after the trusted [EidState].
     fn log(&self) -> Vec<Self::EvolvementProvider>;
 
