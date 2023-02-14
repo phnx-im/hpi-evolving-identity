@@ -18,7 +18,7 @@ pub enum BOOLEAN {
 
 impl PartialEq for EidDummyMember {
     fn eq(&self, other: &Self) -> bool {
-        self.pk.eq(&other.pk)
+        self.id.eq(&other.id)
     }
 }
 
@@ -27,6 +27,7 @@ impl Member for EidDummyMember {
 
     fn new(cred: Vec<u8>) -> Self {
         EidDummyMember {
+            id: cred.clone(),
             pk: cred,
             cross_signed: BOOLEAN::FALSE,
         }

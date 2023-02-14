@@ -111,13 +111,14 @@ impl EidClient for EidDummyClient {
 
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
-        let myself = &EidDummyMember::new(self.pk.clone());
-        new_members.retain(|m| myself != m);
+        let mut myself = self.state.members.iter().find(|&x| x.id == self.id);
+        let mut myself = myself.unwrap().clone();
+        new_members.retain(|m| &myself != m);
+        myself.cross_signed = BOOLEAN::TRUE;
+        myself.pk = new_pk;
+        new_members.push(myself);
 
-        let mut member = EidDummyMember::new(new_pk.clone());
-        member.cross_signed = BOOLEAN::TRUE;
         // create an evolvement with the new member
-        new_members.push(member);
         let evolvement = EidDummyEvolvement::Update {
             members: new_members,
         };
@@ -142,7 +143,12 @@ impl EidClient for EidDummyClient {
     }
 
     fn get_members(&self) -> Vec<Self::MemberProvider> {
-        self.state.get_members()
+        self.state
+            .get_members()
+            .iter()
+            .filter(|&m| m.cross_signed == BOOLEAN::TRUE)
+            .map(|m| m.clone())
+            .collect()
     }
     fn export_transcript_state(
         &self,
@@ -158,6 +164,7 @@ impl EidClient for EidDummyClient {
     ) -> (Self::MemberProvider, Self::KeyProvider) {
         (
             EidDummyMember {
+                id,
                 pk: (0..256).map(|_| rand::random::<u8>()).collect(),
                 cross_signed: BOOLEAN::FALSE,
             },
