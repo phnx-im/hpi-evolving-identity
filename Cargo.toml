@@ -6,7 +6,7 @@ members = [
 
 resolver = "2"
 tls_codec = { version = "0.2.0", features = ["derive", "serde", "mls"] }
-openmls_basic_credential = { git = "https://github.com/openmls/openmls.git", rev = "d6ba6d90509fa9b82b234b81a6b3db59c0640075" }
+openmls_basic_credential = { git = "https://github.com/openmls/openmls.git", branch = "konrad/public_group_api" }
 
 # Patching unreleased crates
 [patch.crates-io.tls_codec]
