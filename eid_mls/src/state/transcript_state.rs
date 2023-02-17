@@ -1,9 +1,9 @@
 use std::io::{Read, Write};
 
-use openmls::framing::{MlsMessageIn, MlsMessageOut};
 use openmls::group::PublicGroup;
 use openmls::prelude::{
-    MlsMessageInBody, Node, ProcessedMessageContent, ProposalStore, ProtocolMessage,
+    LeafNode, Member as MlsMember, MlsMessageIn, MlsMessageInBody, MlsMessageOut, Node,
+    ProcessedMessageContent, ProposalStore, ProtocolMessage,
 };
 use serde;
 use serde_json;
@@ -20,7 +20,7 @@ use crate::eid_mls_member::EidMlsMember;
 /// Eid Mls Transcript State
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct EidMlsTranscriptState {
-    pub(crate) group: PublicGroup<false>,
+    pub(crate) group: PublicGroup,
 }
 
 impl EidState for EidMlsTranscriptState {
@@ -68,8 +68,11 @@ impl EidState for EidMlsTranscriptState {
     }
 
     fn get_members(&self) -> Vec<Self::MemberProvider> {
-        // self.group.members() (not public right now)
-        todo!()
+        self.group
+            .members()
+            .filter(|member| self.has_member(member).unwrap_or(false))
+            .map(|member| EidMlsMember::from_existing(member.clone()))
+            .collect()
     }
 }
 
@@ -82,7 +85,7 @@ impl PartialEq<Self> for EidMlsTranscriptState {
 }
 
 impl EidMlsTranscriptState {
-    pub(crate) fn new(group: PublicGroup<false>) -> Self {
+    pub(crate) fn new(group: PublicGroup) -> Self {
         EidMlsTranscriptState { group }
     }
 

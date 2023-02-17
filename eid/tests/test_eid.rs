@@ -99,6 +99,9 @@ fn remove<B: EidBackend>(backend: &B) {
     client
         .evolve(evolvement_remove_in.clone(), backend)
         .expect("Failed to apply remove on client state");
+    transcript
+        .evolve(evolvement_remove_in.clone(), backend)
+        .expect("Failed to evolve transcript");
 
     //Todo assert_eq!(transcript.get_members(), client.get_members());
 
@@ -192,7 +195,7 @@ where
 // TODO remove
 #[test]
 fn test_debug() {
-    let backend = &EidMlsBackend::default();
-    // let backend = &EidDummyBackend::default();
-    add(backend);
+    // let backend = &EidMlsBackend::default();
+    let backend = &EidDummyBackend::default();
+    update(backend);
 }
