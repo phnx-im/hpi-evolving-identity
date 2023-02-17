@@ -24,7 +24,7 @@ pub trait EidTranscript {
         Self: Sized;
 
     /// Add a new entry on top of the existing [Evolvement]s in the transcript.
-    fn add_evolvement(
+    fn evolve(
         &mut self,
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
@@ -35,6 +35,8 @@ pub trait EidTranscript {
 
     ///Return the current members (i.e, after the latest [Evolvement])
     fn get_members(&self) -> Vec<Self::MemberProvider>;
+
+    fn get_trusted_state(&self) -> Result<Self::StateProvider, EidError>;
 }
 
 /// State that is exported by the client and sent over the wire. The only function it needs

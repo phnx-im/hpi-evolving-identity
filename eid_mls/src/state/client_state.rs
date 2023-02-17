@@ -11,13 +11,12 @@ use eid_traits::types::EidError;
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
-use crate::state::state_trait::EidMlsState;
 
 pub struct EidMlsClientState {
     pub(crate) group: MlsGroup,
 }
 
-impl EidMlsState for EidMlsClientState {
+impl EidMlsClientState {
     fn apply_processed_message(
         &mut self,
         message: ProcessedMessage,
@@ -41,16 +40,6 @@ impl EidState for EidMlsClientState {
     type EvolvementProvider = EidMlsEvolvement;
     type MemberProvider = EidMlsMember;
     type BackendProvider = EidMlsBackend;
-    fn apply_log(
-        &mut self,
-        evolvements: Vec<Self::EvolvementProvider>,
-        backend: &Self::BackendProvider,
-    ) -> Result<(), EidError> {
-        for evolvement in evolvements {
-            self.apply(evolvement, backend)?;
-        }
-        Ok(())
-    }
 
     fn apply(
         &mut self,

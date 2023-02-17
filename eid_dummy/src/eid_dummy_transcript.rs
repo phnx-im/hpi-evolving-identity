@@ -32,10 +32,11 @@ impl EidTranscript for EidDummyTranscript {
             log,
             current_state,
         };
+        transcript.batch_evolve(log, backend)?;
         Ok(transcript)
     }
 
-    fn add_evolvement(
+    fn evolve(
         &mut self,
         evolvement: EidDummyEvolvement,
         _backend: &Self::BackendProvider,

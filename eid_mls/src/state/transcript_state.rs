@@ -3,15 +3,11 @@ use std::io::{Read, Write};
 use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
 use openmls::group::PublicGroup;
 use openmls::prelude::{
-    LeafNode, MlsMessageInBody, Node, ProcessedMessageContent, ProposalStore, ProtocolMessage,
-    Verifiable,
+    MlsMessageInBody, Node, ProcessedMessageContent, ProposalStore, ProtocolMessage,
 };
-use openmls::prelude_test::ContentType;
 use serde;
 use serde_json;
-use tls_codec::{
-    Deserialize, Error as TlsError, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize,
-};
+use tls_codec::{Deserialize, Error as TlsError, Serialize, Size};
 
 use eid_traits::state::EidState;
 use eid_traits::transcript::EidExportedTranscriptState;
@@ -20,9 +16,6 @@ use eid_traits::types::EidError;
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
-use crate::state::client_state::EidMlsClientState;
-
-use super::state_trait::EidMlsState;
 
 /// Eid Mls Transcript State
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -94,7 +87,7 @@ impl EidState for EidMlsTranscriptState {
 impl Eq for EidMlsTranscriptState {}
 
 impl PartialEq<Self> for EidMlsTranscriptState {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _: &Self) -> bool {
         todo!()
     }
 }

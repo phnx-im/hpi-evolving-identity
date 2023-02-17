@@ -33,7 +33,7 @@ impl EidTranscript for EidMlsTranscript {
         Ok(transcript)
     }
 
-    fn add_evolvement(
+    fn evolve(
         &mut self,
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,

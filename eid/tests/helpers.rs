@@ -1,61 +1,61 @@
-use tls_codec::{Deserialize, Serialize};
-
-use eid_traits::client::EidClient;
-use eid_traits::transcript::EidTranscript;
-
-/// Simulate transfer over the wire by simply serializing and deserializing once.
 #[cfg(feature = "test")]
-pub(crate) fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
-    let serialized = input.tls_serialize_detached().expect("Failed to serialize");
-    O::tls_deserialize(&mut serialized.as_slice()).expect("Failed to deserialize")
-}
+pub(crate) mod helpers {
+    use tls_codec::{Deserialize, Serialize};
 
-#[cfg(feature = "test")]
-pub(crate) fn cross_sign<C: EidClient>(
-    client: &mut C,
-    transcript: &mut C::TranscriptProvider,
-    backend: &C::BackendProvider,
-) -> C::EvolvementProvider {
-    let cross_sign_evolvement_out = client
-        .cross_sign_membership(backend)
-        .expect("Cross signing failed");
-    let cross_sign_evolvement_in: C::EvolvementProvider =
-        simulate_transfer(&cross_sign_evolvement_out);
+    use eid_traits::client::EidClient;
+    use eid_traits::transcript::EidTranscript;
 
-    transcript
-        .add_evolvement(cross_sign_evolvement_in.clone(), backend)
-        .expect("Failed to add cross sign evolvement to transcript");
-    client
-        .evolve(cross_sign_evolvement_in.clone(), backend)
-        .expect("Failed to apply state");
-    cross_sign_evolvement_in
-}
+    /// Simulate transfer over the wire by simply serializing and deserializing once.
+    pub(crate) fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
+        let serialized = input.tls_serialize_detached().expect("Failed to serialize");
+        O::tls_deserialize(&mut serialized.as_slice()).expect("Failed to deserialize")
+    }
 
-#[cfg(feature = "test")]
-pub(crate) fn add_and_cross_sign<C: EidClient>(
-    client: &mut C,
-    transcript: &mut C::TranscriptProvider,
-    member: C::MemberProvider,
-    keypair: C::KeyProvider,
-    backend: &C::BackendProvider,
-) -> () {
-    let add_evolvement_out = client.add(&member, backend).expect("failed to add member");
-    let add_evolvement_in: C::EvolvementProvider = simulate_transfer(&add_evolvement_out);
+    pub(crate) fn cross_sign<C: EidClient>(
+        client: &mut C,
+        transcript: &mut C::TranscriptProvider,
+        backend: &C::BackendProvider,
+    ) -> C::EvolvementProvider {
+        let cross_sign_evolvement_out = client
+            .cross_sign_membership(backend)
+            .expect("Cross signing failed");
+        let cross_sign_evolvement_in: C::EvolvementProvider =
+            simulate_transfer(&cross_sign_evolvement_out);
 
-    transcript
-        .add_evolvement(add_evolvement_in.clone(), backend)
-        .expect("Failed to add evolvement to transcript");
+        transcript
+            .evolve(cross_sign_evolvement_in.clone(), backend)
+            .expect("Failed to add cross sign evolvement to transcript");
+        client
+            .evolve(cross_sign_evolvement_in.clone(), backend)
+            .expect("Failed to apply state");
+        cross_sign_evolvement_in
+    }
 
-    client
-        .evolve(add_evolvement_in.clone(), backend)
-        .expect("Failed to evolve");
+    pub(crate) fn add_and_cross_sign<C: EidClient>(
+        client: &mut C,
+        transcript: &mut C::TranscriptProvider,
+        member: C::MemberProvider,
+        keypair: C::KeyProvider,
+        backend: &C::BackendProvider,
+    ) -> () {
+        let add_evolvement_out = client.add(&member, backend).expect("failed to add member");
+        let add_evolvement_in: C::EvolvementProvider = simulate_transfer(&add_evolvement_out);
 
-    let new_client = &mut C::create_from_invitation(add_evolvement_in, keypair, backend)
-        .expect("failed to create client from invitation");
+        transcript
+            .evolve(add_evolvement_in.clone(), backend)
+            .expect("Failed to add evolvement to transcript");
 
-    let cross_sign_evolvement_in = cross_sign(new_client, transcript, backend);
+        client
+            .evolve(add_evolvement_in.clone(), backend)
+            .expect("Failed to evolve");
 
-    client
-        .evolve(cross_sign_evolvement_in.clone(), backend)
-        .expect("Failed to evolve");
+        let new_client = &mut C::create_from_invitation(add_evolvement_in, keypair, backend)
+            .expect("failed to create client from invitation");
+
+        let cross_sign_evolvement_in = cross_sign(new_client, transcript, backend);
+
+        client
+            .evolve(cross_sign_evolvement_in.clone(), backend)
+            .expect("Failed to evolve");
+    }
 }

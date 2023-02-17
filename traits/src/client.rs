@@ -84,6 +84,19 @@ pub trait EidClient {
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError>;
 
+    /// Apply a [Vec] of [Evolvement] to the current [EidState].
+    /// Can be used to verify a slice of a [Transcript]'s [EidState] or to recover a [EidState].
+    fn batch_evolve(
+        &mut self,
+        evolvements: Vec<Self::EvolvementProvider>,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
+        for evolvement in evolvements.iter() {
+            self.evolve(evolvement.clone(), backend)?;
+        }
+        Ok(())
+    }
+
     fn cross_sign_membership(
         &mut self,
         backend: &Self::BackendProvider,

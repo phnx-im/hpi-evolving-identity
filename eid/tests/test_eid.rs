@@ -1,23 +1,15 @@
-use std::fmt::Debug;
-
-use openmls::prelude::SignatureScheme;
-use openmls_basic_credential::SignatureKeyPair;
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
 
 use eid_dummy::eid_dummy_backend::EidDummyBackend;
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
-use eid_dummy::eid_dummy_member::EidDummyMember;
 use eid_mls::eid_mls_backend::EidMlsBackend;
-use eid_mls::eid_mls_client::EidMlsClient;
-use eid_mls::eid_mls_member::EidMlsMember;
 use eid_traits::backend::EidBackend;
 use eid_traits::client::EidClient;
-use eid_traits::evolvement::Evolvement;
 use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
-use helpers::{add_and_cross_sign, cross_sign, simulate_transfer};
+use helpers::helpers::{add_and_cross_sign, cross_sign, simulate_transfer};
 
 mod helpers;
 
@@ -39,7 +31,7 @@ fn add<B: EidBackend>(backend: &B) {
 
     assert_eq!(0, members_initial.len());
 
-    helpers::cross_sign(client, &mut transcript, backend);
+    cross_sign(client, &mut transcript, backend);
 
     let members_after_cross_sign = client.get_members();
     assert_eq!(1, members_after_cross_sign.len());
@@ -160,7 +152,7 @@ fn update<B: EidBackend>(backend: &B) {
         .expect("Failed to apply update on client state");
 
     transcript
-        .add_evolvement(update_evolvement_2_in.clone(), backend)
+        .evolve(update_evolvement_2_in.clone(), backend)
         .expect("Failed to add evolvement");
     //Todo assert_eq!(transcript.get_members(), client.get_members());
 
