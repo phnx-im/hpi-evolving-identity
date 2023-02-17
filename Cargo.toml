@@ -18,8 +18,6 @@ git = "https://github.com/franziskuskiefer/hpke-rs.git"
 [patch.crates-io.hpke-rs-crypto]
 git = "https://github.com/franziskuskiefer/hpke-rs.git"
 
-[patch.crates-io.hpke-rs-evercrypt]
-git = "https://github.com/franziskuskiefer/hpke-rs.git"
 
 [patch.crates-io.hpke-rs-rust-crypto]
 git = "https://github.com/franziskuskiefer/hpke-rs.git"
