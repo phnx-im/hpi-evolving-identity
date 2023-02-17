@@ -39,7 +39,7 @@ fn add<B: EidBackend>(backend: &B) {
 
     assert_eq!(0, members_initial.len());
 
-    cross_sign(client, &mut transcript, backend);
+    helpers::cross_sign(client, &mut transcript, backend);
 
     let members_after_cross_sign = client.get_members();
     assert_eq!(1, members_after_cross_sign.len());
