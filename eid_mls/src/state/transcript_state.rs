@@ -90,22 +90,14 @@ impl EidMlsTranscriptState {
     }
 
     fn get_leaf_nodes(&self) -> Vec<LeafNode> {
-        let tree = self
-            .group
+        self.group
             .export_nodes()
             .iter()
-            .map(|node| node.clone().unwrap())
-            .collect::<Vec<Node>>();
-
-        let leaf_nodes = tree
-            .iter()
             .filter_map(|node| match node {
-                Node::LeafNode(leaf_node) => Some(LeafNode::from(leaf_node.clone())),
-                Node::ParentNode(_) => None,
+                Some(Node::LeafNode(leaf_node)) => Some(LeafNode::from(leaf_node.clone())),
+                Some(Node::ParentNode(_)) | None => None,
             })
-            .collect();
-
-        leaf_nodes
+            .collect()
     }
 }
 
