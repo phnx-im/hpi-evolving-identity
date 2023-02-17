@@ -48,8 +48,7 @@ impl EidTranscript for EidMlsTranscript {
     }
 
     fn get_members(&self) -> Vec<Self::MemberProvider> {
-        // self.current_state.group.get_members()
-        todo!()
+        self.current_state.get_members()
     }
 }
 

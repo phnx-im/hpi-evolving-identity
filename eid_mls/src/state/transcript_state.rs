@@ -85,11 +85,8 @@ impl EidState for EidMlsTranscriptState {
         }
     }
 
-    fn verify_member(&self, _: &Self::MemberProvider) -> bool {
-        todo!()
-    }
-
     fn get_members(&self) -> Vec<Self::MemberProvider> {
+        // self.group.members() (not public right now)
         todo!()
     }
 }

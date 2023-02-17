@@ -77,10 +77,6 @@ impl EidState for EidMlsClientState {
         }
     }
 
-    fn verify_member(&self, member: &Self::MemberProvider) -> bool {
-        self.get_members().contains(member)
-    }
-
     fn get_members(&self) -> Vec<Self::MemberProvider> {
         // get members out of group state -> members leaf node sources which are not a key package but a commit, will be valid members
         self.group
