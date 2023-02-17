@@ -259,7 +259,7 @@ fn add_and_cross_sign<C: EidClient>(
     let new_client = &mut C::create_from_invitation(add_evolvement_in, keypair, backend)
         .expect("failed to create client from invitation");
 
-    let cross_sign_evolvement_in = cross_sign(new_client, backend);
+    let cross_sign_evolvement_in = cross_sign(new_client, transcript, backend);
 
     client
         .evolve(cross_sign_evolvement_in.clone(), backend)
