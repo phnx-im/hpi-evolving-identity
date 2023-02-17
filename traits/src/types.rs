@@ -9,17 +9,19 @@ pub enum EidError {
     StateNotInitialized,
     StateAlreadyInitialized,
     AddMemberError(String),
+    DeserializationError(String),
     RemoveMemberError(String),
     InvalidMemberError(String),
     ProcessMessageError(String),
     UnverifiedMessageError,
     InvalidMessageError(String),
-    ApplyCommitError,
+    ApplyCommitError(String),
     UpdateMemberError(String),
     ExportGroupInfoError,
     SerializationError(String),
     InvalidInvitationError,
     CreateGroupError(String),
+    CreateTranscriptStateError(String)
 }
 
 impl Display for EidError {

@@ -6,5 +6,5 @@ pub trait Member: PartialEq + Debug + Clone {
     fn new(id: Self::CredentialProvider) -> Self;
 
     #[cfg(feature = "test")]
-    fn get_credential(&self) -> Self::CredentialProvider;
+    fn get_pk(&self) -> Vec<u8>;
 }

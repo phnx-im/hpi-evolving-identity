@@ -1,11 +1,17 @@
 use std::io::{Read, Write};
 
-use mls_assist::group::Group as AssistedGroup;
-use mls_assist::messages::assisted_messages::{AssistedCommit, AssistedGroupInfo, AssistedMessage};
 use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
-use openmls::prelude::{LeafNode, MlsMessageInBody, ProtocolMessage, Verifiable};
+use openmls::group::PublicGroup;
+use openmls::prelude::{
+    LeafNode, MlsMessageInBody, Node, ProcessedMessageContent, ProposalStore, ProtocolMessage,
+    Verifiable,
+};
 use openmls::prelude_test::ContentType;
-use tls_codec::{Deserialize, Error, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize};
+use serde;
+use serde_json;
+use tls_codec::{
+    Deserialize, Error as TlsError, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize,
+};
 
 use eid_traits::state::EidState;
 use eid_traits::transcript::EidExportedTranscriptState;
@@ -19,9 +25,9 @@ use crate::state::client_state::EidMlsClientState;
 use super::state_trait::EidMlsState;
 
 /// Eid Mls Transcript State
-#[derive(Clone)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct EidMlsTranscriptState {
-    pub(crate) group: AssistedGroup,
+    pub(crate) group: PublicGroup<false>,
 }
 
 impl EidState for EidMlsTranscriptState {
@@ -47,23 +53,24 @@ impl EidState for EidMlsTranscriptState {
     ) -> Result<(), EidError> {
         if let EidMlsEvolvement::IN { message, .. } = evolvement {
             let body = message.extract();
-            if let MlsMessageInBody::PublicMessage(msg) = body {
-                let pub_msg = ProtocolMessage::PublicMessage(msg.clone());
-
-                let a_msg = match pub_msg.content_type() {
-                    ContentType::Application | ContentType::Proposal => {
-                        AssistedMessage::NonCommit(msg)
+            if let MlsMessageInBody::PublicMessage(public_message) = body {
+                let protocol_message = ProtocolMessage::PublicMessage(public_message);
+                let processed_message = self
+                    .group
+                    .process_message(&backend.mls_backend, protocol_message)
+                    .map_err(|e| EidError::ProcessMessageError(e.to_string()))?;
+                match processed_message.into_content() {
+                    ProcessedMessageContent::ApplicationMessage(_)
+                    | ProcessedMessageContent::ProposalMessage(_)
+                    | ProcessedMessageContent::ExternalJoinProposalMessage(_) => {
+                        return Err(EidError::ProcessMessageError(
+                            "Unexpected message type.".into(),
+                        ))
                     }
-                    ContentType::Commit => {
-                        // TODO: How do we get the signature from a commit?
-                        let a_group_info = AssistedGroupInfo::Signature(Vec::new());
-                        let a_commit = AssistedCommit::new(msg, a_group_info);
-                        AssistedMessage::Commit(a_commit)
+                    ProcessedMessageContent::StagedCommitMessage(staged_commit) => {
+                        self.group.merge_commit(*staged_commit);
                     }
                 };
-                // TODO: I guess we want to do something with this :D
-                let _processed_msg = self.group.process_message(a_msg);
-
                 Ok(())
             } else {
                 Err(EidError::InvalidMessageError(format!(
@@ -78,11 +85,8 @@ impl EidState for EidMlsTranscriptState {
         }
     }
 
-    fn verify_member(&self, _: &Self::MemberProvider) -> bool {
-        todo!()
-    }
-
     fn get_members(&self) -> Vec<Self::MemberProvider> {
+        // self.group.members() (not public right now)
         todo!()
     }
 }
@@ -106,24 +110,73 @@ impl EidMlsState for EidMlsTranscriptState {
 }
 
 impl EidMlsTranscriptState {
-    pub(crate) fn new(group: AssistedGroup) -> Self {
+    pub(crate) fn new(group: PublicGroup<false>) -> Self {
         EidMlsTranscriptState { group }
+    }
+
+    pub(crate) fn clone_serde(&self) -> Result<Self, EidError> {
+        let serialized =
+            serde_json::to_string(self).map_err(|e| EidError::SerializationError(e.to_string()))?;
+        let deserialized = serde_json::from_str(&serialized)
+            .map_err(|e| EidError::DeserializationError(e.to_string()))?;
+        Ok(deserialized)
     }
 }
 
-#[derive(TlsSize, TlsDeserialize, TlsSerialize)]
-#[repr(u8)]
 pub enum EidMlsExportedTranscriptState {
-    #[tls_codec(discriminant = 1)]
     IN {
         group_info: MlsMessageIn,
-        leaf_node: LeafNode,
+        nodes: Vec<Option<Node>>,
     },
-    #[tls_codec(discriminant = 1)]
     OUT {
         group_info: MlsMessageOut,
-        leaf_node: LeafNode,
+        nodes: Vec<Option<Node>>,
     },
+}
+
+impl Size for EidMlsExportedTranscriptState {
+    fn tls_serialized_len(&self) -> usize {
+        let nodes_len: usize = match self {
+            EidMlsExportedTranscriptState::IN { nodes, .. }
+            | EidMlsExportedTranscriptState::OUT { nodes, .. } => {
+                nodes.iter().map(|node| node.tls_serialized_len()).sum()
+            }
+        };
+        match self {
+            Self::OUT { group_info, .. } => nodes_len + group_info.tls_serialized_len(),
+            Self::IN { group_info, .. } => nodes_len + group_info.tls_serialized_len(),
+        }
+    }
+}
+
+impl Serialize for EidMlsExportedTranscriptState {
+    fn tls_serialize<W: Write>(&self, writer: &mut W) -> Result<usize, TlsError> {
+        if let Self::OUT { group_info, nodes } = self {
+            let mut bytes_written = 0;
+            let msg_ser = group_info.tls_serialize_detached()?;
+            bytes_written += writer.write(msg_ser.as_slice())?;
+
+            let welcome_ser = nodes.tls_serialize_detached()?;
+            bytes_written += writer.write(welcome_ser.as_slice())?;
+
+            Ok(bytes_written)
+        } else {
+            Err(TlsError::EncodingError(String::from(
+                "Expected EidMlsExportedTranscriptState::OUT, got ::IN",
+            )))
+        }
+    }
+}
+
+impl Deserialize for EidMlsExportedTranscriptState {
+    fn tls_deserialize<R: Read>(bytes: &mut R) -> Result<Self, TlsError>
+    where
+        Self: Sized,
+    {
+        let group_info = MlsMessageIn::tls_deserialize(bytes)?;
+        let nodes = Vec::<Option<Node>>::tls_deserialize(bytes)?;
+        Ok(Self::IN { group_info, nodes })
+    }
 }
 
 impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
@@ -136,20 +189,17 @@ impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
     ) -> Result<Self::TranscriptStateProvider, EidError> {
         if let EidMlsExportedTranscriptState::IN {
             group_info: message_in,
-            leaf_node,
+            nodes,
         } = self
         {
             if let MlsMessageInBody::GroupInfo(verifiable_group_info) = message_in.extract() {
-                // let group_info = verifiable_group_info
-                //     .verify(
-                //         &backend.mls_backend,
-                //         // todo: should we take the key out of the leaf node or take a separate one as function argument?
-                //         leaf_node.signature_key(),
-                //         backend.ciphersuite.signature_algorithm(),
-                //     )
-                //     .map_err(|_| EidError::UnverifiedMessageError)?;
-
-                let group = AssistedGroup::new();
+                let (mut group, _extensions) = PublicGroup::from_external(
+                    &backend.mls_backend,
+                    nodes.to_vec(),
+                    verifiable_group_info,
+                    ProposalStore::new(),
+                )
+                .map_err(|e| EidError::CreateTranscriptStateError(e.to_string()))?;
 
                 Ok(EidMlsTranscriptState::new(group))
             } else {

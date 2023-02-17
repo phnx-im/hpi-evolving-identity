@@ -25,7 +25,7 @@ impl EidTranscript for EidMlsTranscript {
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
         let mut transcript = EidMlsTranscript {
-            trusted_state: trusted_state.clone(),
+            trusted_state: trusted_state.clone_serde()?,
             current_state: trusted_state,
             log: vec![],
         };
@@ -43,17 +43,12 @@ impl EidTranscript for EidMlsTranscript {
         Ok(())
     }
 
-    fn trusted_state(&self) -> Self::StateProvider {
-        self.trusted_state.clone()
-    }
-
     fn log(&self) -> Vec<Self::EvolvementProvider> {
         self.log.clone()
     }
 
     fn get_members(&self) -> Vec<Self::MemberProvider> {
-        // self.current_state.group.get_members()
-        todo!()
+        self.current_state.get_members()
     }
 }
 

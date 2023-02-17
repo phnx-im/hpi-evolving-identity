@@ -49,10 +49,6 @@ impl EidTranscript for EidDummyTranscript {
         Ok(())
     }
 
-    fn trusted_state(&self) -> EidDummyState {
-        self.trusted_state.clone()
-    }
-
     fn log(&self) -> Vec<EidDummyEvolvement> {
         self.log.clone()
     }

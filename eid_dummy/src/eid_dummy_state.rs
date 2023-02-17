@@ -42,9 +42,7 @@ impl EidState for EidDummyState {
             }
         }
     }
-    fn verify_member(&self, _: &EidDummyMember) -> bool {
-        true
-    }
+
     fn get_members(&self) -> Vec<EidDummyMember> {
         self.members.clone()
     }

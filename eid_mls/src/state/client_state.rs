@@ -1,4 +1,3 @@
-use mls_assist::group::LeafNode as AssistedLeafNode;
 use openmls::framing::MlsMessageInBody;
 use openmls::framing::ProcessedMessageContent::StagedCommitMessage;
 use openmls::prelude::{LeafNode, Member as MlsMember};
@@ -27,7 +26,7 @@ impl EidMlsState for EidMlsClientState {
         if let StagedCommitMessage(staged_commit_ref) = message.into_content() {
             self.group
                 .merge_staged_commit(&backend.mls_backend, *staged_commit_ref)
-                .map_err(|_| EidError::ApplyCommitError)?;
+                .map_err(|e| EidError::ApplyCommitError(e.to_string()))?;
             Ok(())
         } else {
             Err(EidError::InvalidMessageError(format!(
@@ -78,10 +77,6 @@ impl EidState for EidMlsClientState {
         }
     }
 
-    fn verify_member(&self, member: &Self::MemberProvider) -> bool {
-        self.get_members().contains(member)
-    }
-
     fn get_members(&self) -> Vec<Self::MemberProvider> {
         // get members out of group state -> members leaf node sources which are not a key package but a commit, will be valid members
         self.group
@@ -115,7 +110,7 @@ impl EidMlsClientState {
                     if let StageCommitError::OwnCommit = stage_commit_error {
                         self.group
                             .merge_pending_commit(&backend.mls_backend)
-                            .map_err(|e| EidError::ApplyCommitError)?;
+                            .map_err(|e| EidError::ApplyCommitError(e.to_string()))?;
                         return Ok(());
                     }
                 }

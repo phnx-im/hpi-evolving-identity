@@ -173,16 +173,11 @@ impl EidClient for EidMlsClient {
             .group
             .export_group_info(&backend.mls_backend, &self.keypair, false)
             .map_err(|_| EidError::ExportGroupInfoError)?;
-        let leaf_node = self
-            .state
-            .group
-            .own_leaf()
-            .ok_or(EidError::InvalidMemberError("Cannot export leaf".into()))?
-            .clone();
+        let nodes = self.state.group.export_ratchet_tree().into();
 
         Ok(EidMlsExportedTranscriptState::OUT {
             group_info: mls_out,
-            leaf_node,
+            nodes,
         })
     }
 

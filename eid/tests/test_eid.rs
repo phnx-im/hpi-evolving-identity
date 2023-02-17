@@ -4,7 +4,6 @@ use openmls::prelude::SignatureScheme;
 use openmls_basic_credential::SignatureKeyPair;
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
-use tls_codec::{Deserialize, Serialize};
 
 use eid_dummy::eid_dummy_backend::EidDummyBackend;
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
@@ -18,6 +17,9 @@ use eid_traits::evolvement::Evolvement;
 use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
+use helpers::{add_and_cross_sign, cross_sign, simulate_transfer};
+
+mod helpers;
 
 #[template]
 #[rstest(backend,
@@ -37,27 +39,20 @@ fn add<B: EidBackend>(backend: &B) {
 
     assert_eq!(0, members_initial.len());
 
-    let cross_sign_evolvement = cross_sign(client, backend);
+    helpers::cross_sign(client, &mut transcript, backend);
 
     let members_after_cross_sign = client.get_members();
     assert_eq!(1, members_after_cross_sign.len());
 
     // Create Alice as a member with a random pk
     let (alice, alice_kp) = B::ClientProvider::generate_initial_member("alice".into(), backend);
-    let (add_alice_evolvement, cross_sign_alice_evolvement) =
-        add_and_cross_sign(client, alice.clone(), alice_kp, backend);
+    add_and_cross_sign(client, &mut transcript, alice.clone(), alice_kp, backend);
 
     let members_after_alice_cross_sign = client.get_members();
     assert!(members_after_alice_cross_sign.contains(&alice));
     assert_eq!(2, members_after_alice_cross_sign.len());
 
-    // TODO transcript
-    //     .add_evolvement(add_evolvement.clone(), backend)
-    //     .expect("Failed to add evolvement");
-    // TODO transcript
-    //     .add_evolvement(cross_sign_evolvement.clone(), backend)
-    //     .expect("Failed to add evolvement");
-    // assert_eq!(transcript.get_members(), members_after_alice_cross_sign);
+    //Todo assert_eq!(transcript.get_members(), members_after_alice_cross_sign);
 
     // Try to add Alice a second time
     let member_in_eid_error = client
@@ -65,19 +60,17 @@ fn add<B: EidBackend>(backend: &B) {
         .expect_err("Adding member a second time");
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
+    //Todo: Also test invalid add on transcript
+
     // Add Bob
     let (bob, bob_kp) = B::ClientProvider::generate_initial_member("bob".into(), backend);
-    add_and_cross_sign(client, bob.clone(), bob_kp, backend);
+    add_and_cross_sign(client, &mut transcript, bob.clone(), bob_kp, backend);
 
     let members = client.get_members();
-
-    // TODO transcript
-    //     .add_evolvement(add_bob_evolvement_in.clone(), backend)
-    //     .expect("Failed to add evolvement");
-    // assert_eq!(transcript.get_members(), members);
-
     assert!(members.contains(&bob));
-    assert_eq!(3, members.len())
+    assert_eq!(3, members.len());
+
+    //Todo assert_eq!(transcript.get_members(), members);
 }
 
 #[apply(eid_clients)]
@@ -85,15 +78,19 @@ fn remove<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
+    cross_sign(client, &mut transcript, backend);
+
     let (alice, keypair_alice) =
         B::ClientProvider::generate_initial_member("alice".into(), backend);
-    let (add_alice_evolvement, cross_sign_alice_evolvement) =
-        add_and_cross_sign(client, alice.clone(), keypair_alice, backend);
+    add_and_cross_sign(
+        client,
+        &mut transcript,
+        alice.clone(),
+        keypair_alice,
+        backend,
+    );
 
-    // TODO transcript
-    //     .add_evolvement(evolvement_add_in.clone(), backend)
-    //     .expect("Failed to add evolvement");
-    // assert_eq!(transcript.get_members(), client.get_members());
+    //Todo assert_eq!(transcript.get_members(), client.get_members());
 
     let alice_after_insert = client
         .get_members()
@@ -111,10 +108,7 @@ fn remove<B: EidBackend>(backend: &B) {
         .evolve(evolvement_remove_in.clone(), backend)
         .expect("Failed to apply remove on client state");
 
-    //TODO  transcript
-    //     .add_evolvement(evolvement_remove_in.clone(), backend)
-    //     .expect("Failed to add evolvement");
-    // assert_eq!(transcript.get_members(), client.get_members());
+    //Todo assert_eq!(transcript.get_members(), client.get_members());
 
     // Try to remove Alice a second time
     let member_not_in_eid_error = client
@@ -136,7 +130,7 @@ fn update<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
-    let cross_sign_evolvement = cross_sign(client, backend);
+    cross_sign(client, &mut transcript, backend);
 
     let alice_before_update_1 = &client.get_members()[0];
 
@@ -146,14 +140,14 @@ fn update<B: EidBackend>(backend: &B) {
     client
         .evolve(update_evolvement_1_in.clone(), backend)
         .expect("Failed to apply update on client state");
-    // TODO transcript
-    //     .add_evolvement(update_evolvement_1_in.clone(), backend)
-    //     .expect("Failed to add evolvement");
-    // assert_eq!(transcript.get_members(), client.get_members());
+
+    //Todo assert_eq!(transcript.get_members(), client.get_members());
 
     let members_after_update_1 = client.get_members();
 
-    assert!(!members_after_update_1.contains(alice_before_update_1));
+    let alice_after_update = members_after_update_1[0].clone();
+    assert!(members_after_update_1.contains(alice_before_update_1));
+    assert_ne!(alice_after_update.get_pk(), alice_before_update_1.get_pk());
     assert_eq!(1, members_after_update_1.len());
 
     // Update Alice a second time
@@ -165,14 +159,19 @@ fn update<B: EidBackend>(backend: &B) {
         .evolve(update_evolvement_2_in.clone(), backend)
         .expect("Failed to apply update on client state");
 
-    // TODO transcript
-    //     .add_evolvement(update_evolvement_2_in.clone(), backend)
-    //     .expect("Failed to add evolvement");
-    // assert_eq!(transcript.get_members(), client.get_members());
+    transcript
+        .add_evolvement(update_evolvement_2_in.clone(), backend)
+        .expect("Failed to add evolvement");
+    //Todo assert_eq!(transcript.get_members(), client.get_members());
 
     let members_after_update_2 = client.get_members();
+    let alice_after_update_2 = members_after_update_2[0].clone();
 
-    assert!(!members_after_update_2.contains(alice_before_update_2));
+    assert!(members_after_update_2.contains(alice_before_update_2));
+    assert_ne!(
+        alice_before_update_2.get_pk(),
+        alice_after_update_2.get_pk()
+    );
     assert_eq!(1, members_after_update_2.len());
 }
 
@@ -198,54 +197,10 @@ where
     .expect("Failed to create transcript")
 }
 
-/// Simulate transfer over the wire by simply serializing and deserializing once.
-#[cfg(feature = "test")]
-fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
-    let serialized = input.tls_serialize_detached().expect("Failed to serialize");
-    O::tls_deserialize(&mut serialized.as_slice()).expect("Failed to deserialize")
-}
-
-fn cross_sign<C: EidClient>(client: &mut C, backend: &C::BackendProvider) -> C::EvolvementProvider {
-    let cross_sign_evolvement_out = client
-        .cross_sign_membership(backend)
-        .expect("Cross signing failed");
-    let cross_sign_evolvement_in: C::EvolvementProvider =
-        simulate_transfer(&cross_sign_evolvement_out);
-
-    client
-        .evolve(cross_sign_evolvement_in.clone(), backend)
-        .expect("Failed to apply state");
-
-    cross_sign_evolvement_in
-}
-
-fn add_and_cross_sign<C: EidClient>(
-    client: &mut C,
-    member: C::MemberProvider,
-    keypair: C::KeyProvider,
-    backend: &C::BackendProvider,
-) -> (C::EvolvementProvider, C::EvolvementProvider) {
-    let add_evolvement_out = client.add(&member, backend).expect("failed to add member");
-    let add_evolvement_in: C::EvolvementProvider = simulate_transfer(&add_evolvement_out);
-
-    client
-        .evolve(add_evolvement_in.clone(), backend)
-        .expect("Failed to evolve");
-
-    let new_client = &mut C::create_from_invitation(add_evolvement_in.clone(), keypair, backend)
-        .expect("failed to create client from invitation");
-
-    let cross_sign_evolvement_in = cross_sign(new_client, backend);
-
-    client
-        .evolve(cross_sign_evolvement_in.clone(), backend)
-        .expect("Failed to evolve");
-
-    (add_evolvement_in, cross_sign_evolvement_in)
-}
-
+// TODO remove
 #[test]
-fn test_mls_update() {
+fn test_debug() {
     let backend = &EidMlsBackend::default();
-    update(backend);
+    // let backend = &EidDummyBackend::default();
+    add(backend);
 }
