@@ -76,6 +76,39 @@ impl EidState for EidMlsTranscriptState {
     }
 }
 
+impl EidMlsTranscriptState {
+    fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
+        let leaf_nodes = self.get_leaf_nodes();
+        let index = member.index;
+        let leaf_node: &LeafNode =
+            leaf_nodes
+                .get(index.u32() as usize)
+                .ok_or(EidError::InvalidMemberError(
+                    "Member index doesn't have a matching node".into(),
+                ))?;
+        Ok(leaf_node.parent_hash().is_some())
+    }
+
+    fn get_leaf_nodes(&self) -> Vec<LeafNode> {
+        let tree = self
+            .group
+            .export_nodes()
+            .iter()
+            .map(|node| node.clone().unwrap())
+            .collect::<Vec<Node>>();
+
+        let leaf_nodes = tree
+            .iter()
+            .filter_map(|node| match node {
+                Node::LeafNode(leaf_node) => Some(LeafNode::from(leaf_node.clone())),
+                Node::ParentNode(_) => None,
+            })
+            .collect();
+
+        leaf_nodes
+    }
+}
+
 impl Eq for EidMlsTranscriptState {}
 
 impl PartialEq<Self> for EidMlsTranscriptState {

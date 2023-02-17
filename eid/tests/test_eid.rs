@@ -44,7 +44,7 @@ fn add<B: EidBackend>(backend: &B) {
     assert!(members_after_alice_cross_sign.contains(&alice));
     assert_eq!(2, members_after_alice_cross_sign.len());
 
-    //Todo assert_eq!(transcript.get_members(), members_after_alice_cross_sign);
+    assert_eq!(transcript.get_members(), members_after_alice_cross_sign);
 
     // Try to add Alice a second time
     let member_in_eid_error = client
@@ -62,7 +62,7 @@ fn add<B: EidBackend>(backend: &B) {
     assert!(members.contains(&bob));
     assert_eq!(3, members.len());
 
-    //Todo assert_eq!(transcript.get_members(), members);
+    assert_eq!(transcript.get_members(), members);
 }
 
 #[apply(eid_clients)]
@@ -82,7 +82,7 @@ fn remove<B: EidBackend>(backend: &B) {
         backend,
     );
 
-    //Todo assert_eq!(transcript.get_members(), client.get_members());
+    assert_eq!(transcript.get_members(), client.get_members());
 
     let alice_after_insert = client
         .get_members()
@@ -103,7 +103,7 @@ fn remove<B: EidBackend>(backend: &B) {
         .evolve(evolvement_remove_in.clone(), backend)
         .expect("Failed to evolve transcript");
 
-    //Todo assert_eq!(transcript.get_members(), client.get_members());
+    assert_eq!(transcript.get_members(), client.get_members());
 
     // Try to remove Alice a second time
     let member_not_in_eid_error = client
@@ -136,7 +136,7 @@ fn update<B: EidBackend>(backend: &B) {
         .evolve(update_evolvement_1_in.clone(), backend)
         .expect("Failed to apply update on client state");
 
-    //Todo assert_eq!(transcript.get_members(), client.get_members());
+    assert_eq!(transcript.get_members(), client.get_members());
 
     let members_after_update_1 = client.get_members();
 
@@ -157,7 +157,7 @@ fn update<B: EidBackend>(backend: &B) {
     transcript
         .evolve(update_evolvement_2_in.clone(), backend)
         .expect("Failed to add evolvement");
-    //Todo assert_eq!(transcript.get_members(), client.get_members());
+    assert_eq!(transcript.get_members(), client.get_members());
 
     let members_after_update_2 = client.get_members();
     let alice_after_update_2 = members_after_update_2[0].clone();
