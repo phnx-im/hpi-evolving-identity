@@ -165,7 +165,7 @@ impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
         } = self
         {
             if let MlsMessageInBody::GroupInfo(verifiable_group_info) = message_in.extract() {
-                let (mut group, _extensions) = PublicGroup::from_external(
+                let (group, _extensions) = PublicGroup::from_external(
                     &backend.mls_backend,
                     nodes.to_vec(),
                     verifiable_group_info,

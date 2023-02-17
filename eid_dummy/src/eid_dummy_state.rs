@@ -46,16 +46,3 @@ impl EidExportedTranscriptState for EidDummyState {
         Ok(self.clone())
     }
 }
-
-impl EidDummyState {
-    pub(crate) fn apply_log(
-        &mut self,
-        evolvements: Vec<EidDummyEvolvement>,
-        backend: &EidDummyBackend,
-    ) -> Result<(), EidError> {
-        if let Some(evolvement) = evolvements.last() {
-            self.apply(evolvement.clone(), backend)?;
-        }
-        Ok(())
-    }
-}

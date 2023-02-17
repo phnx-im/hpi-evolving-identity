@@ -1,4 +1,3 @@
-use eid_traits::state::EidState;
 use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
 
