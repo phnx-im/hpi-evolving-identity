@@ -37,7 +37,7 @@ fn add<B: EidBackend>(backend: &B) {
 
     assert_eq!(0, members_initial.len());
 
-    let cross_sign_evolvement = cross_sign(client, &mut transcript, backend);
+    cross_sign(client, &mut transcript, backend);
 
     let members_after_cross_sign = client.get_members();
     assert_eq!(1, members_after_cross_sign.len());
@@ -76,7 +76,7 @@ fn remove<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
-    let cross_sign_evolvement = cross_sign(client, &mut transcript, backend);
+    cross_sign(client, &mut transcript, backend);
 
     let (alice, keypair_alice) =
         B::ClientProvider::generate_initial_member("alice".into(), backend);
@@ -128,7 +128,7 @@ fn update<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
-    let cross_sign_evolvement = cross_sign(client, &mut transcript, backend);
+    cross_sign(client, &mut transcript, backend);
 
     let alice_before_update_1 = &client.get_members()[0];
 
