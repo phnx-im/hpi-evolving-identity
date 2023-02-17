@@ -112,37 +112,23 @@ impl EidMlsClientState {
     }
 
     fn get_leaf_nodes(&self) -> Vec<LeafNode> {
-        let tree = self
-            .group
+        self.group
             .export_ratchet_tree()
             .iter()
-            .map(|node| node.clone().unwrap())
-            .collect::<Vec<Node>>();
-
-        let leaf_nodes = tree
-            .iter()
             .filter_map(|node| match node {
-                Node::LeafNode(leaf_node) => Some(LeafNode::from(leaf_node.clone())),
-                Node::ParentNode(_) => None,
+                Some(Node::LeafNode(leaf_node)) => Some(LeafNode::from(leaf_node.clone())),
+                Some(Node::ParentNode(_)) | None => None,
             })
-            .collect();
-
-        leaf_nodes
+            .collect()
     }
 
-    /// Returns true if the member has cross-signed their addition to the group.
+    /// True if the member has cross-signed their addition to the group.
     ///
     /// # Arguments
     ///
     /// * `member`:
     ///
     /// returns: Result<bool, EidError>
-    ///
-    /// # Examples
-    ///
-    /// ```
-    ///
-    /// ```
     fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
         // Todo: It would be great if mls offers a get_member_by_index method
         let leaf_nodes = self.get_leaf_nodes();
@@ -155,7 +141,7 @@ impl EidMlsClientState {
                 .ok_or(EidError::InvalidMemberError(
                     "Member index doesn't have a matching node".into(),
                 ))?;
-        //leaf_node.credential()
+
         Ok(leaf_node.parent_hash().is_some())
     }
 }
