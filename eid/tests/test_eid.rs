@@ -37,15 +37,14 @@ fn add<B: EidBackend>(backend: &B) {
 
     assert_eq!(0, members_initial.len());
 
-    let cross_sign_evolvement = cross_sign(client, backend);
+    let cross_sign_evolvement = cross_sign(client, &mut transcript, backend);
 
     let members_after_cross_sign = client.get_members();
     assert_eq!(1, members_after_cross_sign.len());
 
     // Create Alice as a member with a random pk
     let (alice, alice_kp) = B::ClientProvider::generate_initial_member("alice".into(), backend);
-    let (add_alice_evolvement, cross_sign_alice_evolvement) =
-        add_and_cross_sign(client, alice.clone(), alice_kp, backend);
+    add_and_cross_sign(client, &mut transcript, alice.clone(), alice_kp, backend);
 
     let members_after_alice_cross_sign = client.get_members();
     assert!(members_after_alice_cross_sign.contains(&alice));
@@ -67,7 +66,7 @@ fn add<B: EidBackend>(backend: &B) {
 
     // Add Bob
     let (bob, bob_kp) = B::ClientProvider::generate_initial_member("bob".into(), backend);
-    add_and_cross_sign(client, bob.clone(), bob_kp, backend);
+    add_and_cross_sign(client, &mut transcript, bob.clone(), bob_kp, backend);
 
     let members = client.get_members();
 
@@ -85,12 +84,17 @@ fn remove<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
-    let cross_sign_evolvement = cross_sign(client, backend);
+    let cross_sign_evolvement = cross_sign(client, &mut transcript, backend);
 
     let (alice, keypair_alice) =
         B::ClientProvider::generate_initial_member("alice".into(), backend);
-    let (add_alice_evolvement, cross_sign_alice_evolvement) =
-        add_and_cross_sign(client, alice.clone(), keypair_alice, backend);
+    add_and_cross_sign(
+        client,
+        &mut transcript,
+        alice.clone(),
+        keypair_alice,
+        backend,
+    );
 
     // TODO transcript
     //     .add_evolvement(evolvement_add_in.clone(), backend)
@@ -138,7 +142,7 @@ fn update<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
 
-    let cross_sign_evolvement = cross_sign(client, backend);
+    let cross_sign_evolvement = cross_sign(client, &mut transcript, backend);
 
     let alice_before_update_1 = &client.get_members()[0];
 
@@ -214,34 +218,45 @@ fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
     O::tls_deserialize(&mut serialized.as_slice()).expect("Failed to deserialize")
 }
 
-fn cross_sign<C: EidClient>(client: &mut C, backend: &C::BackendProvider) -> C::EvolvementProvider {
+fn cross_sign<C: EidClient>(
+    client: &mut C,
+    transcript: &mut C::TranscriptProvider,
+    backend: &C::BackendProvider,
+) -> C::EvolvementProvider {
     let cross_sign_evolvement_out = client
         .cross_sign_membership(backend)
         .expect("Cross signing failed");
     let cross_sign_evolvement_in: C::EvolvementProvider =
         simulate_transfer(&cross_sign_evolvement_out);
 
+    transcript
+        .add_evolvement(cross_sign_evolvement_in.clone(), backend)
+        .expect("Failed to add cross sign evolvement to transcript");
     client
         .evolve(cross_sign_evolvement_in.clone(), backend)
         .expect("Failed to apply state");
-
     cross_sign_evolvement_in
 }
 
 fn add_and_cross_sign<C: EidClient>(
     client: &mut C,
+    transcript: &mut C::TranscriptProvider,
     member: C::MemberProvider,
     keypair: C::KeyProvider,
     backend: &C::BackendProvider,
-) -> (C::EvolvementProvider, C::EvolvementProvider) {
+) -> () {
     let add_evolvement_out = client.add(&member, backend).expect("failed to add member");
     let add_evolvement_in: C::EvolvementProvider = simulate_transfer(&add_evolvement_out);
+
+    transcript
+        .add_evolvement(add_evolvement_in.clone(), backend)
+        .expect("Failed to add evolvement to transcript");
 
     client
         .evolve(add_evolvement_in.clone(), backend)
         .expect("Failed to evolve");
 
-    let new_client = &mut C::create_from_invitation(add_evolvement_in.clone(), keypair, backend)
+    let new_client = &mut C::create_from_invitation(add_evolvement_in, keypair, backend)
         .expect("failed to create client from invitation");
 
     let cross_sign_evolvement_in = cross_sign(new_client, backend);
@@ -249,13 +264,11 @@ fn add_and_cross_sign<C: EidClient>(
     client
         .evolve(cross_sign_evolvement_in.clone(), backend)
         .expect("Failed to evolve");
-
-    (add_evolvement_in, cross_sign_evolvement_in)
 }
 
 #[test]
 fn test_debug() {
-    // let backend = &EidMlsBackend::default();
-    let backend = &EidDummyBackend::default();
+    let backend = &EidMlsBackend::default();
+    // let backend = &EidDummyBackend::default();
     update(backend);
 }
