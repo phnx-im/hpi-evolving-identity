@@ -11,7 +11,7 @@ use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
 use helpers::helpers::{add_and_cross_sign, cross_sign, simulate_transfer};
 
-mod helpers;
+pub mod helpers;
 
 #[template]
 #[rstest(backend,

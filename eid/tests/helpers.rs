@@ -1,17 +1,17 @@
 #[cfg(feature = "test")]
-pub(crate) mod helpers {
+pub mod helpers {
     use tls_codec::{Deserialize, Serialize};
 
     use eid_traits::client::EidClient;
     use eid_traits::transcript::EidTranscript;
 
     /// Simulate transfer over the wire by simply serializing and deserializing once.
-    pub(crate) fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
+    pub fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
         let serialized = input.tls_serialize_detached().expect("Failed to serialize");
         O::tls_deserialize(&mut serialized.as_slice()).expect("Failed to deserialize")
     }
 
-    pub(crate) fn cross_sign<C: EidClient>(
+    pub fn cross_sign<C: EidClient>(
         client: &mut C,
         transcript: &mut C::TranscriptProvider,
         backend: &C::BackendProvider,
@@ -31,7 +31,7 @@ pub(crate) mod helpers {
         cross_sign_evolvement_in
     }
 
-    pub(crate) fn add_and_cross_sign<C: EidClient>(
+    pub fn add_and_cross_sign<C: EidClient>(
         client: &mut C,
         transcript: &mut C::TranscriptProvider,
         member: C::MemberProvider,
