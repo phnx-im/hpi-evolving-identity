@@ -55,7 +55,7 @@ impl EidState for EidMlsTranscriptState {
                 };
                 Ok(())
             } else {
-                Err(EidError::InvalidMessageError(format!(
+                Err(EidError::InvalidEvolvementError(format!(
                     "Expected PublicMessage, got {:?}",
                     body
                 )))

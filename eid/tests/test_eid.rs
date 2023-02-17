@@ -135,6 +135,9 @@ fn update<B: EidBackend>(backend: &B) {
     client
         .evolve(update_evolvement_1_in.clone(), backend)
         .expect("Failed to apply update on client state");
+    transcript
+        .evolve(update_evolvement_1_in.clone(), backend)
+        .expect("Failed to evolve transcript");
 
     assert_eq!(transcript.get_members(), client.get_members());
 

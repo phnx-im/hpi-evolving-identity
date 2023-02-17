@@ -12,6 +12,7 @@ pub enum EidError {
     DeserializationError(String),
     RemoveMemberError(String),
     InvalidMemberError(String),
+    InvalidEvolvementError(String),
     ProcessMessageError(String),
     UnverifiedMessageError,
     InvalidMessageError(String),

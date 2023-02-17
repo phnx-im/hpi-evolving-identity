@@ -8,6 +8,7 @@ use crate::eid_dummy_member::EidDummyMember;
 #[repr(u8)]
 pub enum EidDummyEvolvement {
     Add {
+        count: u64,
         members: Vec<EidDummyMember>,
         invited_id: Vec<u8>,
     },

@@ -31,7 +31,10 @@ impl EidClient for EidDummyClient {
         _backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
         let members = vec![initial_member.clone()];
-        let state = EidDummyState { members };
+        let state = EidDummyState {
+            members,
+            evolvement_count: 0,
+        };
         Ok(EidDummyClient {
             state,
             id: initial_member.id.clone(),
@@ -49,10 +52,14 @@ impl EidClient for EidDummyClient {
         if let EidDummyEvolvement::Add {
             members,
             invited_id: invited_pk,
+            count,
         } = invitation
         {
             Ok(Self {
-                state: EidDummyState { members },
+                state: EidDummyState {
+                    members,
+                    evolvement_count: count,
+                },
                 id: invited_pk,
             })
         } else {
@@ -75,6 +82,7 @@ impl EidClient for EidDummyClient {
         let evolvement = EidDummyEvolvement::Add {
             members: new_state.members,
             invited_id: member.id.clone(),
+            count: self.state.evolvement_count + 1,
         };
         Ok(evolvement)
     }
@@ -98,6 +106,7 @@ impl EidClient for EidDummyClient {
 
         let evolvement = EidDummyEvolvement::Remove {
             members: new_state.members,
+            count: self.state.evolvement_count + 1,
         };
         Ok(evolvement)
     }
@@ -118,6 +127,7 @@ impl EidClient for EidDummyClient {
         // create an evolvement with the new member
         let evolvement = EidDummyEvolvement::Update {
             members: new_members,
+            count: self.state.evolvement_count + 1,
         };
         Ok(evolvement)
     }
@@ -127,7 +137,7 @@ impl EidClient for EidDummyClient {
         evolvement: EidDummyEvolvement,
         backend: &EidDummyBackend,
     ) -> Result<(), EidError> {
-        // in case of update, change your own pk
+        //throw error if evolvement count is invalid
         self.state.apply(evolvement, backend)
     }
 

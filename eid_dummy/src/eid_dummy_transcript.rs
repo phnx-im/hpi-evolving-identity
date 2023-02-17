@@ -1,3 +1,4 @@
+use eid_traits::state::EidState;
 use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
 
@@ -36,14 +37,10 @@ impl EidTranscript for EidDummyTranscript {
     fn evolve(
         &mut self,
         evolvement: EidDummyEvolvement,
-        _backend: &Self::BackendProvider,
+        backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        self.log.push(evolvement.clone());
-        match evolvement {
-            EidDummyEvolvement::Update { members }
-            | EidDummyEvolvement::Add { members, .. }
-            | EidDummyEvolvement::Remove { members } => self.current_state.members = members,
-        }
+        self.current_state.apply(evolvement.clone(), backend)?;
+        self.log.push(evolvement);
         Ok(())
     }
 
