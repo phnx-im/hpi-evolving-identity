@@ -17,16 +17,6 @@ impl EidState for EidDummyState {
     type EvolvementProvider = EidDummyEvolvement;
     type MemberProvider = EidDummyMember;
     type BackendProvider = EidDummyBackend;
-    fn apply_log(
-        &mut self,
-        evolvements: Vec<EidDummyEvolvement>,
-        backend: &EidDummyBackend,
-    ) -> Result<(), EidError> {
-        if let Some(evolvement) = evolvements.last() {
-            self.apply(evolvement.clone(), backend)?;
-        }
-        Ok(())
-    }
 
     fn apply(
         &mut self,
@@ -54,5 +44,18 @@ impl EidExportedTranscriptState for EidDummyState {
 
     fn into_transcript_state(self, _backend: &EidDummyBackend) -> Result<EidDummyState, EidError> {
         Ok(self.clone())
+    }
+}
+
+impl EidDummyState {
+    pub(crate) fn apply_log(
+        &mut self,
+        evolvements: Vec<EidDummyEvolvement>,
+        backend: &EidDummyBackend,
+    ) -> Result<(), EidError> {
+        if let Some(evolvement) = evolvements.last() {
+            self.apply(evolvement.clone(), backend)?;
+        }
+        Ok(())
     }
 }

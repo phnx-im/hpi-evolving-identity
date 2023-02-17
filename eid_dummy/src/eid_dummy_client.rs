@@ -1,7 +1,4 @@
-use serde_json::json_internal_vec;
-
 use eid_traits::client::EidClient;
-use eid_traits::member::Member;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
@@ -111,7 +108,7 @@ impl EidClient for EidDummyClient {
 
         let mut new_members = self.state.members.clone();
         // remove yourself from member list
-        let mut myself = self.state.members.iter().find(|&x| x.id == self.id);
+        let myself = self.state.members.iter().find(|&x| x.id == self.id);
         let mut myself = myself.unwrap().clone();
         new_members.retain(|m| &myself != m);
         myself.cross_signed = BOOLEAN::TRUE;
@@ -174,7 +171,7 @@ impl EidClient for EidDummyClient {
 
     #[cfg(feature = "test")]
     fn generate_initial_client(id: Vec<u8>, backend: &Self::BackendProvider) -> Self {
-        let (member, keypair) = EidDummyClient::generate_initial_member("1".into(), backend);
+        let (member, keypair) = EidDummyClient::generate_initial_member(id, backend);
         EidDummyClient::create_eid(&member, keypair, backend).expect("Could not create EID")
     }
 }

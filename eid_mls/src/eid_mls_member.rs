@@ -1,6 +1,4 @@
-use openmls::credentials::Credential;
-use openmls::prelude::{CredentialWithKey, KeyPackage, Member as MlsMember, SignaturePublicKey};
-use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
+use openmls::prelude::{CredentialWithKey, KeyPackage, Member as MlsMember};
 
 use eid_traits::member::Member;
 
@@ -36,14 +34,6 @@ impl Member for EidMlsMember {
 }
 
 impl EidMlsMember {
-    fn set_member(&mut self, mls_member: MlsMember) {
-        self.mls_member = Some(mls_member);
-    }
-
-    /*fn update_signature_key(&mut self, new_signature_key: SignaturePublicKey) {
-        self.signature_key = new_signature_key;
-    }*/
-
     pub(crate) fn from_existing(mls_member: MlsMember) -> Self {
         let signature_key = mls_member.signature_key.clone().into();
         let credential = mls_member.credential.clone();

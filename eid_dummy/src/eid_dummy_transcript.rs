@@ -25,12 +25,10 @@ impl EidTranscript for EidDummyTranscript {
         log: Vec<EidDummyEvolvement>,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        let mut current_state = trusted_state.clone();
-        current_state.apply_log(log.clone(), backend)?;
-        let transcript = EidDummyTranscript {
+        let mut transcript = EidDummyTranscript {
+            current_state: trusted_state.clone(),
+            log: log.clone(),
             trusted_state,
-            log,
-            current_state,
         };
         transcript.batch_evolve(log, backend)?;
         Ok(transcript)
@@ -53,8 +51,10 @@ impl EidTranscript for EidDummyTranscript {
     fn log(&self) -> Vec<EidDummyEvolvement> {
         self.log.clone()
     }
-
     fn get_members(&self) -> Vec<Self::MemberProvider> {
         self.current_state.members.clone()
+    }
+    fn get_trusted_state(&self) -> Result<Self::StateProvider, EidError> {
+        Ok(self.trusted_state.clone())
     }
 }

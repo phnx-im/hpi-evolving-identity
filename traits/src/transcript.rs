@@ -30,6 +30,19 @@ pub trait EidTranscript {
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError>;
 
+    /// Apply a [Vec] of [Evolvement] to the current [EidState].
+    /// Can be used to verify a slice of a [Transcript]'s [EidState] or to recover a [EidState].
+    fn batch_evolve(
+        &mut self,
+        evolvements: Vec<Self::EvolvementProvider>,
+        backend: &Self::BackendProvider,
+    ) -> Result<(), EidError> {
+        for evolvement in evolvements.iter() {
+            self.evolve(evolvement.clone(), backend)?;
+        }
+        Ok(())
+    }
+
     /// Return the [Evolvement]s that happened after the trusted [EidState].
     fn log(&self) -> Vec<Self::EvolvementProvider>;
 

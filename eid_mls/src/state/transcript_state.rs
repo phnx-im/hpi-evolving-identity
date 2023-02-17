@@ -1,6 +1,6 @@
 use std::io::{Read, Write};
 
-use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
+use openmls::framing::{MlsMessageIn, MlsMessageOut};
 use openmls::group::PublicGroup;
 use openmls::prelude::{
     MlsMessageInBody, Node, ProcessedMessageContent, ProposalStore, ProtocolMessage,
@@ -27,17 +27,6 @@ impl EidState for EidMlsTranscriptState {
     type EvolvementProvider = EidMlsEvolvement;
     type MemberProvider = EidMlsMember;
     type BackendProvider = EidMlsBackend;
-
-    fn apply_log(
-        &mut self,
-        log: Vec<EidMlsEvolvement>,
-        backend: &Self::BackendProvider,
-    ) -> Result<(), EidError> {
-        for evolvement in log {
-            self.apply(evolvement, backend)?;
-        }
-        Ok(())
-    }
 
     fn apply(
         &mut self,
@@ -88,16 +77,6 @@ impl Eq for EidMlsTranscriptState {}
 
 impl PartialEq<Self> for EidMlsTranscriptState {
     fn eq(&self, _: &Self) -> bool {
-        todo!()
-    }
-}
-
-impl EidMlsState for EidMlsTranscriptState {
-    fn apply_processed_message(
-        &mut self,
-        message: ProcessedMessage,
-        backend: &Self::BackendProvider,
-    ) -> Result<(), EidError> {
         todo!()
     }
 }
