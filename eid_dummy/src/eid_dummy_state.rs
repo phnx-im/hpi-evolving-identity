@@ -12,6 +12,7 @@ use crate::eid_dummy_member::EidDummyMember;
 #[derive(Default, Debug, Clone, PartialEq, Eq, TlsDeserialize, TlsSerialize, TlsSize)]
 pub struct EidDummyState {
     pub(crate) members: Vec<EidDummyMember>,
+    pub(crate) evolvement_count: u64,
 }
 
 impl EidState for EidDummyState {

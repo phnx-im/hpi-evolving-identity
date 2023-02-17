@@ -38,7 +38,19 @@ fn add<B: EidBackend>(backend: &B) {
 
     // Create Alice as a member with a random pk
     let (alice, alice_kp) = B::ClientProvider::generate_initial_member("alice".into(), backend);
-    add_and_cross_sign(client, &mut transcript, alice.clone(), alice_kp, backend);
+    let (add_alice_evolvement_in, ..) =
+        add_and_cross_sign(client, &mut transcript, alice.clone(), alice_kp, backend);
+
+    assert_eq!(client.get_members().len(), 2);
+    let error = client
+        .evolve(add_alice_evolvement_in.clone(), backend)
+        .expect_err("Evolving with same evolvement twice");
+    assert!(matches!(error, EidError::InvalidEvolvementError(..)));
+
+    let error = transcript
+        .evolve(add_alice_evolvement_in.clone(), backend)
+        .expect_err("Evolving with same evolvement twice");
+    assert!(matches!(error, EidError::InvalidEvolvementError(..)));
 
     let members_after_alice_cross_sign = client.get_members();
     assert!(members_after_alice_cross_sign.contains(&alice));
@@ -51,8 +63,6 @@ fn add<B: EidBackend>(backend: &B) {
         .add(&alice, backend)
         .expect_err("Adding member a second time");
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
-
-    //Todo: Also test invalid add on transcript
 
     // Add Bob
     let (bob, bob_kp) = B::ClientProvider::generate_initial_member("bob".into(), backend);

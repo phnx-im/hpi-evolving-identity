@@ -37,7 +37,7 @@ pub mod helpers {
         member: C::MemberProvider,
         keypair: C::KeyProvider,
         backend: &C::BackendProvider,
-    ) -> () {
+    ) -> (C::EvolvementProvider, C::EvolvementProvider) {
         let add_evolvement_out = client.add(&member, backend).expect("failed to add member");
         let add_evolvement_in: C::EvolvementProvider = simulate_transfer(&add_evolvement_out);
 
@@ -49,13 +49,15 @@ pub mod helpers {
             .evolve(add_evolvement_in.clone(), backend)
             .expect("Failed to evolve");
 
-        let new_client = &mut C::create_from_invitation(add_evolvement_in, keypair, backend)
-            .expect("failed to create client from invitation");
+        let new_client =
+            &mut C::create_from_invitation(add_evolvement_in.clone(), keypair, backend)
+                .expect("failed to create client from invitation");
 
         let cross_sign_evolvement_in = cross_sign(new_client, transcript, backend);
 
         client
             .evolve(cross_sign_evolvement_in.clone(), backend)
             .expect("Failed to evolve");
+        (add_evolvement_in, cross_sign_evolvement_in)
     }
 }

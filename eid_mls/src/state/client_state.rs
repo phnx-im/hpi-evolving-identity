@@ -53,14 +53,15 @@ impl EidState for EidMlsClientState {
             let body = mls_in.extract();
             if let MlsMessageInBody::PublicMessage(public_message) = body {
                 let protocol_message = ProtocolMessage::PublicMessage(public_message);
+
                 self.merge_or_apply_commit(protocol_message, backend)
             } else {
-                Err(EidError::ProcessMessageError(
+                Err(EidError::InvalidEvolvementError(
                     "Expected MlsMessageInBody::PublicMessage, got another variant".into(),
                 ))
             }
         } else {
-            Err(EidError::InvalidMessageError(String::from(
+            Err(EidError::InvalidEvolvementError(String::from(
                 "Expected EidMlsEvolvement::IN, got ::OUT",
             )))
         }
@@ -104,8 +105,8 @@ impl EidMlsClientState {
                     }
                 }
 
-                Err(EidError::ProcessMessageError(
-                    "Failed to process message".into(),
+                Err(EidError::InvalidEvolvementError(
+                    "Failed to process MLS message".into(),
                 ))
             }
         }

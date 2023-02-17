@@ -40,12 +40,12 @@ impl EidState for EidMlsTranscriptState {
                 let processed_message = self
                     .group
                     .process_message(&backend.mls_backend, protocol_message)
-                    .map_err(|e| EidError::ProcessMessageError(e.to_string()))?;
+                    .map_err(|e| EidError::InvalidEvolvementError(e.to_string()))?;
                 match processed_message.into_content() {
                     ProcessedMessageContent::ApplicationMessage(_)
                     | ProcessedMessageContent::ProposalMessage(_)
                     | ProcessedMessageContent::ExternalJoinProposalMessage(_) => {
-                        return Err(EidError::ProcessMessageError(
+                        return Err(EidError::InvalidEvolvementError(
                             "Unexpected message type.".into(),
                         ))
                     }
@@ -61,7 +61,7 @@ impl EidState for EidMlsTranscriptState {
                 )))
             }
         } else {
-            Err(EidError::InvalidMessageError(String::from(
+            Err(EidError::InvalidEvolvementError(String::from(
                 "Expected EidMlsEvolvement::IN, got ::OUT",
             )))
         }
