@@ -8,16 +8,6 @@ pub trait EidState: Sized {
     type MemberProvider: Member;
     type BackendProvider: EidBackend;
 
-    /// Apply a [Vec] of [Evolvement] to the current [EidState].
-    /// Can be used to verify a slice of a [Transcript]'s [EidState] or to recover a [EidState].
-    fn apply_log(
-        &mut self,
-        log: Vec<Self::EvolvementProvider>,
-        backend: &Self::BackendProvider,
-    ) -> Result<(), EidError>
-    where
-        Self: Sized;
-
     /// Apply an [Evolvement], changing the [EidState]. If the [Evolvement]
     /// is invalid, return an [EidError].
     fn apply(

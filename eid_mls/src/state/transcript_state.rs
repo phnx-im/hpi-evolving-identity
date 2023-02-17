@@ -1,17 +1,13 @@
 use std::io::{Read, Write};
 
-use openmls::framing::{MlsMessageIn, MlsMessageOut, ProcessedMessage};
+use openmls::framing::{MlsMessageIn, MlsMessageOut};
 use openmls::group::PublicGroup;
 use openmls::prelude::{
-    LeafNode, MlsMessageInBody, Node, ProcessedMessageContent, ProposalStore, ProtocolMessage,
-    Verifiable,
+    MlsMessageInBody, Node, ProcessedMessageContent, ProposalStore, ProtocolMessage,
 };
-use openmls::prelude_test::ContentType;
 use serde;
 use serde_json;
-use tls_codec::{
-    Deserialize, Error as TlsError, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize,
-};
+use tls_codec::{Deserialize, Error as TlsError, Serialize, Size};
 
 use eid_traits::state::EidState;
 use eid_traits::transcript::EidExportedTranscriptState;
@@ -20,9 +16,6 @@ use eid_traits::types::EidError;
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
-use crate::state::client_state::EidMlsClientState;
-
-use super::state_trait::EidMlsState;
 
 /// Eid Mls Transcript State
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -34,17 +27,6 @@ impl EidState for EidMlsTranscriptState {
     type EvolvementProvider = EidMlsEvolvement;
     type MemberProvider = EidMlsMember;
     type BackendProvider = EidMlsBackend;
-
-    fn apply_log(
-        &mut self,
-        log: Vec<EidMlsEvolvement>,
-        backend: &Self::BackendProvider,
-    ) -> Result<(), EidError> {
-        for evolvement in log {
-            self.apply(evolvement, backend)?;
-        }
-        Ok(())
-    }
 
     fn apply(
         &mut self,
@@ -94,17 +76,7 @@ impl EidState for EidMlsTranscriptState {
 impl Eq for EidMlsTranscriptState {}
 
 impl PartialEq<Self> for EidMlsTranscriptState {
-    fn eq(&self, other: &Self) -> bool {
-        todo!()
-    }
-}
-
-impl EidMlsState for EidMlsTranscriptState {
-    fn apply_processed_message(
-        &mut self,
-        message: ProcessedMessage,
-        backend: &Self::BackendProvider,
-    ) -> Result<(), EidError> {
+    fn eq(&self, _: &Self) -> bool {
         todo!()
     }
 }
@@ -193,7 +165,7 @@ impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
         } = self
         {
             if let MlsMessageInBody::GroupInfo(verifiable_group_info) = message_in.extract() {
-                let (mut group, _extensions) = PublicGroup::from_external(
+                let (group, _extensions) = PublicGroup::from_external(
                     &backend.mls_backend,
                     nodes.to_vec(),
                     verifiable_group_info,

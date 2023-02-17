@@ -1,11 +1,9 @@
 use openmls::prelude::{
-    Ciphersuite, Credential, CredentialType, CredentialWithKey, CryptoConfig, Extensions,
-    KeyPackage, KeyPackageBuilder, OpenMlsCryptoProvider, OpenMlsSignaturePublicKey,
-    ProtocolVersion, SignaturePublicKey, SignatureScheme,
+    Ciphersuite, Credential, CredentialType, CredentialWithKey, CryptoConfig, KeyPackage,
+    OpenMlsCryptoProvider, SignatureScheme,
 };
 use openmls_basic_credential::SignatureKeyPair;
 use openmls_traits::signatures::Signer;
-use tls_codec::VLBytes;
 
 pub(crate) fn create_store_credential(
     identity: Vec<u8>,

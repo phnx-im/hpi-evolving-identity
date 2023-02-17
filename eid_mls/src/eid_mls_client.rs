@@ -1,11 +1,8 @@
-use openmls::framing::MlsMessageIn;
-use openmls::messages::Welcome;
 use openmls::prelude::MlsMessageInBody;
-use openmls::prelude::{CredentialType, MlsGroup, SignaturePublicKey};
+use openmls::prelude::{CredentialType, MlsGroup};
 use openmls_basic_credential::SignatureKeyPair;
 
 use eid_traits::client::EidClient;
-use eid_traits::evolvement::Evolvement;
 use eid_traits::state::EidState;
 use eid_traits::types::EidError;
 
@@ -38,16 +35,6 @@ impl EidClient for EidMlsClient {
         key_pair: Self::KeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        let key_package =
-            initial_member
-                .key_package
-                .clone()
-                .ok_or(EidError::InvalidMemberError(
-                    "No key package provided in member".into(),
-                ))?;
-
-        let signature_key = key_package.leaf_node().signature_key();
-
         Self::create_mls_eid(backend, key_pair, initial_member.credential.clone())
     }
 

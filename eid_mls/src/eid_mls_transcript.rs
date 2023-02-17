@@ -29,11 +29,11 @@ impl EidTranscript for EidMlsTranscript {
             current_state: trusted_state,
             log: vec![],
         };
-        transcript.apply_log(log, backend)?;
+        transcript.batch_evolve(log, backend)?;
         Ok(transcript)
     }
 
-    fn add_evolvement(
+    fn evolve(
         &mut self,
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
@@ -50,16 +50,7 @@ impl EidTranscript for EidMlsTranscript {
     fn get_members(&self) -> Vec<Self::MemberProvider> {
         self.current_state.get_members()
     }
-}
-
-impl EidMlsTranscript {
-    fn apply_log(
-        &mut self,
-        mut log: Vec<EidMlsEvolvement>,
-        backend: &EidMlsBackend,
-    ) -> Result<(), EidError> {
-        self.current_state.apply_log(log.clone(), backend)?;
-        self.log.append(&mut log);
-        Ok(())
+    fn get_trusted_state(&self) -> Result<Self::StateProvider, EidError> {
+        self.trusted_state.clone_serde()
     }
 }

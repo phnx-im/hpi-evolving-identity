@@ -1,17 +1,13 @@
 use openmls::group::MlsGroupConfig;
 use openmls::prelude::{
-    CredentialWithKey, MlsGroup, SenderRatchetConfiguration, SignaturePublicKey,
-    PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
+    CredentialWithKey, MlsGroup, SenderRatchetConfiguration, PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
 };
 use openmls_basic_credential::SignatureKeyPair;
 
-use eid_traits::client::EidClient;
 use eid_traits::types::EidError;
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_client::EidMlsClient;
-use crate::eid_mls_evolvement::EidMlsEvolvement;
-use crate::eid_mls_member::EidMlsMember;
 use crate::state::client_state::EidMlsClientState;
 
 impl EidMlsClient {
