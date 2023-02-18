@@ -3,7 +3,28 @@ pub mod helpers {
     use tls_codec::{Deserialize, Serialize};
 
     use eid_traits::client::EidClient;
-    use eid_traits::transcript::EidTranscript;
+    use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
+
+    /// Create transcript, trusting the client's state
+    pub fn build_transcript<C>(client: &C, backend: &C::BackendProvider) -> C::TranscriptProvider
+    where
+        C: EidClient,
+    {
+        let exported_state = client
+            .export_transcript_state(backend)
+            .expect("failed to export transcript state");
+
+        let imported_state: C::ExportedTranscriptStateProvider = simulate_transfer(&exported_state);
+
+        C::TranscriptProvider::new(
+            imported_state
+                .into_transcript_state(backend)
+                .expect("failed to create transcript state"),
+            vec![],
+            backend,
+        )
+        .expect("Failed to create transcript")
+    }
 
     /// Simulate transfer over the wire by simply serializing and deserializing once.
     pub fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {

@@ -9,7 +9,7 @@ use eid_traits::client::EidClient;
 use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 use eid_traits::types::EidError;
-use helpers::helpers::{add_and_cross_sign, cross_sign, simulate_transfer};
+use helpers::helpers::{add_and_cross_sign, build_transcript, cross_sign, simulate_transfer};
 
 pub mod helpers;
 
@@ -181,28 +181,6 @@ fn update<B: EidBackend>(backend: &B) {
         alice_after_update_2.get_pk()
     );
     assert_eq!(1, members_after_update_2.len());
-}
-
-/// Create transcript, trusting the client's state
-#[cfg(feature = "test")]
-fn build_transcript<C>(client: &C, backend: &C::BackendProvider) -> C::TranscriptProvider
-where
-    C: EidClient,
-{
-    let exported_state = client
-        .export_transcript_state(backend)
-        .expect("failed to export transcript state");
-
-    let imported_state: C::ExportedTranscriptStateProvider = simulate_transfer(&exported_state);
-
-    C::TranscriptProvider::new(
-        imported_state
-            .into_transcript_state(backend)
-            .expect("failed to create transcript state"),
-        vec![],
-        backend,
-    )
-    .expect("Failed to create transcript")
 }
 
 // TODO remove
