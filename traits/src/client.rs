@@ -8,20 +8,30 @@ use crate::transcript::EidExportedTranscriptState;
 use crate::transcript::EidTranscript;
 use crate::types::EidError;
 
+/// # EidClient
+/// A Client of an EID that can create new [Evolvement]s and evolve its [EidState] by applying any [Evolvement]s.
 pub trait EidClient {
+    /// Type of [Evolvement](Self::EvolvementProvider)s the client creates.
     #[cfg(not(feature = "test"))]
     type EvolvementProvider: Evolvement;
+    /// Type of [Evolvement](Self::EvolvementProvider)s the client creates.
     #[cfg(feature = "test")]
     type EvolvementProvider: Evolvement + Debug;
+    /// Type of [Member](Self::MemberProvider)s that can be added or removed from the EID.
     type MemberProvider: Member;
+
+    /// The type of [Transcript State](Self::TranscriptStateProvider) this corresponds to.
     type TranscriptStateProvider: EidState<
         EvolvementProvider = Self::EvolvementProvider,
         MemberProvider = Self::MemberProvider,
     >;
+
+    /// Type of [State](Self::ExportedTranscriptStateProvider) that can be exported from a client and is used to create a corresponding transcript state.
     type ExportedTranscriptStateProvider: EidExportedTranscriptState<
         TranscriptStateProvider = Self::TranscriptStateProvider,
         BackendProvider = Self::BackendProvider,
     >;
+    /// Type of [EidBackend](Self::BackendProvider) this [EidClient](Self) uses.
     type BackendProvider: EidBackend;
     type KeyProvider;
 
@@ -34,7 +44,17 @@ pub trait EidClient {
         MemberProvider = Self::MemberProvider,
     >;
 
-    /// Create the first [EidState] of an EID by interacting with a PKI. We assume trust on first use on the resulting [EidState].
+    /// Create the first [EidClient](Self) of an EID including the first [EidState] of an EID.
+    /// We assume trust on first use on the resulting [EidState].
+    ///
+    /// # Arguments
+    ///
+    /// * `initial_member`: The first [Member](Self::MemberProvider)
+    /// * `key_pair`: The [Member](Self::MemberProvider)'s key material
+    /// * `backend`: The [Member](Self::BackendProvider).
+    ///
+    /// returns: [Result]<[Self], [EidError]> [Self] if creation of the EID succeeds, [EidError] otherwise
+    ///
     fn create_eid(
         initial_member: &Self::MemberProvider,
         key_pair: Self::KeyProvider,
@@ -43,7 +63,15 @@ pub trait EidClient {
     where
         Self: Sized;
 
-    /// Create the [EidClient] with the state of an existing EID that you are invited to.
+    /// Create an [EidClient] with the state of an existing EID that the clients corresponding [Member](Self::MemberProvider) is invited to.
+    ///
+    /// # Arguments
+    ///
+    /// * `invitation`: The [Evolvement](Self::EvolvementProvider) that was created when the [Member](Self::MemberProvider) was added to the EID (see [Self::add])
+    /// * `signature_keypair`: The invited [Member](Self::MemberProvider)'s key material
+    /// * `backend`: The [EidBackend](Self::BackendProvider)
+    ///
+    /// returns: [Result]<[Self], [EidError]> [Self] if creation of the EID succeeds, [EidError] otherwise
     fn create_from_invitation(
         invitation: Self::EvolvementProvider,
         signature_keypair: Self::KeyProvider,
@@ -52,7 +80,15 @@ pub trait EidClient {
     where
         Self: Sized;
 
-    /// Create an [Evolvement] to add a member to the EID.
+    /// Create an [Evolvement](Self::EvolvementProvider) that can be used to do both, create an EID from invitation or to evolve clients that are already in the EID,
+    /// to add a [Member](Self::MemberProvider) to the EID.
+    ///
+    /// # Arguments
+    ///
+    /// * `member`: The [Member](Self::MemberProvider)
+    /// * `backend`: The [EidBackend](Self::BackendProvider)
+    ///
+    /// returns: [Result]<[Evolvement](Self::EvolvementProvider), [EidError]> [Evolvement](Self::EvolvementProvider) if creation of the EID succeeds, [EidError] otherwise.
     fn add(
         &mut self,
         member: &Self::MemberProvider,
@@ -61,7 +97,15 @@ pub trait EidClient {
     where
         Self: Sized;
 
-    /// Create an [Evolvement] to remove a member from the EID.
+    /// Create an [Evolvement](Self::EvolvementProvider) to remove a member from the EID.
+    ///
+    /// # Arguments
+    ///
+    /// * `member`: The [Member](Self::MemberProvider)
+    /// * `backend`: The [Backend](Self::BackendProvider)
+    ///
+    /// returns: [Result]<[Self::EvolvementProvider], [EidError]>
+    ///
     fn remove(
         &mut self,
         member: &Self::MemberProvider,
@@ -70,14 +114,28 @@ pub trait EidClient {
     where
         Self: Sized;
 
-    /// Create an [Evolvement] to update your own key material.
+    /// Create an [Evolvement](Self::EvolvementProvider) to update your own key material.
+    ///
+    /// # Arguments
+    ///
+    /// * `backend`: The [Backend](Self::BackendProvider)
+    ///
+    /// returns: [Result]<[Self::EvolvementProvider], [EidError]>
+    ///
     fn update(
         &mut self,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>;
 
-    /// Apply an [evolvement::Evolvement], changing the client's state. If the [evolvement::Evolvement]
-    /// is invalid, return an [EidError].
+    /// Apply an [Evolvement](Self::EvolvementProvider), changing the client's state.
+    ///
+    /// # Arguments
+    ///
+    /// * `evolvement`: The [Evolvement](Self::EvolvementProvider)
+    /// * `backend`: The [Backend](Self::BackendProvider)
+    ///
+    /// returns: [Result]<[()]), [EidError]> [EidError] If the [Self::EvolvementProvider] is invalid.
+    ///
     fn evolve(
         &mut self,
         evolvement: Self::EvolvementProvider,
