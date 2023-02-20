@@ -7,9 +7,9 @@ use eid_mls::eid_mls_backend::EidMlsBackend;
 use eid_traits::backend::EidBackend;
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
-use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
+use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
-use helpers::helpers::{add_and_cross_sign, cross_sign, simulate_transfer};
+use helpers::helpers::{add_and_cross_sign, build_transcript, cross_sign, simulate_transfer};
 
 pub mod helpers;
 
@@ -38,21 +38,31 @@ fn add<B: EidBackend>(backend: &B) {
 
     // Create Alice as a member with a random pk
     let (alice, alice_kp) = B::ClientProvider::generate_initial_member("alice".into(), backend);
-    add_and_cross_sign(client, &mut transcript, alice.clone(), alice_kp, backend);
+    let (add_alice_evolvement_in, ..) =
+        add_and_cross_sign(client, &mut transcript, alice.clone(), alice_kp, backend);
+
+    assert_eq!(client.get_members().len(), 2);
+    let error = client
+        .evolve(add_alice_evolvement_in.clone(), backend)
+        .expect_err("Evolving with same evolvement twice");
+    assert!(matches!(error, EidError::InvalidEvolvementError(..)));
+
+    let error = transcript
+        .evolve(add_alice_evolvement_in.clone(), backend)
+        .expect_err("Evolving with same evolvement twice");
+    assert!(matches!(error, EidError::InvalidEvolvementError(..)));
 
     let members_after_alice_cross_sign = client.get_members();
     assert!(members_after_alice_cross_sign.contains(&alice));
     assert_eq!(2, members_after_alice_cross_sign.len());
 
-    //Todo assert_eq!(transcript.get_members(), members_after_alice_cross_sign);
+    assert_eq!(transcript.get_members(), members_after_alice_cross_sign);
 
     // Try to add Alice a second time
     let member_in_eid_error = client
         .add(&alice, backend)
         .expect_err("Adding member a second time");
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
-
-    //Todo: Also test invalid add on transcript
 
     // Add Bob
     let (bob, bob_kp) = B::ClientProvider::generate_initial_member("bob".into(), backend);
@@ -62,7 +72,7 @@ fn add<B: EidBackend>(backend: &B) {
     assert!(members.contains(&bob));
     assert_eq!(3, members.len());
 
-    //Todo assert_eq!(transcript.get_members(), members);
+    assert_eq!(transcript.get_members(), members);
 }
 
 #[apply(eid_clients)]
@@ -82,7 +92,7 @@ fn remove<B: EidBackend>(backend: &B) {
         backend,
     );
 
-    //Todo assert_eq!(transcript.get_members(), client.get_members());
+    assert_eq!(transcript.get_members(), client.get_members());
 
     let alice_after_insert = client
         .get_members()
@@ -99,8 +109,11 @@ fn remove<B: EidBackend>(backend: &B) {
     client
         .evolve(evolvement_remove_in.clone(), backend)
         .expect("Failed to apply remove on client state");
+    transcript
+        .evolve(evolvement_remove_in.clone(), backend)
+        .expect("Failed to evolve transcript");
 
-    //Todo assert_eq!(transcript.get_members(), client.get_members());
+    assert_eq!(transcript.get_members(), client.get_members());
 
     // Try to remove Alice a second time
     let member_not_in_eid_error = client
@@ -132,8 +145,11 @@ fn update<B: EidBackend>(backend: &B) {
     client
         .evolve(update_evolvement_1_in.clone(), backend)
         .expect("Failed to apply update on client state");
+    transcript
+        .evolve(update_evolvement_1_in.clone(), backend)
+        .expect("Failed to evolve transcript");
 
-    //Todo assert_eq!(transcript.get_members(), client.get_members());
+    assert_eq!(transcript.get_members(), client.get_members());
 
     let members_after_update_1 = client.get_members();
 
@@ -154,7 +170,7 @@ fn update<B: EidBackend>(backend: &B) {
     transcript
         .evolve(update_evolvement_2_in.clone(), backend)
         .expect("Failed to add evolvement");
-    //Todo assert_eq!(transcript.get_members(), client.get_members());
+    assert_eq!(transcript.get_members(), client.get_members());
 
     let members_after_update_2 = client.get_members();
     let alice_after_update_2 = members_after_update_2[0].clone();
@@ -165,34 +181,4 @@ fn update<B: EidBackend>(backend: &B) {
         alice_after_update_2.get_pk()
     );
     assert_eq!(1, members_after_update_2.len());
-}
-
-/// Create transcript, trusting the client's state
-#[cfg(feature = "test")]
-fn build_transcript<C>(client: &C, backend: &C::BackendProvider) -> C::TranscriptProvider
-where
-    C: EidClient,
-{
-    let exported_state = client
-        .export_transcript_state(backend)
-        .expect("failed to export transcript state");
-
-    let imported_state: C::ExportedTranscriptStateProvider = simulate_transfer(&exported_state);
-
-    C::TranscriptProvider::new(
-        imported_state
-            .into_transcript_state(backend)
-            .expect("failed to create transcript state"),
-        vec![],
-        backend,
-    )
-    .expect("Failed to create transcript")
-}
-
-// TODO remove
-#[test]
-fn test_debug() {
-    let backend = &EidMlsBackend::default();
-    // let backend = &EidDummyBackend::default();
-    add(backend);
 }

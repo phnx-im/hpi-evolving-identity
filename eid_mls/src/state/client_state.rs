@@ -25,13 +25,12 @@ impl EidMlsClientState {
         if let StagedCommitMessage(staged_commit_ref) = message.into_content() {
             self.group
                 .merge_staged_commit(&backend.mls_backend, *staged_commit_ref)
-                .map_err(|e| EidError::ApplyCommitError(e.to_string()))?;
+                .map_err(|e| EidError::InvalidEvolvementError(e.to_string()))?;
             Ok(())
         } else {
-            Err(EidError::InvalidMessageError(format!(
-                // TODO
-                "Expected StagedCommitMessage, got XXX",
-            )))
+            Err(EidError::InvalidEvolvementError(
+                "Expected ProcessedMessage::StagedCommitMessage, got a different variant of a processed message".into(),
+            ))
         }
     }
 }
@@ -53,14 +52,15 @@ impl EidState for EidMlsClientState {
             let body = mls_in.extract();
             if let MlsMessageInBody::PublicMessage(public_message) = body {
                 let protocol_message = ProtocolMessage::PublicMessage(public_message);
+
                 self.merge_or_apply_commit(protocol_message, backend)
             } else {
-                Err(EidError::ProcessMessageError(
+                Err(EidError::InvalidEvolvementError(
                     "Expected MlsMessageInBody::PublicMessage, got another variant".into(),
                 ))
             }
         } else {
-            Err(EidError::InvalidMessageError(String::from(
+            Err(EidError::InvalidEvolvementError(String::from(
                 "Expected EidMlsEvolvement::IN, got ::OUT",
             )))
         }
@@ -99,63 +99,46 @@ impl EidMlsClientState {
                     if let StageCommitError::OwnCommit = stage_commit_error {
                         self.group
                             .merge_pending_commit(&backend.mls_backend)
-                            .map_err(|e| EidError::ApplyCommitError(e.to_string()))?;
+                            .map_err(|e| EidError::InvalidEvolvementError(e.to_string()))?;
                         return Ok(());
                     }
                 }
 
-                Err(EidError::ProcessMessageError(
-                    "Failed to process message".into(),
+                Err(EidError::InvalidEvolvementError(
+                    "Failed to process MLS message".into(),
                 ))
             }
         }
     }
 
     fn get_leaf_nodes(&self) -> Vec<LeafNode> {
-        let tree = self
-            .group
+        self.group
             .export_ratchet_tree()
             .iter()
-            .map(|node| node.clone().unwrap())
-            .collect::<Vec<Node>>();
-
-        let leaf_nodes = tree
-            .iter()
             .filter_map(|node| match node {
-                Node::LeafNode(leaf_node) => Some(LeafNode::from(leaf_node.clone())),
-                Node::ParentNode(_) => None,
+                Some(Node::LeafNode(leaf_node)) => Some(LeafNode::from(leaf_node.clone())),
+                Some(Node::ParentNode(_)) | None => None,
             })
-            .collect();
-
-        leaf_nodes
+            .collect()
     }
 
-    /// Returns true if the member has cross-signed their addition to the group.
+    /// True if the member has cross-signed their addition to the group.
     ///
     /// # Arguments
     ///
     /// * `member`:
     ///
     /// returns: Result<bool, EidError>
-    ///
-    /// # Examples
-    ///
-    /// ```
-    ///
-    /// ```
     fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
-        // Todo: It would be great if mls offers a get_member_by_index method
         let leaf_nodes = self.get_leaf_nodes();
-
-        let index = member.index;
 
         let leaf_node: &LeafNode =
             leaf_nodes
-                .get(index.u32() as usize)
+                .get(member.index.u32() as usize)
                 .ok_or(EidError::InvalidMemberError(
                     "Member index doesn't have a matching node".into(),
                 ))?;
-        //leaf_node.credential()
+
         Ok(leaf_node.parent_hash().is_some())
     }
 }

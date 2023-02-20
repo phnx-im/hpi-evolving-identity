@@ -1,9 +1,9 @@
 use std::io::{Read, Write};
 
-use openmls::framing::{MlsMessageIn, MlsMessageOut};
 use openmls::group::PublicGroup;
 use openmls::prelude::{
-    MlsMessageInBody, Node, ProcessedMessageContent, ProposalStore, ProtocolMessage,
+    LeafNode, Member as MlsMember, MlsMessageIn, MlsMessageInBody, MlsMessageOut, Node,
+    ProcessedMessageContent, ProposalStore, ProtocolMessage,
 };
 use serde;
 use serde_json;
@@ -20,7 +20,7 @@ use crate::eid_mls_member::EidMlsMember;
 /// Eid Mls Transcript State
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct EidMlsTranscriptState {
-    pub(crate) group: PublicGroup<false>,
+    pub(crate) group: PublicGroup,
 }
 
 impl EidState for EidMlsTranscriptState {
@@ -40,12 +40,12 @@ impl EidState for EidMlsTranscriptState {
                 let processed_message = self
                     .group
                     .process_message(&backend.mls_backend, protocol_message)
-                    .map_err(|e| EidError::ProcessMessageError(e.to_string()))?;
+                    .map_err(|e| EidError::InvalidEvolvementError(e.to_string()))?;
                 match processed_message.into_content() {
                     ProcessedMessageContent::ApplicationMessage(_)
                     | ProcessedMessageContent::ProposalMessage(_)
                     | ProcessedMessageContent::ExternalJoinProposalMessage(_) => {
-                        return Err(EidError::ProcessMessageError(
+                        return Err(EidError::InvalidEvolvementError(
                             "Unexpected message type.".into(),
                         ))
                     }
@@ -55,34 +55,54 @@ impl EidState for EidMlsTranscriptState {
                 };
                 Ok(())
             } else {
-                Err(EidError::InvalidMessageError(format!(
+                Err(EidError::InvalidEvolvementError(format!(
                     "Expected PublicMessage, got {:?}",
                     body
                 )))
             }
         } else {
-            Err(EidError::InvalidMessageError(String::from(
+            Err(EidError::InvalidEvolvementError(String::from(
                 "Expected EidMlsEvolvement::IN, got ::OUT",
             )))
         }
     }
 
     fn get_members(&self) -> Vec<Self::MemberProvider> {
-        // self.group.members() (not public right now)
-        todo!()
-    }
-}
-
-impl Eq for EidMlsTranscriptState {}
-
-impl PartialEq<Self> for EidMlsTranscriptState {
-    fn eq(&self, _: &Self) -> bool {
-        todo!()
+        self.group
+            .members()
+            .filter(|member| self.has_member(member).unwrap_or(false))
+            .map(|member| EidMlsMember::from_existing(member.clone()))
+            .collect()
     }
 }
 
 impl EidMlsTranscriptState {
-    pub(crate) fn new(group: PublicGroup<false>) -> Self {
+    fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
+        let leaf_nodes = self.get_leaf_nodes();
+        let index = member.index;
+        let leaf_node: &LeafNode =
+            leaf_nodes
+                .get(index.u32() as usize)
+                .ok_or(EidError::InvalidMemberError(
+                    "Member index doesn't have a matching node".into(),
+                ))?;
+        Ok(leaf_node.parent_hash().is_some())
+    }
+
+    fn get_leaf_nodes(&self) -> Vec<LeafNode> {
+        self.group
+            .export_nodes()
+            .iter()
+            .filter_map(|node| match node {
+                Some(Node::LeafNode(leaf_node)) => Some(LeafNode::from(leaf_node.clone())),
+                Some(Node::ParentNode(_)) | None => None,
+            })
+            .collect()
+    }
+}
+
+impl EidMlsTranscriptState {
+    pub(crate) fn new(group: PublicGroup) -> Self {
         EidMlsTranscriptState { group }
     }
 
@@ -175,10 +195,13 @@ impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
 
                 Ok(EidMlsTranscriptState::new(group))
             } else {
-                Err(EidError::ExportGroupInfoError)
+                Err(EidError::ImportTranscriptStateError(
+                    "Expected MlsMessageInBody::GroupInfo, got another variant of MlsMessageInBody"
+                        .into(),
+                ))
             }
         } else {
-            Err(EidError::InvalidMessageError(String::from(
+            Err(EidError::ImportTranscriptStateError(String::from(
                 "Expected EidMlsExportedTranscriptState::IN, got ::OUT",
             )))
         }

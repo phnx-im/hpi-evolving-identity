@@ -3,6 +3,7 @@ use tls_codec::{TlsDeserialize, TlsSerialize, TlsSize};
 use eid_traits::state::EidState;
 use eid_traits::transcript::EidExportedTranscriptState;
 use eid_traits::types::EidError;
+use eid_traits::types::EidError::InvalidEvolvementError;
 
 use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
@@ -11,6 +12,7 @@ use crate::eid_dummy_member::EidDummyMember;
 #[derive(Default, Debug, Clone, PartialEq, Eq, TlsDeserialize, TlsSerialize, TlsSize)]
 pub struct EidDummyState {
     pub(crate) members: Vec<EidDummyMember>,
+    pub(crate) evolvement_count: u64,
 }
 
 impl EidState for EidDummyState {
@@ -24,9 +26,13 @@ impl EidState for EidDummyState {
         _backend: &EidDummyBackend,
     ) -> Result<(), EidError> {
         match &evolvement {
-            EidDummyEvolvement::Update { members }
-            | EidDummyEvolvement::Add { members, .. }
-            | EidDummyEvolvement::Remove { members } => {
+            EidDummyEvolvement::Update { members, count, .. }
+            | EidDummyEvolvement::Add { members, count, .. }
+            | EidDummyEvolvement::Remove { members, count, .. } => {
+                if self.evolvement_count + 1 != *count {
+                    return Err(InvalidEvolvementError("Invalid Evolvement count".into()));
+                }
+                self.evolvement_count += 1;
                 self.members = members.clone();
                 Ok(())
             }

@@ -6,22 +6,23 @@ use std::fmt::{Debug, Display, Formatter};
 /// Errors related to EID
 #[derive(Debug)]
 pub enum EidError {
-    StateNotInitialized,
-    StateAlreadyInitialized,
-    AddMemberError(String),
     DeserializationError(String),
-    RemoveMemberError(String),
-    InvalidMemberError(String),
-    ProcessMessageError(String),
-    UnverifiedMessageError,
-    InvalidMessageError(String),
-    ApplyCommitError(String),
-    UpdateMemberError(String),
-    ExportGroupInfoError,
     SerializationError(String),
+
+    AddMemberError(String),
+    UpdateMemberError(String),
+    RemoveMemberError(String),
+
+    InvalidMemberError(String),
+    InvalidEvolvementError(String),
     InvalidInvitationError,
-    CreateGroupError(String),
-    CreateTranscriptStateError(String)
+
+    CreateTranscriptStateError(String),
+    ExportTranscriptStateError,
+    ImportTranscriptStateError(String),
+
+    CreateClientError(String),
+    CreateCredentialError(String),
 }
 
 impl Display for EidError {

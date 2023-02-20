@@ -4,7 +4,6 @@ use eid_traits::member::Member;
 
 #[derive(Debug, Clone)]
 pub struct EidMlsMember {
-    // TODO: do we need a constant identifier here?
     pub(crate) mls_member: Option<MlsMember>,
     pub(crate) key_package: Option<KeyPackage>,
     pub(crate) credential: CredentialWithKey,
@@ -29,7 +28,15 @@ impl Member for EidMlsMember {
 
     #[cfg(feature = "test")]
     fn get_pk(&self) -> Vec<u8> {
-        self.credential.signature_key.as_slice().to_vec()
+        // TODO currently the signature key doesn't change with an update, that's why we return the encryption key
+        // self.mls_member
+        //     .clone()
+        //     .expect("failed to extract mls member".into())
+        //     .signature_key
+        self.mls_member
+            .clone()
+            .expect("failed to extract mls member".into())
+            .encryption_key
     }
 }
 

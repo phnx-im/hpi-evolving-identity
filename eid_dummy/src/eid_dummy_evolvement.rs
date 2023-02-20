@@ -8,24 +8,18 @@ use crate::eid_dummy_member::EidDummyMember;
 #[repr(u8)]
 pub enum EidDummyEvolvement {
     Add {
+        count: u64,
         members: Vec<EidDummyMember>,
         invited_id: Vec<u8>,
     },
     Update {
+        count: u64,
         members: Vec<EidDummyMember>,
     },
     Remove {
+        count: u64,
         members: Vec<EidDummyMember>,
     },
-}
-
-impl Default for EidDummyEvolvement {
-    fn default() -> Self {
-        Self::Add {
-            members: vec![],
-            invited_id: vec![],
-        }
-    }
 }
 
 impl Evolvement for EidDummyEvolvement {}
