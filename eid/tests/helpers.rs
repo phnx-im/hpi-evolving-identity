@@ -1,8 +1,10 @@
+/// # Helpers
+/// This module contains convenience methods that are used for tests.
 #[cfg(feature = "test")]
 pub mod helpers {
     use tls_codec::{Deserialize, Serialize};
 
-    use eid_traits::client::EidClient;
+    use eid_traits::client::{EidClient, Evolvement};
     use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 
     /// Create transcript, trusting the client's state
@@ -26,7 +28,13 @@ pub mod helpers {
         .expect("Failed to create transcript")
     }
 
-    /// Simulate transfer over the wire by simply serializing and deserializing once.
+    /// "Simulate" a transfer over the wire by serializing and deserializing the given item.
+    ///
+    /// # Arguments
+    ///
+    /// * `input`: The item that is serialized.
+    ///
+    /// returns: The deserialized struct.
     pub fn simulate_transfer<I: Serialize, O: Deserialize>(input: &I) -> O {
         let serialized = input.tls_serialize_detached().expect("Failed to serialize");
         O::tls_deserialize(&mut serialized.as_slice()).expect("Failed to deserialize")
