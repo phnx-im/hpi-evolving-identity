@@ -4,7 +4,6 @@ use eid_traits::member::Member;
 
 #[derive(Debug, Clone)]
 pub struct EidMlsMember {
-    // TODO: do we need a constant identifier here?
     pub(crate) mls_member: Option<MlsMember>,
     pub(crate) key_package: Option<KeyPackage>,
     pub(crate) credential: CredentialWithKey,

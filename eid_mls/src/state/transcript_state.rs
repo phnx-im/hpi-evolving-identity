@@ -195,10 +195,13 @@ impl EidExportedTranscriptState for EidMlsExportedTranscriptState {
 
                 Ok(EidMlsTranscriptState::new(group))
             } else {
-                Err(EidError::ExportGroupInfoError)
+                Err(EidError::ImportTranscriptStateError(
+                    "Expected MlsMessageInBody::GroupInfo, got another variant of MlsMessageInBody"
+                        .into(),
+                ))
             }
         } else {
-            Err(EidError::InvalidMessageError(String::from(
+            Err(EidError::ImportTranscriptStateError(String::from(
                 "Expected EidMlsExportedTranscriptState::IN, got ::OUT",
             )))
         }

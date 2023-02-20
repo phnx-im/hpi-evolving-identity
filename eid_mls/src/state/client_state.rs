@@ -25,7 +25,7 @@ impl EidMlsClientState {
         if let StagedCommitMessage(staged_commit_ref) = message.into_content() {
             self.group
                 .merge_staged_commit(&backend.mls_backend, *staged_commit_ref)
-                .map_err(|e| EidError::ApplyCommitError(e.to_string()))?;
+                .map_err(|e| EidError::InvalidEvolvementError(e.to_string()))?;
             Ok(())
         } else {
             Err(EidError::InvalidEvolvementError(
@@ -99,7 +99,7 @@ impl EidMlsClientState {
                     if let StageCommitError::OwnCommit = stage_commit_error {
                         self.group
                             .merge_pending_commit(&backend.mls_backend)
-                            .map_err(|e| EidError::ApplyCommitError(e.to_string()))?;
+                            .map_err(|e| EidError::InvalidEvolvementError(e.to_string()))?;
                         return Ok(());
                     }
                 }
@@ -132,11 +132,9 @@ impl EidMlsClientState {
     fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
         let leaf_nodes = self.get_leaf_nodes();
 
-        let index = member.index;
-
         let leaf_node: &LeafNode =
             leaf_nodes
-                .get(index.u32() as usize)
+                .get(member.index.u32() as usize)
                 .ok_or(EidError::InvalidMemberError(
                     "Member index doesn't have a matching node".into(),
                 ))?;
