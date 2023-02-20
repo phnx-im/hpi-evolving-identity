@@ -101,14 +101,6 @@ impl EidMlsTranscriptState {
     }
 }
 
-impl Eq for EidMlsTranscriptState {}
-
-impl PartialEq<Self> for EidMlsTranscriptState {
-    fn eq(&self, _: &Self) -> bool {
-        todo!()
-    }
-}
-
 impl EidMlsTranscriptState {
     pub(crate) fn new(group: PublicGroup) -> Self {
         EidMlsTranscriptState { group }

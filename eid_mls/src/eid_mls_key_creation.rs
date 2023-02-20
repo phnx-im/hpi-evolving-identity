@@ -5,47 +5,29 @@ use openmls::prelude::{
 use openmls_basic_credential::SignatureKeyPair;
 use openmls_traits::signatures::Signer;
 
+use eid_traits::types::EidError;
+
 pub(crate) fn create_store_credential(
     identity: Vec<u8>,
     credential_type: CredentialType,
     signature_algorithm: SignatureScheme,
     backend: &impl OpenMlsCryptoProvider,
-) -> (CredentialWithKey, SignatureKeyPair) {
-    // TODO: error handling
-    let credential = Credential::new(identity, credential_type).unwrap();
+) -> Result<(CredentialWithKey, SignatureKeyPair), EidError> {
+    let credential = Credential::new(identity, credential_type)
+        .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
+    let signature_keys = SignatureKeyPair::new(signature_algorithm)
+        .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
+    signature_keys
+        .store(backend.key_store())
+        .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
 
-    let signature_keys = SignatureKeyPair::new(signature_algorithm).unwrap();
-    signature_keys.store(backend.key_store()).unwrap();
-
-    (
+    Ok((
         CredentialWithKey {
             credential,
             signature_key: signature_keys.to_public_vec().into(),
         },
         signature_keys,
-    )
-    /*
-    let credential_bundle = CredentialBundle::new(
-        identifier.into(),
-        CredentialType::Basic,
-        signature_scheme,
-        backend,
-    )
-    .expect("Could not create CredentialBundle");
-
-    let credential = credential_bundle.credential().clone();
-    backend
-        .key_store()
-        .store(
-            &credential
-                .signature_key()
-                .tls_serialize_detached()
-                .expect("Error serialising signature key"),
-            &credential_bundle,
-        )
-        .expect("Storing credential failed");
-
-    return credential_bundle;*/
+    ))
 }
 
 pub(crate) fn create_store_key_package(
@@ -53,7 +35,7 @@ pub(crate) fn create_store_key_package(
     credential_with_key: CredentialWithKey,
     backend: &impl OpenMlsCryptoProvider,
     signer: &impl Signer,
-) -> KeyPackage {
+) -> Result<KeyPackage, EidError> {
     let kp = KeyPackage::builder()
         //.key_package_extensions(extensions)
         .build(
@@ -62,19 +44,7 @@ pub(crate) fn create_store_key_package(
             signer,
             credential_with_key,
         )
-        .expect("Could not create KeyPackage");
+        .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
 
-    /*
-    backend
-        .key_store()
-        .store(
-            kp.hash_ref(backend.crypto())
-                .expect("Could not hash KeyPackage")
-                .as_slice(),
-            &kp,
-        )
-        .expect("Storing KeyPackage failed");
-     */
-
-    return kp;
+    return Ok(kp);
 }

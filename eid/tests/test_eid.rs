@@ -7,7 +7,7 @@ use eid_mls::eid_mls_backend::EidMlsBackend;
 use eid_traits::backend::EidBackend;
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
-use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
+use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
 use helpers::helpers::{add_and_cross_sign, build_transcript, cross_sign, simulate_transfer};
 
@@ -181,12 +181,4 @@ fn update<B: EidBackend>(backend: &B) {
         alice_after_update_2.get_pk()
     );
     assert_eq!(1, members_after_update_2.len());
-}
-
-// TODO remove
-#[test]
-fn test_debug() {
-    // let backend = &EidMlsBackend::default();
-    let backend = &EidDummyBackend::default();
-    update(backend);
 }

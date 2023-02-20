@@ -61,7 +61,7 @@ impl EidClient for EidMlsClient {
                     welcome,
                     None,
                 )
-                .map_err(|err| EidError::CreateGroupError(err.to_string()))?;
+                .map_err(|err| EidError::CreateClientError(err.to_string()))?;
                 return Ok(Self {
                     state: EidMlsClientState { group: mls_group },
                     keypair: signature_keypair,
@@ -159,7 +159,7 @@ impl EidClient for EidMlsClient {
             .state
             .group
             .export_group_info(&backend.mls_backend, &self.keypair, false)
-            .map_err(|_| EidError::ExportGroupInfoError)?;
+            .map_err(|_| EidError::ExportTranscriptStateError)?;
         let nodes = self.state.group.export_ratchet_tree().into();
 
         Ok(EidMlsExportedTranscriptState::OUT {
@@ -179,20 +179,21 @@ impl EidClient for EidMlsClient {
             CredentialType::Basic,
             ciphersuite.signature_algorithm(),
             &backend.mls_backend,
-        );
+        )
+        .expect("Failed to create credential");
 
-        let key_bundle = create_store_key_package(
+        let key_package = create_store_key_package(
             ciphersuite,
             cred_with_key.clone(),
             &backend.mls_backend,
             &keypair,
-        );
+        )
+        .expect("Failed to create key package");
 
-        // TODO: we're basically throwing away the private parts (but they're stored in the key store) - do we want this?
         (
             EidMlsMember {
                 mls_member: None,
-                key_package: Some(key_bundle.clone()),
+                key_package: Some(key_package.clone()),
                 credential: cred_with_key,
             },
             keypair,

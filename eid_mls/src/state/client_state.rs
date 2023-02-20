@@ -28,10 +28,9 @@ impl EidMlsClientState {
                 .map_err(|e| EidError::ApplyCommitError(e.to_string()))?;
             Ok(())
         } else {
-            Err(EidError::InvalidMessageError(format!(
-                // TODO
-                "Expected StagedCommitMessage, got XXX",
-            )))
+            Err(EidError::InvalidEvolvementError(
+                "Expected ProcessedMessage::StagedCommitMessage, got a different variant of a processed message".into(),
+            ))
         }
     }
 }
@@ -131,7 +130,6 @@ impl EidMlsClientState {
     ///
     /// returns: Result<bool, EidError>
     fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
-        // Todo: It would be great if mls offers a get_member_by_index method
         let leaf_nodes = self.get_leaf_nodes();
 
         let index = member.index;
