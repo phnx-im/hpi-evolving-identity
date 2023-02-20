@@ -4,10 +4,18 @@
 pub mod helpers {
     use tls_codec::{Deserialize, Serialize};
 
-    use eid_traits::client::{EidClient, Evolvement};
+    use eid_traits::client::EidClient;
     use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 
-    /// Create transcript, trusting the client's state
+    /// Build a transcript by exporting the client's state and creating a transcript from it.
+    /// This state will be used as the trusted state for the transcript.
+    ///
+    /// # Arguments
+    ///
+    /// * `client`: The client
+    /// * `backend`: The EID backend
+    ///
+    /// returns: The [EidTranscript].
     pub fn build_transcript<C>(client: &C, backend: &C::BackendProvider) -> C::TranscriptProvider
     where
         C: EidClient,
@@ -40,6 +48,15 @@ pub mod helpers {
         O::tls_deserialize(&mut serialized.as_slice()).expect("Failed to deserialize")
     }
 
+    /// Cross-sign the client's EID membership and evolve client and transcript
+    ///
+    /// # Arguments
+    ///
+    /// * `client`: The client
+    /// * `transcript`: The transcript
+    /// * `backend`: The EID backend
+    ///
+    /// returns: [EidClient::EvolvementProvider] The transferred cross sign evolvement
     pub fn cross_sign<C: EidClient>(
         client: &mut C,
         transcript: &mut C::TranscriptProvider,
@@ -60,6 +77,19 @@ pub mod helpers {
         cross_sign_evolvement_in
     }
 
+    /// Add a member to the Eid and evolve [EidClient] and [EidTranscript].
+    /// Then let the new_members client cross-sign and evolve client and transcript.
+    ///
+    /// # Arguments
+    ///
+    /// * `client`: The client
+    /// * `transcript`: The transcript
+    /// * `member`: The member
+    /// * `keypair`: The member's key material
+    /// * `backend`: The EID backend
+    ///
+    /// returns: ([EidClient::EvolvementProvider], [EidClient::EvolvementProvider])
+    /// The transferred evolvements of the addition and cross-signing.
     pub fn add_and_cross_sign<C: EidClient>(
         client: &mut C,
         transcript: &mut C::TranscriptProvider,
