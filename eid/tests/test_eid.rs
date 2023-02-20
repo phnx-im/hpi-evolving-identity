@@ -21,6 +21,15 @@ case::EidMls(& EidMlsBackend::default()),
 #[allow(non_snake_case)]
 pub fn eid_clients<B: EidBackend>(backend: &B) {}
 
+/// This test simulates the following:
+/// * create a new client
+/// * create a transcript from the client's state
+/// * let the client cross sign its membership
+/// * create and add a second member to the Eid
+/// * adding the same member a second time, expecting an Error
+///
+/// We evolve client and transcript along the way, comparing their states
+///
 #[apply(eid_clients)]
 fn add<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
@@ -75,6 +84,15 @@ fn add<B: EidBackend>(backend: &B) {
     assert_eq!(transcript.get_members(), members);
 }
 
+/// This test simulates the following:
+/// * create a new client
+/// * create a transcript from the client's state
+/// * let the client cross sign its membership
+/// * create and add a second member to the Eid
+/// * remove the second member
+///
+/// We evolve client and transcript along the way, comparing their states
+///
 #[apply(eid_clients)]
 fn remove<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
@@ -130,6 +148,13 @@ fn remove<B: EidBackend>(backend: &B) {
     assert_eq!(1, members.len());
 }
 
+/// This test simulates the following:
+/// * create a new client
+/// * create a transcript from the client's state
+/// * let the client cross sign its membership
+/// * let the client update its key material.
+///
+/// We evolve client and transcript along the way, comparing their states
 #[apply(eid_clients)]
 fn update<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
