@@ -80,8 +80,8 @@ pub trait EidClient {
     where
         Self: Sized;
 
-    /// Create an [Evolvement](Self::EvolvementProvider) that can be used to do both, create an EID from invitation or to evolve clients that are already in the EID,
-    /// to add a [Member](Self::MemberProvider) to the EID.
+    /// Create an [Evolvement](Self::EvolvementProvider) that can be used to to add a [Member](Self::MemberProvider) to the EID.
+    /// The evolvement is used to create the added members client from invitation (see [create_from_invitation](Self::create_from_invitation)).
     ///
     /// # Arguments
     ///
@@ -127,14 +127,14 @@ pub trait EidClient {
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>;
 
-    /// Apply an [Evolvement](Self::EvolvementProvider), changing the client's state.
+    /// Apply the next [Evolvement](Self::EvolvementProvider), changing the client's state.
     ///
     /// # Arguments
     ///
     /// * `evolvement`: The [Evolvement](Self::EvolvementProvider)
     /// * `backend`: The [Backend](Self::BackendProvider)
     ///
-    /// returns: [Result]<[()]), [EidError]> [EidError] If the [Self::EvolvementProvider] is invalid.
+    /// returns: [Result]<[()], [EidError]> [EidError] If the [Self::EvolvementProvider] is invalid.
     ///
     fn evolve(
         &mut self,
@@ -142,8 +142,16 @@ pub trait EidClient {
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError>;
 
-    /// Apply a [Vec] of [Evolvement] to the current [EidState].
-    /// Can be used to verify a slice of a [Transcript]'s [EidState] or to recover a [EidState].
+    /// Evolve the clients state by calling [evolve](Self::evolve)
+    /// for each [Self::EvolvementProvider] in a [Vec]<[Self::EvolvementProvider]>.
+    ///
+    /// # Arguments
+    ///
+    /// * `evolvements`: The [Vec]<[Self::EvolvementProvider]>
+    /// * `backend`: The [Self::BackendProvider]
+    ///
+    /// returns: [Result]<[()], [EidError]>) [EidError] If any [Self::EvolvementProvider] is invalid.
+    ///
     fn batch_evolve(
         &mut self,
         evolvements: Vec<Self::EvolvementProvider>,
@@ -155,25 +163,64 @@ pub trait EidClient {
         Ok(())
     }
 
+    /// Cross-sign a clients membership.
+    /// A member that was invited to a group via [add](Self::add) needs to cross-sign to be part of the EID.
+    ///
+    /// # Arguments
+    ///
+    /// * `backend`: The [Self::BackendProvider]
+    ///
+    /// returns: [Result]<[Self::EvolvementProvider], [EidError]>
+    ///
     fn cross_sign_membership(
         &mut self,
         backend: &Self::BackendProvider,
     ) -> Result<Self::EvolvementProvider, EidError>;
 
-    /// Get all clients which are members of the EID.
+    /// Get all members of the EID.
+    ///
+    /// returns: [Vec]<[Self::MemberProvider]>
     fn get_members(&self) -> Vec<Self::MemberProvider>;
 
+    /// Export the clients EidState as [Self::ExportedTranscriptStateProvider].
+    /// The exported state will be the trusted trusted EID state used to create a Transcript.
+    ///
+    /// # Arguments
+    ///
+    /// * `backend`: The [Self::BackendProvider]
+    ///
+    /// returns: [Result]<[Self::ExportedTranscriptStateProvider], [EidError]>
+    ///
     fn export_transcript_state(
         &self,
         backend: &Self::BackendProvider,
     ) -> Result<Self::ExportedTranscriptStateProvider, EidError>;
 
+    /// Generate a [member](Self::MemberProvider) that can be added to an EID.
+    ///
+    /// # Arguments
+    ///
+    /// * `id`: The members [Vec]<[u8]> identifier
+    /// * `backend`: The [Self::BackendProvider]
+    ///
+    /// returns: ([Self::MemberProvider], [Self::KeyProvider])
+    ///
     #[cfg(feature = "test")]
-    fn generate_initial_member(
+    fn generate_member(
         id: Vec<u8>,
         backend: &Self::BackendProvider,
     ) -> (Self::MemberProvider, Self::KeyProvider);
 
+    /// Generate an initial [client](Self).
+    /// The client will be the start of a new EID.
+    ///
+    /// # Arguments
+    ///
+    /// * `id`: The members [Vec]<[u8]> identifier
+    /// * `backend`: The [Self::BackendProvider]
+    ///
+    /// returns: [Self]
+    ///
     #[cfg(feature = "test")]
     fn generate_initial_client(id: Vec<u8>, backend: &Self::BackendProvider) -> Self;
 }

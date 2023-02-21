@@ -165,7 +165,7 @@ impl EidClient for EidDummyClient {
     }
 
     #[cfg(feature = "test")]
-    fn generate_initial_member(
+    fn generate_member(
         id: Vec<u8>,
         _backend: &Self::BackendProvider,
     ) -> (Self::MemberProvider, Self::KeyProvider) {
@@ -181,7 +181,7 @@ impl EidClient for EidDummyClient {
 
     #[cfg(feature = "test")]
     fn generate_initial_client(id: Vec<u8>, backend: &Self::BackendProvider) -> Self {
-        let (member, keypair) = EidDummyClient::generate_initial_member(id, backend);
+        let (member, keypair) = EidDummyClient::generate_member(id, backend);
         EidDummyClient::create_eid(&member, keypair, backend).expect("Could not create EID")
     }
 }
