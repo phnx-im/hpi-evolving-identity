@@ -4,7 +4,7 @@ use crate::member::Member;
 use crate::types::EidError;
 
 /// # EidState
-/// The state of the EID. Each Client and the Transcript will have their own [EidState]
+/// The state of the EID. Each Client and the Transcript have their own [EidState]
 pub trait EidState: Sized {
     /// Type of [Evolvement](Self::EvolvementProvider) that can be applied on this [EidState](Self)
     type EvolvementProvider: Evolvement;
