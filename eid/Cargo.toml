@@ -16,6 +16,7 @@ tls_codec = "0.2.0"
 
 openmls = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
 openmls_basic_credential = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
+openmls_rust_crypto = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
 
 [features]
 test = ["eid_mls/test", "eid_traits/test", "eid_dummy", "eid_dummy/test", "rstest", "rstest_reuse", "rand"]
