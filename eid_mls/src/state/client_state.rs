@@ -12,6 +12,8 @@ use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 
+/// # EidClientState
+/// Implementation of [EidState] using [openmls] wrapping a [MlsGroup].
 pub struct EidMlsClientState {
     pub(crate) group: MlsGroup,
 }

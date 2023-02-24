@@ -223,3 +223,13 @@ impl EidClient for EidMlsClient {
         Self::create_eid(&member, keypair, backend).expect("Could not create EID")
     }
 }
+
+impl EidMlsClient {
+    fn gen_group_config() -> MlsGroupConfig {
+        MlsGroupConfig::builder()
+            .sender_ratchet_configuration(SenderRatchetConfiguration::new(10, 2000))
+            .use_ratchet_tree_extension(true)
+            .wire_format_policy(PURE_PLAINTEXT_WIRE_FORMAT_POLICY)
+            .build()
+    }
+}
