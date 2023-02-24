@@ -15,10 +15,10 @@ pub enum EidError {
 
     InvalidMemberError(String),
     InvalidEvolvementError(String),
-    InvalidInvitationError,
+    InvalidInvitationError(String),
 
     CreateTranscriptStateError(String),
-    ExportTranscriptStateError,
+    ExportTranscriptStateError(String),
     ImportTranscriptStateError(String),
 
     CreateClientError(String),

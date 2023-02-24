@@ -8,6 +8,8 @@ use crate::eid_dummy_member::{EidDummyMember, BOOLEAN};
 use crate::eid_dummy_state::EidDummyState;
 use crate::eid_dummy_transcript::EidDummyTranscript;
 
+/// # EID Dummy Client
+/// Simple implementation of [EidClient].
 pub struct EidDummyClient {
     state: EidDummyState,
     id: Vec<u8>,
