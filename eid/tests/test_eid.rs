@@ -100,8 +100,7 @@ fn remove<B: EidBackend>(backend: &B) {
 
     cross_sign(client, &mut transcript, backend);
 
-    let (alice, keypair_alice) =
-        B::ClientProvider::generate_member("alice".into(), backend);
+    let (alice, keypair_alice) = B::ClientProvider::generate_member("alice".into(), backend);
     add_and_cross_sign(
         client,
         &mut transcript,

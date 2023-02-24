@@ -6,7 +6,7 @@ use tls_codec::{Deserialize, Error as TlsError, Serialize, Size};
 use eid_traits::evolvement::Evolvement;
 
 /// # EidMlsEvolvement
-/// Implementation of [Evolvement] using [openmls]. 
+/// Implementation of [Evolvement] using [openmls].
 /// To keep the API as simple as possible, [EidMlsEvolvement] doesn't introduce extra types for in- and outbound [Evolvement]s.
 #[derive(Debug, Clone)]
 pub enum EidMlsEvolvement {
