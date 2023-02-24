@@ -195,7 +195,7 @@ impl EidClient for EidMlsClient {
         backend: &Self::BackendProvider,
     ) -> (Self::MemberProvider, Self::KeyProvider) {
         let ciphersuite = backend.ciphersuite;
-        let (cred_with_key, keypair) = create_store_credential(
+        let (cred_with_key, keypair) = Self::create_store_credential(
             id,
             CredentialType::Basic,
             ciphersuite.signature_algorithm(),
