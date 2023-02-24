@@ -53,6 +53,6 @@ impl EidExportedTranscriptState for EidDummyState {
     type BackendProvider = EidDummyBackend;
 
     fn into_transcript_state(self, _backend: &EidDummyBackend) -> Result<EidDummyState, EidError> {
-        Ok(self.clone())
+        Ok(self)
     }
 }

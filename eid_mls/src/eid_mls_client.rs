@@ -73,9 +73,9 @@ impl EidClient for EidMlsClient {
             welcome: option_message_in,
         } = invitation
         {
-            let message_in = option_message_in.ok_or(EidError::InvalidInvitationError(
-                "Missing welcome message".into(),
-            ))?;
+            let message_in = option_message_in.ok_or_else(|| {
+                EidError::InvalidInvitationError("Missing welcome message".into())
+            })?;
             let message_in_body = message_in.extract();
             if let MlsMessageInBody::Welcome(welcome) = message_in_body {
                 let mls_group_config = Self::gen_group_config();
@@ -108,7 +108,7 @@ impl EidClient for EidMlsClient {
                 .add_members(&backend.mls_backend, &self.key_pair, &[key_package])
                 .map_err(|error| EidError::AddMemberError(error.to_string()))?;
             let evolvement = EidMlsEvolvement::OUT {
-                message: mls_out.into(),
+                message: mls_out,
                 welcome: Some(welcome),
             };
             Ok(evolvement)
@@ -132,7 +132,7 @@ impl EidClient for EidMlsClient {
                 .remove_members(&backend.mls_backend, &self.key_pair, &[mls_member.index])
                 .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
             let evolvement = EidMlsEvolvement::OUT {
-                message: mls_out.into(),
+                message: mls_out,
                 welcome,
             };
             Ok(evolvement)
@@ -152,7 +152,7 @@ impl EidClient for EidMlsClient {
             .self_update(&backend.mls_backend, &self.key_pair)
             .map_err(|error| EidError::UpdateMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement::OUT {
-            message: mls_out.into(),
+            message: mls_out,
             welcome: None,
         };
         Ok(evolvement)
@@ -163,7 +163,7 @@ impl EidClient for EidMlsClient {
         evolvement: Self::EvolvementProvider,
         backend: &Self::BackendProvider,
     ) -> Result<(), EidError> {
-        Ok(self.state.apply(evolvement, backend)?)
+        self.state.apply(evolvement, backend)
     }
 
     fn cross_sign_membership(
@@ -186,7 +186,7 @@ impl EidClient for EidMlsClient {
             .group
             .export_group_info(&backend.mls_backend, &self.key_pair, false)
             .map_err(|e| EidError::ExportTranscriptStateError(e.to_string()))?;
-        let nodes = self.state.group.export_ratchet_tree().into();
+        let nodes = self.state.group.export_ratchet_tree();
 
         Ok(EidMlsExportedTranscriptState::OUT {
             group_info: mls_out,
@@ -219,7 +219,7 @@ impl EidClient for EidMlsClient {
         (
             EidMlsMember {
                 mls_member: None,
-                key_package: Some(key_package.clone()),
+                key_package: Some(key_package),
                 credential: cred_with_key,
             },
             keypair,
@@ -271,7 +271,7 @@ impl EidMlsClient {
         backend: &impl OpenMlsCryptoProvider,
         signer: &impl Signer,
     ) -> Result<KeyPackage, EidError> {
-        let kp = KeyPackage::builder()
+        let key_package = KeyPackage::builder()
             //.key_package_extensions(extensions)
             .build(
                 CryptoConfig::with_default_version(ciphersuite),
@@ -280,7 +280,6 @@ impl EidMlsClient {
                 credential_with_key,
             )
             .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
-
-        return Ok(kp);
+        Ok(key_package)
     }
 }
