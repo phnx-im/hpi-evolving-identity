@@ -65,7 +65,9 @@ impl EidClient for EidDummyClient {
                 id: invited_pk,
             })
         } else {
-            Err(EidError::InvalidInvitationError)
+            Err(EidError::InvalidInvitationError(
+                "Wrong Evolvement type".into(),
+            ))
         }
     }
 

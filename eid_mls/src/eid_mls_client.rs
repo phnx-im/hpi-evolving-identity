@@ -72,7 +72,9 @@ impl EidClient for EidMlsClient {
             welcome: option_message_in,
         } = invitation
         {
-            let message_in = option_message_in.ok_or(EidError::InvalidInvitationError)?;
+            let message_in = option_message_in.ok_or(EidError::InvalidInvitationError(
+                "Missing welcome message".into(),
+            ))?;
             let message_in_body = message_in.extract();
             if let MlsMessageInBody::Welcome(welcome) = message_in_body {
                 let mls_group_config = Self::gen_group_config();
@@ -89,7 +91,9 @@ impl EidClient for EidMlsClient {
                 });
             }
         }
-        Err(EidError::InvalidInvitationError)
+        Err(EidError::InvalidInvitationError(
+            "Wrong evolvement type".into(),
+        ))
     }
 
     fn add(

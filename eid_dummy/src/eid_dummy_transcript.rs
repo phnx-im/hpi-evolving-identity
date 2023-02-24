@@ -7,6 +7,8 @@ use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::EidDummyMember;
 use crate::eid_dummy_state::EidDummyState;
 
+/// # EidDummyTranscript
+/// Dummy Implementation for [EidTranscript]
 #[derive(Default)]
 pub struct EidDummyTranscript {
     trusted_state: EidDummyState,
