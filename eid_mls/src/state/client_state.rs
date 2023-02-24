@@ -132,11 +132,9 @@ impl EidMlsClientState {
         let leaf_nodes = self.get_leaf_nodes();
 
         let leaf_node: &LeafNode =
-            leaf_nodes
-                .get(member.index.u32() as usize)
-                .ok_or(EidError::InvalidMemberError(
-                    "Member index doesn't have a matching node".into(),
-                ))?;
+            leaf_nodes.get(member.index.u32() as usize).ok_or_else(|| {
+                EidError::InvalidMemberError("Member index doesn't have a matching node".into())
+            })?;
 
         Ok(leaf_node.parent_hash().is_some())
     }

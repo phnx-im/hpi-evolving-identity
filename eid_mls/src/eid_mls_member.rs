@@ -37,7 +37,7 @@ impl Member for EidMlsMember {
         //     .signature_key
         self.mls_member
             .clone()
-            .expect("failed to extract mls member".into())
+            .expect("failed to extract mls member")
             .encryption_key
     }
 }
