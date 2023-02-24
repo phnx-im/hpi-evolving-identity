@@ -8,7 +8,7 @@ use crate::eid_mls_member::EidMlsMember;
 use crate::state::transcript_state::EidMlsTranscriptState;
 
 /// # EID MLS Transcript
-/// Implementation of [EidTranscript] using [openmls]. 
+/// Implementation of [EidTranscript] using [openmls].
 /// Uses [EidMlsTranscriptState] for its state and [EidMlsEvolvement] for its log.
 pub struct EidMlsTranscript {
     trusted_state: EidMlsTranscriptState,
