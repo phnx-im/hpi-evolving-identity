@@ -1,6 +1,6 @@
 # Summary
 
-- [Concepts](concepts/concepts.md)
+- [Concepts](concepts/README.md)
   - [Evolving Identity](concepts/concepts.md)
   - [Evolving Identity using MLS](concepts/mls_eid.md)
 - [User Manual](user_manual/README.md)
