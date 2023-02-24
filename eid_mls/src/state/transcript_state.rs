@@ -17,7 +17,8 @@ use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 
-/// Eid Mls Transcript State
+/// # EidTranscriptState
+/// Implementation of [EidState] for the Transcript using [openmls] wrapping a [PublicGroup].
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct EidMlsTranscriptState {
     pub(crate) group: PublicGroup,
@@ -115,6 +116,8 @@ impl EidMlsTranscriptState {
     }
 }
 
+/// # EID MLS Exported Transcript State
+/// Implementation of [EidExportedTranscriptState] using [openmls].
 pub enum EidMlsExportedTranscriptState {
     IN {
         group_info: MlsMessageIn,

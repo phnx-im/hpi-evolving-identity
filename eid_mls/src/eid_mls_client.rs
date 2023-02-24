@@ -1,5 +1,7 @@
-use openmls::prelude::MlsMessageInBody;
 use openmls::prelude::{CredentialType, MlsGroup};
+use openmls::prelude::{
+    MlsGroupConfig, MlsMessageInBody, SenderRatchetConfiguration, PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
+};
 use openmls_basic_credential::SignatureKeyPair;
 
 use eid_traits::client::EidClient;
@@ -14,9 +16,11 @@ use crate::eid_mls_transcript::EidMlsTranscript;
 use crate::state::client_state::EidMlsClientState;
 use crate::state::transcript_state::{EidMlsExportedTranscriptState, EidMlsTranscriptState};
 
+/// # EID MLS Client
+/// Implementation of [EidClient] using [openmls]. Uses [EidMlsClientState] as its state.
 pub struct EidMlsClient {
     pub(crate) state: EidMlsClientState,
-    pub(crate) keypair: SignatureKeyPair,
+    pub(crate) key_pair: SignatureKeyPair,
 }
 
 impl EidClient for EidMlsClient {
@@ -35,7 +39,20 @@ impl EidClient for EidMlsClient {
         key_pair: Self::KeyProvider,
         backend: &Self::BackendProvider,
     ) -> Result<Self, EidError> {
-        Self::create_mls_eid(backend, key_pair, initial_member.credential.clone())
+        let mls_group_config = Self::gen_group_config();
+
+        let group = MlsGroup::new(
+            &backend.mls_backend,
+            &key_pair,
+            &mls_group_config,
+            initial_member.credential.clone(),
+        )
+        .expect("Could not create MlsGroup");
+
+        Ok(Self {
+            state: EidMlsClientState { group },
+            key_pair,
+        })
     }
 
     fn create_from_invitation(
@@ -64,7 +81,7 @@ impl EidClient for EidMlsClient {
                 .map_err(|err| EidError::CreateClientError(err.to_string()))?;
                 return Ok(Self {
                     state: EidMlsClientState { group: mls_group },
-                    keypair: signature_keypair,
+                    key_pair: signature_keypair,
                 });
             }
         }
@@ -79,7 +96,7 @@ impl EidClient for EidMlsClient {
         if let Some(key_package) = member.key_package.clone() {
             let group = &mut self.state.group;
             let (mls_out, welcome, _group_info) = group
-                .add_members(&backend.mls_backend, &self.keypair, &[key_package])
+                .add_members(&backend.mls_backend, &self.key_pair, &[key_package])
                 .map_err(|error| EidError::AddMemberError(error.to_string()))?;
             let evolvement = EidMlsEvolvement::OUT {
                 message: mls_out.into(),
@@ -103,7 +120,7 @@ impl EidClient for EidMlsClient {
 
         if let Some(mls_member) = &member.mls_member {
             let (mls_out, welcome, _group_info) = group
-                .remove_members(&backend.mls_backend, &self.keypair, &[mls_member.index])
+                .remove_members(&backend.mls_backend, &self.key_pair, &[mls_member.index])
                 .map_err(|error| EidError::RemoveMemberError(error.to_string()))?;
             let evolvement = EidMlsEvolvement::OUT {
                 message: mls_out.into(),
@@ -123,7 +140,7 @@ impl EidClient for EidMlsClient {
     ) -> Result<Self::EvolvementProvider, EidError> {
         let group = &mut self.state.group;
         let (mls_out, _, _) = group
-            .self_update(&backend.mls_backend, &self.keypair)
+            .self_update(&backend.mls_backend, &self.key_pair)
             .map_err(|error| EidError::UpdateMemberError(error.to_string()))?;
         let evolvement = EidMlsEvolvement::OUT {
             message: mls_out.into(),
@@ -158,7 +175,7 @@ impl EidClient for EidMlsClient {
         let mls_out = self
             .state
             .group
-            .export_group_info(&backend.mls_backend, &self.keypair, false)
+            .export_group_info(&backend.mls_backend, &self.key_pair, false)
             .map_err(|_| EidError::ExportTranscriptStateError)?;
         let nodes = self.state.group.export_ratchet_tree().into();
 
