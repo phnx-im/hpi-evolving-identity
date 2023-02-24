@@ -1,8 +1,13 @@
-use openmls::prelude::{CredentialType, MlsGroup};
+use openmls::prelude::{
+    Credential, CredentialType, CredentialWithKey, CryptoConfig, KeyPackage, MlsGroup,
+};
 use openmls::prelude::{
     MlsGroupConfig, MlsMessageInBody, SenderRatchetConfiguration, PURE_PLAINTEXT_WIRE_FORMAT_POLICY,
 };
 use openmls_basic_credential::SignatureKeyPair;
+use openmls_traits::signatures::Signer;
+use openmls_traits::types::{Ciphersuite, SignatureScheme};
+use openmls_traits::OpenMlsCryptoProvider;
 
 use eid_traits::client::EidClient;
 use eid_traits::state::EidState;
@@ -10,7 +15,6 @@ use eid_traits::types::EidError;
 
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
-use crate::eid_mls_key_creation::{create_store_credential, create_store_key_package};
 use crate::eid_mls_member::EidMlsMember;
 use crate::eid_mls_transcript::EidMlsTranscript;
 use crate::state::client_state::EidMlsClientState;
@@ -199,7 +203,7 @@ impl EidClient for EidMlsClient {
         )
         .expect("Failed to create credential");
 
-        let key_package = create_store_key_package(
+        let key_package = Self::create_store_key_package(
             ciphersuite,
             cred_with_key.clone(),
             &backend.mls_backend,
@@ -231,5 +235,47 @@ impl EidMlsClient {
             .use_ratchet_tree_extension(true)
             .wire_format_policy(PURE_PLAINTEXT_WIRE_FORMAT_POLICY)
             .build()
+    }
+
+    fn create_store_credential(
+        identity: Vec<u8>,
+        credential_type: CredentialType,
+        signature_algorithm: SignatureScheme,
+        backend: &impl OpenMlsCryptoProvider,
+    ) -> Result<(CredentialWithKey, SignatureKeyPair), EidError> {
+        let credential = Credential::new(identity, credential_type)
+            .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
+        let signature_keys = SignatureKeyPair::new(signature_algorithm)
+            .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
+        signature_keys
+            .store(backend.key_store())
+            .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
+
+        Ok((
+            CredentialWithKey {
+                credential,
+                signature_key: signature_keys.to_public_vec().into(),
+            },
+            signature_keys,
+        ))
+    }
+
+    fn create_store_key_package(
+        ciphersuite: Ciphersuite,
+        credential_with_key: CredentialWithKey,
+        backend: &impl OpenMlsCryptoProvider,
+        signer: &impl Signer,
+    ) -> Result<KeyPackage, EidError> {
+        let kp = KeyPackage::builder()
+            //.key_package_extensions(extensions)
+            .build(
+                CryptoConfig::with_default_version(ciphersuite),
+                backend,
+                signer,
+                credential_with_key,
+            )
+            .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
+
+        return Ok(kp);
     }
 }

@@ -13,7 +13,7 @@ use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
 
 /// # EidClientState
-/// Implementation of [EidState] using [openmls] wrapping a [MlsGroup].
+/// Implementation of [EidState] using [openmls], wrapping a [MlsGroup].
 pub struct EidMlsClientState {
     pub(crate) group: MlsGroup,
 }
@@ -128,9 +128,9 @@ impl EidMlsClientState {
     ///
     /// # Arguments
     ///
-    /// * `member`:
+    /// * `member`: The [MlsMember] to check membership for.
     ///
-    /// returns: Result<bool, EidError>
+    /// returns: [Result]<bool, [EidError]>
     fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
         let leaf_nodes = self.get_leaf_nodes();
 
