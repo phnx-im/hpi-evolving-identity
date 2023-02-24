@@ -8,12 +8,12 @@ edition = "2021"
 [dependencies]
 eid_traits = { version = "0.1.0", path = "../traits" }
 
-openmls = { git = "https://github.com/openmls/openmls.git", branch = "konrad/public_group_api" }
-openmls_rust_crypto = { git = "https://github.com/openmls/openmls.git", branch = "konrad/public_group_api" }
+openmls = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
+openmls_rust_crypto = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
 thiserror = "1.0"
 tls_codec = "0.2.0"
-openmls_traits = { git = "https://github.com/openmls/openmls.git", branch = "konrad/public_group_api" }
-openmls_basic_credential = { git = "https://github.com/openmls/openmls.git", branch = "konrad/public_group_api" }
+openmls_traits = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
+openmls_basic_credential = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
 serde = { version = "^1.0", features = ["derive"] }
 serde_json = "^1.0"
 [features]

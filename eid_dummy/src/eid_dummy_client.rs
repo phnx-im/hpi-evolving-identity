@@ -6,6 +6,7 @@ use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::{EidDummyMember, BOOLEAN};
 use crate::eid_dummy_state::EidDummyState;
+#[cfg(feature = "test")]
 use crate::eid_dummy_transcript::EidDummyTranscript;
 
 /// # EID Dummy Client

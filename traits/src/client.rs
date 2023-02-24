@@ -1,3 +1,4 @@
+#[cfg(feature = "test")]
 use std::fmt::Debug;
 
 use crate::backend::EidBackend;
@@ -5,6 +6,7 @@ use crate::evolvement::Evolvement;
 use crate::member::Member;
 use crate::state::EidState;
 use crate::transcript::EidExportedTranscriptState;
+#[cfg(feature = "test")]
 use crate::transcript::EidTranscript;
 use crate::types::EidError;
 
