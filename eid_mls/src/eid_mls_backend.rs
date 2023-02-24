@@ -1,8 +1,10 @@
-use openmls::prelude::Ciphersuite;
 use openmls_rust_crypto::OpenMlsRustCrypto;
+#[cfg(feature = "test")]
+use openmls_traits::types::Ciphersuite;
 
 use eid_traits::backend::EidBackend;
 
+#[cfg(feature = "test")]
 use crate::eid_mls_client::EidMlsClient;
 
 /// # EID MLS Backend

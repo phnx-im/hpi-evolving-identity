@@ -265,7 +265,7 @@ impl EidMlsClient {
         ))
     }
 
-    fn create_store_key_package(
+    pub fn create_store_key_package(
         ciphersuite: Ciphersuite,
         credential_with_key: CredentialWithKey,
         backend: &impl OpenMlsCryptoProvider,

@@ -1,5 +1,6 @@
 use eid_traits::backend::EidBackend;
 
+#[cfg(feature = "test")]
 use crate::eid_dummy_client::EidDummyClient;
 
 /// # EID Dummy Backend
