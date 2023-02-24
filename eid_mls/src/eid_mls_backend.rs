@@ -9,6 +9,7 @@ use crate::eid_mls_client::EidMlsClient;
 
 /// # EID MLS Backend
 /// Implements [EidBackend] using [openmls]
+#[cfg_attr(not(feature = "test"), derive(Default))]
 pub struct EidMlsBackend {
     pub(crate) mls_backend: OpenMlsRustCrypto,
     #[cfg(feature = "test")]

@@ -77,7 +77,7 @@ impl EidClient for EidDummyClient {
         member: &EidDummyMember,
         _backend: &EidDummyBackend,
     ) -> Result<EidDummyEvolvement, EidError> {
-        if self.state.members.contains(&member) {
+        if self.state.members.contains(member) {
             return Err(EidError::AddMemberError(String::from(
                 "Member already in EID",
             )));
@@ -159,7 +159,7 @@ impl EidClient for EidDummyClient {
             .get_members()
             .iter()
             .filter(|&m| m.cross_signed == BOOLEAN::TRUE)
-            .map(|m| m.clone())
+            .cloned()
             .collect()
     }
     fn export_transcript_state(

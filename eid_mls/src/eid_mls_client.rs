@@ -73,9 +73,9 @@ impl EidClient for EidMlsClient {
             welcome: option_message_in,
         } = invitation
         {
-            let message_in = option_message_in.ok_or(EidError::InvalidInvitationError(
-                "Missing welcome message".into(),
-            ))?;
+            let message_in = option_message_in.ok_or_else(|| {
+                EidError::InvalidInvitationError("Missing welcome message".into())
+            })?;
             let message_in_body = message_in.extract();
             if let MlsMessageInBody::Welcome(welcome) = message_in_body {
                 let mls_group_config = Self::gen_group_config();
@@ -219,7 +219,7 @@ impl EidClient for EidMlsClient {
         (
             EidMlsMember {
                 mls_member: None,
-                key_package: Some(key_package.clone()),
+                key_package: Some(key_package),
                 credential: cred_with_key,
             },
             keypair,
@@ -271,7 +271,7 @@ impl EidMlsClient {
         backend: &impl OpenMlsCryptoProvider,
         signer: &impl Signer,
     ) -> Result<KeyPackage, EidError> {
-        let kp = KeyPackage::builder()
+        let key_package = KeyPackage::builder()
             //.key_package_extensions(extensions)
             .build(
                 CryptoConfig::with_default_version(ciphersuite),
@@ -280,7 +280,6 @@ impl EidMlsClient {
                 credential_with_key,
             )
             .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
-
-        return Ok(kp);
+        Ok(key_package)
     }
 }

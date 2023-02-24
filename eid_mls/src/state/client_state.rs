@@ -73,7 +73,7 @@ impl EidState for EidMlsClientState {
         self.group
             .members()
             .filter(|member| self.has_member(member).unwrap_or(false))
-            .map(|member| EidMlsMember::from_existing(member.clone()))
+            .map(EidMlsMember::from_existing)
             .collect()
     }
 }
@@ -90,20 +90,17 @@ impl EidMlsClientState {
 
         match processed_message_result {
             Ok(processed_message) => {
-                self.apply_processed_message(processed_message, &backend)?;
+                self.apply_processed_message(processed_message, backend)?;
                 Ok(())
             }
             Err(process_message_error) => {
-                if let ProcessMessageError::InvalidCommit(stage_commit_error) =
+                if let ProcessMessageError::InvalidCommit(StageCommitError::OwnCommit) =
                     process_message_error
                 {
-                    // if the commit belongs to ourselves, we can just merge the pending commit.
-                    if let StageCommitError::OwnCommit = stage_commit_error {
-                        self.group
-                            .merge_pending_commit(&backend.mls_backend)
-                            .map_err(|e| EidError::InvalidEvolvementError(e.to_string()))?;
-                        return Ok(());
-                    }
+                    self.group
+                        .merge_pending_commit(&backend.mls_backend)
+                        .map_err(|e| EidError::InvalidEvolvementError(e.to_string()))?;
+                    return Ok(());
                 }
 
                 Err(EidError::InvalidEvolvementError(
