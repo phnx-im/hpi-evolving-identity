@@ -2,17 +2,17 @@ use openmls::prelude::{Ciphersuite, Credential, CredentialType, CredentialWithKe
 use openmls_basic_credential::SignatureKeyPair;
 
 use eid_mls::eid_mls_client::EidMlsClient;
-use eid_mls::eid_mls_evolvement::EidMlsEvolvement;
 use eid_mls::eid_mls_member::EidMlsMember;
+use eid_traits::backend::EidBackend;
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
 
-fn create_backend_rust_crypto() {
-    // ANCHOR: create_backend_rust_crypto
-    use openmls_rust_crypto::OpenMlsRustCrypto;
+fn create_backend() {
+    // ANCHOR: create_backend
+    use eid_mls::eid_mls_backend::EidMlsBackend;
 
-    let backend = OpenMlsRustCrypto::default();
-    // ANCHOR_END: create_backend_rust_crypto
+    let backend = EidMlsBackend::default();
+    // ANCHOR_END: create_backend
 
     // Suppress warning.
     let _backend = backend;
