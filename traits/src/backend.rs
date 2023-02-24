@@ -1,3 +1,4 @@
+#[cfg(feature = "test")]
 use crate::client::EidClient;
 
 /// # EidBackend

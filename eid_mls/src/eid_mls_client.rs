@@ -16,6 +16,7 @@ use eid_traits::types::EidError;
 use crate::eid_mls_backend::EidMlsBackend;
 use crate::eid_mls_evolvement::EidMlsEvolvement;
 use crate::eid_mls_member::EidMlsMember;
+#[cfg(feature = "test")]
 use crate::eid_mls_transcript::EidMlsTranscript;
 use crate::state::client_state::EidMlsClientState;
 use crate::state::transcript_state::{EidMlsExportedTranscriptState, EidMlsTranscriptState};
@@ -184,7 +185,7 @@ impl EidClient for EidMlsClient {
             .state
             .group
             .export_group_info(&backend.mls_backend, &self.key_pair, false)
-            .map_err(|_| EidError::ExportTranscriptStateError)?;
+            .map_err(|e| EidError::ExportTranscriptStateError(e.to_string()))?;
         let nodes = self.state.group.export_ratchet_tree().into();
 
         Ok(EidMlsExportedTranscriptState::OUT {
@@ -233,7 +234,7 @@ impl EidClient for EidMlsClient {
 }
 
 impl EidMlsClient {
-    fn gen_group_config() -> MlsGroupConfig {
+    pub fn gen_group_config() -> MlsGroupConfig {
         MlsGroupConfig::builder()
             .sender_ratchet_configuration(SenderRatchetConfiguration::new(10, 2000))
             .use_ratchet_tree_extension(true)
@@ -241,7 +242,7 @@ impl EidMlsClient {
             .build()
     }
 
-    fn create_store_credential(
+    pub fn create_store_credential(
         identity: Vec<u8>,
         credential_type: CredentialType,
         signature_algorithm: SignatureScheme,
