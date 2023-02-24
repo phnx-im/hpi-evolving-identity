@@ -32,9 +32,3 @@ impl Display for EidError {
 }
 
 impl Error for EidError {}
-
-pub enum EvolvementType {
-    Add,
-    Update,
-    Remove,
-}

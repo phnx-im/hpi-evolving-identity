@@ -21,6 +21,15 @@ case::EidMls(& EidMlsBackend::default()),
 #[allow(non_snake_case)]
 pub fn eid_clients<B: EidBackend>(backend: &B) {}
 
+/// This test simulates the following:
+/// * create a new client
+/// * create a transcript from the client's state
+/// * let the client cross sign its membership
+/// * create and add a second member to the Eid
+/// * adding the same member a second time, expecting an Error
+///
+/// We evolve client and transcript along the way, comparing their states
+///
 #[apply(eid_clients)]
 fn add<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
@@ -37,7 +46,7 @@ fn add<B: EidBackend>(backend: &B) {
     assert_eq!(1, members_after_cross_sign.len());
 
     // Create Alice as a member with a random pk
-    let (alice, alice_kp) = B::ClientProvider::generate_initial_member("alice".into(), backend);
+    let (alice, alice_kp) = B::ClientProvider::generate_member("alice".into(), backend);
     let (add_alice_evolvement_in, ..) =
         add_and_cross_sign(client, &mut transcript, alice.clone(), alice_kp, backend);
 
@@ -65,7 +74,7 @@ fn add<B: EidBackend>(backend: &B) {
     assert!(matches!(member_in_eid_error, EidError::AddMemberError(..)));
 
     // Add Bob
-    let (bob, bob_kp) = B::ClientProvider::generate_initial_member("bob".into(), backend);
+    let (bob, bob_kp) = B::ClientProvider::generate_member("bob".into(), backend);
     add_and_cross_sign(client, &mut transcript, bob.clone(), bob_kp, backend);
 
     let members = client.get_members();
@@ -75,6 +84,15 @@ fn add<B: EidBackend>(backend: &B) {
     assert_eq!(transcript.get_members(), members);
 }
 
+/// This test simulates the following:
+/// * create a new client
+/// * create a transcript from the client's state
+/// * let the client cross sign its membership
+/// * create and add a second member to the Eid
+/// * remove the second member
+///
+/// We evolve client and transcript along the way, comparing their states
+///
 #[apply(eid_clients)]
 fn remove<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
@@ -83,7 +101,7 @@ fn remove<B: EidBackend>(backend: &B) {
     cross_sign(client, &mut transcript, backend);
 
     let (alice, keypair_alice) =
-        B::ClientProvider::generate_initial_member("alice".into(), backend);
+        B::ClientProvider::generate_member("alice".into(), backend);
     add_and_cross_sign(
         client,
         &mut transcript,
@@ -130,6 +148,13 @@ fn remove<B: EidBackend>(backend: &B) {
     assert_eq!(1, members.len());
 }
 
+/// This test simulates the following:
+/// * create a new client
+/// * create a transcript from the client's state
+/// * let the client cross sign its membership
+/// * let the client update its key material.
+///
+/// We evolve client and transcript along the way, comparing their states
 #[apply(eid_clients)]
 fn update<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
