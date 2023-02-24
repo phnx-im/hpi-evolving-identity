@@ -9,6 +9,10 @@ use crate::eid_dummy_backend::EidDummyBackend;
 use crate::eid_dummy_evolvement::EidDummyEvolvement;
 use crate::eid_dummy_member::EidDummyMember;
 
+/// # EID Dummy State
+/// Dummy implementation of [EidState].
+/// Holds [EidDummyMember]s and a count of processed [Evolvement]s for a minimum of validation
+/// to provide compliance with integration tests.
 #[derive(Default, Debug, Clone, PartialEq, Eq, TlsDeserialize, TlsSerialize, TlsSize)]
 pub struct EidDummyState {
     pub(crate) members: Vec<EidDummyMember>,

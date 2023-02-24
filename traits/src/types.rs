@@ -15,10 +15,10 @@ pub enum EidError {
 
     InvalidMemberError(String),
     InvalidEvolvementError(String),
-    InvalidInvitationError,
+    InvalidInvitationError(String),
 
     CreateTranscriptStateError(String),
-    ExportTranscriptStateError,
+    ExportTranscriptStateError(String),
     ImportTranscriptStateError(String),
 
     CreateClientError(String),
@@ -27,7 +27,22 @@ pub enum EidError {
 
 impl Display for EidError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.to_string())
+        let error_string = match &self {
+            EidError::DeserializationError(s)
+            | EidError::SerializationError(s)
+            | EidError::AddMemberError(s)
+            | EidError::UpdateMemberError(s)
+            | EidError::RemoveMemberError(s)
+            | EidError::InvalidMemberError(s)
+            | EidError::InvalidEvolvementError(s)
+            | EidError::InvalidInvitationError(s)
+            | EidError::CreateTranscriptStateError(s)
+            | EidError::ExportTranscriptStateError(s)
+            | EidError::ImportTranscriptStateError(s)
+            | EidError::CreateClientError(s)
+            | EidError::CreateCredentialError(s) => s,
+        };
+        write!(f, "{:?}", error_string)
     }
 }
 

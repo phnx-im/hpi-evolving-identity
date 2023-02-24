@@ -2,6 +2,8 @@ use openmls::prelude::{CredentialWithKey, KeyPackage, Member as MlsMember};
 
 use eid_traits::member::Member;
 
+/// # EID MLS Member
+/// Implementation of [Member] using [openmls]
 #[derive(Debug, Clone)]
 pub struct EidMlsMember {
     pub(crate) mls_member: Option<MlsMember>,

@@ -8,6 +8,8 @@ use crate::eid_dummy_member::{EidDummyMember, BOOLEAN};
 use crate::eid_dummy_state::EidDummyState;
 use crate::eid_dummy_transcript::EidDummyTranscript;
 
+/// # EID Dummy Client
+/// Simple implementation of [EidClient].
 pub struct EidDummyClient {
     state: EidDummyState,
     id: Vec<u8>,
@@ -63,7 +65,9 @@ impl EidClient for EidDummyClient {
                 id: invited_pk,
             })
         } else {
-            Err(EidError::InvalidInvitationError)
+            Err(EidError::InvalidInvitationError(
+                "Wrong Evolvement type".into(),
+            ))
         }
     }
 

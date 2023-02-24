@@ -93,6 +93,7 @@ pub trait EidTranscript {
     fn get_trusted_state(&self) -> Result<Self::StateProvider, EidError>;
 }
 
+/// # EID Exported Transcript State
 /// State that is exported by the client and sent over the wire. The only function it needs
 /// to implement is the conversion to a transcript state.
 pub trait EidExportedTranscriptState: Serialize + Deserialize {

@@ -5,6 +5,8 @@ use eid_traits::backend::EidBackend;
 
 use crate::eid_mls_client::EidMlsClient;
 
+/// # EID MLS Backend
+/// Implements [EidBackend] using [openmls]
 pub struct EidMlsBackend {
     pub(crate) mls_backend: OpenMlsRustCrypto,
     pub(crate) ciphersuite: Ciphersuite,

@@ -4,6 +4,8 @@ use eid_traits::evolvement::Evolvement;
 
 use crate::eid_dummy_member::EidDummyMember;
 
+/// # EidDummyEvolvement
+/// Dummy Implementation of [Evolvement]
 #[derive(Debug, Clone, TlsSerialize, TlsDeserialize, TlsSize)]
 #[repr(u8)]
 pub enum EidDummyEvolvement {
