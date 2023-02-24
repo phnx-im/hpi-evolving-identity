@@ -143,7 +143,7 @@ pub trait EidClient {
     ) -> Result<(), EidError>;
 
     /// Evolve the client's state by calling [evolve](Self::evolve)
-    /// for each [Self::EvolvementProvider] in a [Vec]<[Self::EvolvementProvider]>.
+    /// for each [Evolvement](Self::EvolvementProvider) in a [Vec] of [Evolvement](Self::EvolvementProvider)s.
     ///
     /// # Arguments
     ///

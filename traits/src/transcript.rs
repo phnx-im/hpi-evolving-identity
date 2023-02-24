@@ -60,7 +60,7 @@ pub trait EidTranscript {
     ) -> Result<(), EidError>;
 
     /// Evolve the transcript's current state by calling [evolve](Self::evolve)
-    /// for each [Self::EvolvementProvider] in a [Vec]<[Self::EvolvementProvider]>.
+    /// for each [Evolvement](Self::EvolvementProvider) in a [Vec] of [Evolvement](Self::EvolvementProvider)s.
     ///
     /// # Arguments
     ///
