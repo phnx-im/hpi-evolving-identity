@@ -19,7 +19,7 @@ case::EidDummy(& EidDummyBackend::default()),
 case::EidMls(& EidMlsBackend::default()),
 )]
 #[allow(non_snake_case)]
-pub fn eid_clients<B: EidBackend>(backend: &B) {}
+pub fn eid_backends<B: EidBackend>(backend: &B) {}
 
 /// This test simulates the following:
 /// * create a new client
@@ -30,7 +30,7 @@ pub fn eid_clients<B: EidBackend>(backend: &B) {}
 ///
 /// We evolve client and transcript along the way, comparing their states
 ///
-#[apply(eid_clients)]
+#[apply(eid_backends)]
 fn add<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
@@ -93,7 +93,7 @@ fn add<B: EidBackend>(backend: &B) {
 ///
 /// We evolve client and transcript along the way, comparing their states
 ///
-#[apply(eid_clients)]
+#[apply(eid_backends)]
 fn remove<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
@@ -154,7 +154,7 @@ fn remove<B: EidBackend>(backend: &B) {
 /// * let the client update its key material.
 ///
 /// We evolve client and transcript along the way, comparing their states
-#[apply(eid_clients)]
+#[apply(eid_backends)]
 fn update<B: EidBackend>(backend: &B) {
     let client = &mut B::ClientProvider::generate_initial_client("test_id".into(), backend);
     let mut transcript = build_transcript(client, backend);
