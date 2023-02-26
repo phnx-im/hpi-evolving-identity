@@ -1,5 +1,5 @@
 # Summary
-
+- [Introduction](introduction.md)
 - [Concepts](concepts/README.md)
   - [Evolving Identity](concepts/01_concepts.md)
   - [Traits and Types](concepts/02_traits_and_types.md)

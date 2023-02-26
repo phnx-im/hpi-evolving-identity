@@ -30,7 +30,7 @@ Clients must specify at least one ciphersuite and not advertise ciphersuites the
 Clients should specify all extensions they support. See the documentation of extensions for more details.
 
 ```rust,no_run,noplayground
-{{#include ../../../eid/tests/book_code.rs:create_key_package}}
+{{#include ../book_code.rs:create_key_package}}
 ```
 
 This will also store the private key for the key package in the key store.

@@ -5,5 +5,5 @@ Simply call the EID `remove` function with the `EidMember` that's supposed to be
 Again, the returned evolvement should be sent to all existing EID members.
 
 ```rust,no_run,noplayground
-{{#include ../../../eid/tests/book_code.rs:alice_adds_bob}}
+{{#include ../book_code.rs:alice_adds_bob}}
 ```
