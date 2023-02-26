@@ -7,5 +7,5 @@ To do so, simply call the `evolve` function for the client:
 message.)
 
 ```rust,no_run,noplayground
-{{#include ../book_code.rs:processing_evolvements}}
+{{#include ../src/eid_mls_example/src/main.rs.rs:processing_evolvements}}
 ```

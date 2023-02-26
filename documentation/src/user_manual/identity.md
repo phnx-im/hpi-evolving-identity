@@ -30,7 +30,7 @@ Thus, to create a fresh `Credential`, the following inputs are required:
 - `credential_type: CredentialType`: The type of the credential, in this case `CredentialType::Basic`.
 
 ```rust,no_run,noplayground
-{{#include ../book_code.rs:create_basic_credential}}
+{{#include ../src/eid_mls_example/src/main.rs:create_basic_credential}}
 ```
 
 After creating the credential bundle, clients should create keys for it.
@@ -39,7 +39,7 @@ of [`BasicCredential`](https://github.com/openmls/openmls/tree/main/basic-creden
 to use credentials.
 
 ```rust,no_run,noplayground
-{{#include ../book_code.rs:create_credential_keys}}
+{{#include ../src/eid_mls_example/src/main.rs:create_credential_keys}}
 ```
 
 All functions and structs related to credentials can be found in

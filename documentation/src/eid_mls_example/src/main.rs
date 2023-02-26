@@ -12,6 +12,7 @@ use eid_mls::eid_mls_evolvement::EidMlsEvolvement;
 use eid_traits::client::EidClient;
 
 pub fn create_backend() {
+    #[allow(unused_imports)]
     // ANCHOR: create_backend
     use eid_mls::eid_mls_backend::EidMlsBackend;
     let backend = EidMlsBackend::default();
@@ -110,7 +111,7 @@ fn book_operations() {
     // ANCHOR: bob_joins_with_invitation
     let mut bob_client =
         EidMlsClient::create_from_invitation(add_bob_evolvement, bob_signature_keys, backend)
-            .expect("Error joining EID from Invitation");
+            .expect("Error creating client from Invitation");
     // ANCHOR_END: bob_joins_with_invitation
 
     // ANCHOR: processing_evolvements
@@ -135,7 +136,7 @@ fn book_operations() {
         charlie_signature_keys,
         backend,
     )
-    .expect("Error creating group from Welcome");
+    .expect("Error creating client from invitation");
 
     let bob = charlie_client
         .get_members()
@@ -147,7 +148,7 @@ fn book_operations() {
     // ANCHOR: charlie_removes_bob
     let remove_bob_evolvement = charlie_client
         .remove(&bob, backend)
-        .expect("Could not remove Bob from Charlie's EID");
+        .expect("Could not remove Bob using Charlie's client");
     // ANCHOR_END: charlie_removes_bob
 
     let remove_bob_evolvement: EidMlsEvolvement = simulate_transfer(&remove_bob_evolvement);
@@ -165,7 +166,7 @@ fn book_operations() {
     charlie_client
         .evolve(remove_bob_evolvement, backend)
         .expect("Alice could not apply remove_bob_evolvement");
-    assert_eq!(charlie_client.get_members().len(), 2);
+    assert_eq!(charlie_client.get_members().len(), 1);
 
     // ANCHOR: alice_update_self
     let alice_update_evolvement = alice_client

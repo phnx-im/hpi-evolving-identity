@@ -6,5 +6,5 @@ Firstly, a new `EidMember` has to be created from the generated keys.
 This member can then be used to initialise a new EID (`EidClient`).
 
 ```rust,no_run,noplayground
-{{#include ../book_code.rs:alice_create_eid}}
+{{#include ../src/eid_mls_example/src/main.rs:alice_create_eid}}
 ```

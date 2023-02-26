@@ -4,7 +4,7 @@ To join a group from an `Invitation` message, a new EID can be instantiated dire
 the `Invitation`.
 
 ```rust,no_run,noplayground
-{{#include ../book_code.rs:bob_joins_with_invitation}}
+{{#include ../src/eid_mls_example/src/main.rs:bob_joins_with_invitation}}
 ```
 
 Pay attention not to forward an Invitation message to a client before its associated commit has been accepted by the
