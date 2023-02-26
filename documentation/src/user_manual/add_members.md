@@ -6,7 +6,7 @@ an `Invitation` for the new member.
 It should be sent to all existing EID members and the newly added member.
 
 ```rust,no_run,noplayground
-{{#include ../../../eid/tests/book_code.rs:alice_adds_bob}}
+{{#include ../book_code.rs:alice_adds_bob}}
 ```
 
 The new member can then [join the group themselves](join_from_invitation.md) after the evolvement has been applied.

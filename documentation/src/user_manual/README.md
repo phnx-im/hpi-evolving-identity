@@ -11,5 +11,5 @@ Currently, there is only one implementation available (using openMLS).
 Thus, you can create the `backend` object for the following examples using ...
 
 ```rust,no_run,noplayground
-{{#include ../../../eid/tests/book_code.rs:create_backend}}
+{{#include ../book_code.rs:create_backend}}
 ```

@@ -1,10 +1,18 @@
 use std::fs::File;
 
-use openmls::prelude::{AddMembersError, Ciphersuite, CommitToPendingProposalsError, CreateCommitError, Credential, CredentialType, CredentialWithKey, CryptoConfig, EmptyInputError, Extensions, GroupId, InnerState, JoinProposal, KeyPackage, LeafNodeIndex, Member, MlsGroup, MlsGroupConfig, OpenMlsCryptoProvider, ProcessedMessageContent, Proposal, RemoveMembersError, RemoveOperation, Sender, SignatureScheme};
+use openmls::prelude::{
+    AddMembersError, Ciphersuite, CommitToPendingProposalsError, CreateCommitError, Credential,
+    CredentialType, CredentialWithKey, CryptoConfig, EmptyInputError, Extensions, GroupId,
+    InnerState, JoinProposal, KeyPackage, LeafNodeIndex, Member, MlsGroup, MlsGroupConfig,
+    OpenMlsCryptoProvider, ProcessedMessageContent, Proposal, RemoveMembersError, RemoveOperation,
+    Sender, SignatureScheme,
+};
 use openmls::test_utils::bytes_to_hex;
 use openmls_basic_credential::SignatureKeyPair;
 use openmls_traits::signatures::Signer;
 
+use eid::test_helpers::helpers::simulate_transfer;
+use eid::test_helpers::{add_and_cross_sign, build_transcript, cross_sign, simulate_transfer};
 use eid_mls::eid_mls_backend::EidMlsBackend;
 use eid_mls::eid_mls_client::EidMlsClient;
 use eid_mls::eid_mls_evolvement::EidMlsEvolvement;
@@ -12,9 +20,6 @@ use eid_mls::eid_mls_member::EidMlsMember;
 use eid_traits::backend::EidBackend;
 use eid_traits::client::EidClient;
 use eid_traits::member::Member as EidMember;
-use helpers::helpers::simulate_transfer;
-
-mod helpers;
 
 fn create_backend() {
     // ANCHOR: create_backend
@@ -26,7 +31,6 @@ fn create_backend() {
     // Suppress warning.
     let _backend = backend;
 }
-
 
 fn generate_credential(
     identity: Vec<u8>,
@@ -91,9 +95,9 @@ fn book_operations() {
     let backend = &EidMlsBackend::default();
     let (alice, alice_signature_keys) = EidMlsClient::generate_member("Alice".into(), backend);
     let (bob, bob_signature_keys) = EidMlsClient::generate_member("Bob".into(), backend);
-    let (charlie, charlie_signature_keys) = EidMlsClient::generate_member("Charlie".into(), backend);
+    let (charlie, charlie_signature_keys) =
+        EidMlsClient::generate_member("Charlie".into(), backend);
     let (dave, dave_signature_keys) = EidMlsClient::generate_member("Dave".into(), backend);
-
 
     // ANCHOR: alice_create_eid
     let mut alice_eid = EidMlsClient::create_eid(&alice, alice_signature_keys, backend)
@@ -102,9 +106,7 @@ fn book_operations() {
 
     // === Alice adds Bob ===
     // ANCHOR: alice_adds_bob
-    let add_bob_evolvement = alice_eid
-        .add(&bob, backend)
-        .expect("Could not add member.");
+    let add_bob_evolvement = alice_eid.add(&bob, backend).expect("Could not add member.");
     // ANCHOR_END: alice_adds_bob
 
     let add_bob_evolvement: EidMlsEvolvement = simulate_transfer(&add_bob_evolvement);
@@ -114,18 +116,13 @@ fn book_operations() {
         .expect("Alice could not apply add_bob_evolvement");
 
     // ANCHOR: bob_joins_with_invitation
-    let mut bob_eid = EidMlsClient::create_from_invitation(
-        add_bob_evolvement,
-        bob_signature_keys,
-        backend,
-    )
-        .expect("Error joining EID from Invitation");
+    let mut bob_eid =
+        EidMlsClient::create_from_invitation(add_bob_evolvement, bob_signature_keys, backend)
+            .expect("Error joining EID from Invitation");
     // ANCHOR_END: bob_joins_with_invitation
 
     // ANCHOR: processing_evolvements
-    let add_charlie_evolvement = bob_eid
-        .add(&charlie, backend)
-        .unwrap();
+    let add_charlie_evolvement = bob_eid.add(&charlie, backend).unwrap();
 
     let add_charlie_evolvement_in: EidMlsEvolvement = simulate_transfer(&add_charlie_evolvement);
 
@@ -143,7 +140,7 @@ fn book_operations() {
         charlie_signature_keys,
         backend,
     )
-        .expect("Error creating group from Welcome");
+    .expect("Error creating group from Welcome");
 
     let bob = charlie_eid
         .get_members()
@@ -171,11 +168,8 @@ fn book_operations() {
         .expect("Alice could not apply remove_bob_evolvement");
 
     // ANCHOR: alice_update_self
-    let alice_update_evolvement = alice_eid
-        .update(backend)
-        .expect("Alice could not update");
+    let alice_update_evolvement = alice_eid.update(backend).expect("Alice could not update");
     // ANCHOR_END: alice_update_self
-
 
     let alice_update_evolvement: EidMlsEvolvement = simulate_transfer(&alice_update_evolvement);
     alice_eid
