@@ -135,7 +135,7 @@ impl EidMlsClientState {
             leaf_nodes.get(member.index.u32() as usize).ok_or_else(|| {
                 EidError::InvalidMemberError("Member index doesn't have a matching node".into())
             })?;
-
-        Ok(leaf_node.parent_hash().is_some())
+        let parent_hash = leaf_node.parent_hash();
+        Ok(parent_hash.is_some())
     }
 }
