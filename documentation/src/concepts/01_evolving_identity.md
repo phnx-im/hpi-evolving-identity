@@ -1,6 +1,4 @@
-# Concepts
-
-## Evolving Identity
+# Evolving Identity Concepts
 
 An _Evolving Idendity_ (EID) is a group of _Clients_ that represent a single identity.
 For instance, the devices of a user of an instant messaging service.
@@ -40,6 +38,8 @@ The DS first sends the Evolvement to the Transcript which verifies and applies t
 Since the Evolvement is valid A and B then also receive the Evolvement and apply it to their local states.
 </figcaption>
 
+## Client and Evolvements
+
 Distributed state management implies that each member of the EID has to keep track of the EID's state individually.
 For that, each member of an EID interacts with the EID through a Client.
 A _Client_ allows a member to create changes to the EID, so-called _Evolvements_.
@@ -55,6 +55,8 @@ Until the cross-sign _Evolvement_ is applied the member is not considered part o
 This prevents new Clients from being added without their consent.
 Moreover, a _Client_ can provide the list of EID members and thus validate cross-signed membership for any given member.
 
+## Transcript
+
 To allow a third party to validate any membership we introduce the _Transcript_.
 A _Transcript_ can be instantiated by anyone, inside or outside the EID.
 It is similar to a _Client_ in the sense that it allows tracking the state of the EID.
@@ -65,17 +67,3 @@ This allows anyone knowing the _Transcript_ to verify memberships in any point i
 To initialize the creation of a _Transcript_, a _Client_ exports a subset of its current state, which can be sent to
 another party.
 This exported state is used to instantiate a _Transcript_, setting it to its initial trusted state.
-
-The concrete implementations differ from each other in the way they handle states and state changes.
-
-## EID Dummy Implementation
-
-The Dummy implementation does not use any cryptography and only ensures correctness in scope of the tests.
-The state of Dummy Clients and Dummy _Transcripts_ is determined by the current list of members and an _Evolvement_
-counter.
-An _Evolvement_ consists of the proposed new member list and the incremented _Evolvement_ count.
-A member consists of an identifier and an indicator whether they cross-signed their own membership.
-Client and _Transcript_ will apply an _Evolvement_ by validating the _Evolvement_ count and
-then setting the list of members of the _Evolvement_ as their new state.
-This means that the _Client_ state and _Transcript_ state are of the same type and
-creating a _Transcript_ is done by transferring the member list from a Client.

@@ -9,7 +9,8 @@ in the group, MLS relies on key packages. Key packages hold several pieces of in
 - the lifetime throughout which the key package is valid
 - information about the client's capabilities (i.e., which features of MLS it supports)
 - any extension that the client wants to include
-- one of the client's [credentials](./identity.md), as well as a signature over the whole key package using the private
+- one of the client's [credentials](02_credentials.md), as well as a signature over the whole key package using the
+  private
   key corresponding to the credential's signature public key
 
 ## Creating key packages

@@ -9,9 +9,10 @@ Credentials are used to authenticate messages by the owner in the context of a g
 Note that the link between the credential and its signature keys depends on the credential type.
 For example, the link between the `BasicCredential`'s and its keys is not defined by MLS.
 
-A credential is always embedded in a leaf node, which is ultimately used to represent a client in a group and signed by
+A leaf node is ultimately used to represent a client in a group and signed by
 the private key corresponding to the signature public key of the leaf node.
-Clients can decide to use the same credential in multiple leaf nodes (and thus multiple groups) or to use distinct
+A credential is always embedded in such a leaf node.
+Users can decide to use the same credential in multiple leaf nodes (and thus multiple groups) or to use distinct
 credentials per group.
 
 The binding between a given credential and owning client's identity is, in turn, authenticated by the Authentication

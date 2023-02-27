@@ -9,7 +9,10 @@ use eid::test_helpers::simulate_transfer;
 use eid_mls::eid_mls_backend::EidMlsBackend;
 use eid_mls::eid_mls_client::EidMlsClient;
 use eid_mls::eid_mls_evolvement::EidMlsEvolvement;
+use eid_mls::eid_mls_transcript::EidMlsTranscript;
+use eid_mls::state::transcript_state::EidMlsExportedTranscriptState;
 use eid_traits::client::EidClient;
+use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 
 pub fn create_backend() {
     #[allow(unused_imports)]
@@ -84,104 +87,133 @@ fn book_operations() {
     let backend = &EidMlsBackend::default();
     let (alice, alice_signature_keys) = EidMlsClient::generate_member("Alice".into(), backend);
     let (bob, bob_signature_keys) = EidMlsClient::generate_member("Bob".into(), backend);
-    let (charlie, charlie_signature_keys) =
-        EidMlsClient::generate_member("Charlie".into(), backend);
 
     // ANCHOR: alice_create_eid
     let mut alice_client = EidMlsClient::create_eid(&alice, alice_signature_keys, backend)
         .expect("Could not create EID");
     // ANCHOR_END: alice_create_eid
 
+    // ANCHOR: create_transcript
+    let exported_state = alice_client
+        .export_transcript_state(backend)
+        .expect("Failed to export state");
+
+    // exported state is sent over the wire
+    let imported_state: EidMlsExportedTranscriptState = simulate_transfer(&exported_state);
+
+    // validate the state and create a trusted state from it
+    let trusted_state = imported_state
+        .into_transcript_state(backend)
+        .expect("failed to create trusted state");
+    let mut transcript = EidMlsTranscript::new(trusted_state, vec![], backend).unwrap();
+    // ANCHOR_END: create_transcript
+
+    assert_eq!(transcript.get_members().len(), 0);
     assert_eq!(alice_client.get_members().len(), 0);
     // === Alice adds Bob ===
-    // ANCHOR: alice_adds_bob
-    let add_bob_evolvement = alice_client
-        .add(&bob, backend)
-        .expect("Could not add member.");
-    // ANCHOR_END: alice_adds_bob
 
-    let add_bob_evolvement: EidMlsEvolvement = simulate_transfer(&add_bob_evolvement);
+    let alice_cross_sign_evolvement_out = alice_client.cross_sign_membership(backend).unwrap();
+    let alice_cross_sign_evolvement_in: EidMlsEvolvement =
+        simulate_transfer(&alice_cross_sign_evolvement_out);
 
+    transcript
+        .evolve(alice_cross_sign_evolvement_in.clone(), backend)
+        .unwrap();
     alice_client
-        .evolve(add_bob_evolvement.clone(), backend)
-        .expect("Alice could not apply add_bob_evolvement");
-    let members = alice_client.get_members();
-    assert_eq!(members.len(), 1);
+        .evolve(alice_cross_sign_evolvement_in, backend)
+        .unwrap();
+    assert_eq!(transcript.get_members().len(), 1);
+    assert_eq!(alice_client.get_members().len(), 1);
+
+    // ANCHOR: alice_adds_bob
+    let add_bob_evolvement_out = alice_client.add(&bob, backend).unwrap();
+    let add_bob_evolvement_in: EidMlsEvolvement = simulate_transfer(&add_bob_evolvement_out);
+    transcript
+        .evolve(add_bob_evolvement_in.clone(), backend)
+        .unwrap();
+    alice_client
+        .evolve(add_bob_evolvement_in.clone(), backend)
+        .unwrap();
+    // ANCHOR_END: alice_adds_bob
 
     // ANCHOR: bob_joins_with_invitation
     let mut bob_client =
-        EidMlsClient::create_from_invitation(add_bob_evolvement, bob_signature_keys, backend)
+        EidMlsClient::create_from_invitation(add_bob_evolvement_in, bob_signature_keys, backend)
             .expect("Error creating client from Invitation");
-    // ANCHOR_END: bob_joins_with_invitation
 
-    // ANCHOR: processing_evolvements
-    let add_charlie_evolvement = bob_client.add(&charlie, backend).unwrap();
-    assert_eq!(members.len(), 1);
-
-    let add_charlie_evolvement_in: EidMlsEvolvement = simulate_transfer(&add_charlie_evolvement);
-
-    alice_client
-        .evolve(add_charlie_evolvement_in.clone(), backend)
-        .expect("Alice could not apply add_charlie_evolvement");
-    assert_eq!(alice_client.get_members().len(), 2);
-
-    bob_client
-        .evolve(add_charlie_evolvement_in.clone(), backend)
-        .expect("Bob could not apply add_charlie_evolvement");
-    // ANCHOR_END: processing_evolvements
-    assert_eq!(bob_client.get_members().len(), 2);
-
-    let mut charlie_client = EidMlsClient::create_from_invitation(
-        add_charlie_evolvement_in,
-        charlie_signature_keys,
-        backend,
-    )
-    .expect("Error creating client from invitation");
-
-    let bob = charlie_client
-        .get_members()
-        .into_iter()
-        .find(|member| member.clone() == bob)
-        .expect("Bob not found");
-
-    // === Charlie removes Bob ===
-    // ANCHOR: charlie_removes_bob
-    let remove_bob_evolvement = charlie_client
-        .remove(&bob, backend)
-        .expect("Could not remove Bob using Charlie's client");
-    // ANCHOR_END: charlie_removes_bob
-
-    let remove_bob_evolvement: EidMlsEvolvement = simulate_transfer(&remove_bob_evolvement);
-
-    alice_client
-        .evolve(remove_bob_evolvement.clone(), backend)
-        .expect("Alice could not apply remove_bob_evolvement");
+    // Bob hasn't cross signed yet, member list is unchanged
+    assert_eq!(transcript.get_members().len(), 1);
     assert_eq!(alice_client.get_members().len(), 1);
-
-    bob_client
-        .evolve(remove_bob_evolvement.clone(), backend)
-        .expect("Alice could not apply remove_bob_evolvement");
     assert_eq!(bob_client.get_members().len(), 1);
 
-    charlie_client
-        .evolve(remove_bob_evolvement, backend)
-        .expect("Alice could not apply remove_bob_evolvement");
-    assert_eq!(charlie_client.get_members().len(), 1);
+    let add_cross_sign_evolvement_bob_out = bob_client.cross_sign_membership(backend).unwrap();
+
+    let add_cross_sign_evolvement_bob_in: EidMlsEvolvement =
+        simulate_transfer(&add_cross_sign_evolvement_bob_out);
+    transcript
+        .evolve(add_cross_sign_evolvement_bob_in.clone(), backend)
+        .unwrap();
+    alice_client
+        .evolve(add_cross_sign_evolvement_bob_in.clone(), backend)
+        .unwrap();
+    bob_client
+        .evolve(add_cross_sign_evolvement_bob_in, backend)
+        .unwrap();
+
+    // After cross sign, Bob is part of the EID
+    assert_eq!(transcript.get_members().len(), 2);
+    assert_eq!(alice_client.get_members().len(), 2);
+    assert_eq!(bob_client.get_members().len(), 2);
+
+    // ANCHOR_END: bob_joins_with_invitation
 
     // ANCHOR: alice_update_self
     let alice_update_evolvement = alice_client
         .update(backend)
         .expect("Alice could not update");
-    // ANCHOR_END: alice_update_self
 
-    let alice_update_evolvement: EidMlsEvolvement = simulate_transfer(&alice_update_evolvement);
+    let alice_update_evolvement_in: EidMlsEvolvement =
+        simulate_transfer(&alice_update_evolvement_out);
+    transcript
+        .evolve(alice_update_evolvement_in.clone(), backend)
+        .unwrap();
     alice_client
-        .evolve(alice_update_evolvement.clone(), backend)
-        .expect("Alice could not apply alice_update_evolvement");
+        .evolve(alice_update_evolvement_in.clone(), backend)
+        .unwrap();
+    bob_client
+        .evolve(alice_update_evolvement_in, backend)
+        .unwrap();
+    // ANCHOR_END: alice_update_self
+    assert_eq!(transcript.get_members().len(), 2);
+    assert_eq!(alice_client.get_members().len(), 2);
+    assert_eq!(bob_client.get_members().len(), 2);
 
-    charlie_client
-        .evolve(alice_update_evolvement.clone(), backend)
-        .expect("Charlie could not apply alice_update_evolvement");
+    // ANCHOR: bob_removes_alice
+
+    // Bob finds alice in his member list
+    let alice = bob_client
+        .get_members()
+        .into_iter()
+        .find(|member| member.clone() == alice)
+        .unwrap();
+
+    let remove_alice_evolvement_out = bob_client.remove(&alice, backend).unwrap();
+
+    let remove_alice_evolvement_in: EidMlsEvolvement =
+        simulate_transfer(&remove_alice_evolvement_out);
+
+    transcript
+        .evolve(remove_alice_evolvement_in.clone(), backend)
+        .unwrap();
+
+    bob_client
+        .evolve(remove_alice_evolvement_in, backend)
+        .unwrap();
+
+    assert_eq!(transcript.get_members().len(), 1);
+    assert_eq!(bob_client.get_members().len(), 1);
+
+    // ANCHOR_END: bob_removes_alice
 }
 
 fn main() {
