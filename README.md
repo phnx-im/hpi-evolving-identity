@@ -1,5 +1,8 @@
 # Evolving Identity
 
+1. [Building the library and running tests](#building-the-library-and-running-tests)
+2. [Building Docs](#building-docs)
+
 ## Building the library and running tests
 
 The following commands have to be run from the libraries root directory.
