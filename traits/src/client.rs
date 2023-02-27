@@ -95,9 +95,7 @@ pub trait EidClient {
         &mut self,
         member: &Self::MemberProvider,
         backend: &Self::BackendProvider,
-    ) -> Result<Self::EvolvementProvider, EidError>
-    where
-        Self: Sized;
+    ) -> Result<Self::EvolvementProvider, EidError>;
 
     /// Create an [Evolvement](Self::EvolvementProvider) to remove a member from the EID.
     ///
