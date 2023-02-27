@@ -52,7 +52,7 @@ impl EidClient for EidMlsClient {
             &mls_group_config,
             initial_member.credential.clone(),
         )
-        .expect("Could not create MlsGroup");
+        .map_err(|e| EidError::CreateClientError(e.to_string()))?;
 
         Ok(Self {
             state: EidMlsClientState { group },
