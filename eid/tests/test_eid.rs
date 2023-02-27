@@ -25,8 +25,9 @@ pub fn eid_backends<B: EidBackend>(backend: &B) {}
 /// * create a new client
 /// * create a transcript from the client's state
 /// * let the client cross sign its membership
-/// * create and add a second member to the Eid
-/// * adding the same member a second time, expecting an Error
+/// * create and add a second member to the EID
+/// * let the second member cross sign its membership
+/// * add the same member a second time, expecting an Error
 ///
 /// We evolve client and transcript along the way, comparing their states
 ///
@@ -88,8 +89,9 @@ fn add<B: EidBackend>(backend: &B) {
 /// * create a new client
 /// * create a transcript from the client's state
 /// * let the client cross sign its membership
-/// * create and add a second member to the Eid
+/// * create and add a second member to the EID
 /// * remove the second member
+/// * remove the same member a second time, expecting an Error
 ///
 /// We evolve client and transcript along the way, comparing their states
 ///
@@ -151,7 +153,7 @@ fn remove<B: EidBackend>(backend: &B) {
 /// * create a new client
 /// * create a transcript from the client's state
 /// * let the client cross sign its membership
-/// * let the client update its key material.
+/// * let the client update its key material twice
 ///
 /// We evolve client and transcript along the way, comparing their states
 #[apply(eid_backends)]
