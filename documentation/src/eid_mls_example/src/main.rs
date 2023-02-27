@@ -1,9 +1,5 @@
-use openmls::prelude::{
-    Ciphersuite, Credential, CredentialType, CredentialWithKey, CryptoConfig, Extensions,
-    KeyPackage, OpenMlsCryptoProvider, SignatureScheme,
-};
+use openmls::prelude::CredentialType;
 use openmls_basic_credential::SignatureKeyPair;
-use openmls_traits::signatures::Signer;
 
 use eid::test_helpers::simulate_transfer;
 use eid_mls::eid_mls_backend::EidMlsBackend;
@@ -12,7 +8,6 @@ use eid_mls::eid_mls_evolvement::EidMlsEvolvement;
 use eid_mls::eid_mls_member::EidMlsMember;
 use eid_mls::eid_mls_transcript::EidMlsTranscript;
 use eid_mls::state::transcript_state::EidMlsExportedTranscriptState;
-use eid_traits::backend::EidBackend;
 use eid_traits::client::EidClient;
 use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
