@@ -6,5 +6,5 @@ Currently, there is only one implementation available that actually uses cryptog
 
 You can create the `backend` object by using:
 ```rust,no_run,noplayground
-{{#include ../../eid_mls_example/src/main.rs:create_backend}}
+{{#include ../eid_mls_example/src/main.rs:create_backend}}
 ```

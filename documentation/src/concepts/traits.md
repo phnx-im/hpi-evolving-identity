@@ -6,7 +6,7 @@ implementations by trait bounds.
 ## Client
 
 A Client of an EID that can create new Evolvements and evolve its EidState by applying any Evolvements.
-For more context, see section [Concepts – Client and Evolvements](01_evolving_identity.md#client-and-evolvements).
+For more context, see section [Concepts – Client and Evolvements](evolving_identity.md#client-and-evolvements).
 
 ```rust,no_run,noplayground
 
@@ -31,7 +31,7 @@ The Transcript holds a trusted State and a log of Evolvements.
 It is the public state of an EID that should be verifiable by any third party.
 It calculates its current State by applying Evolvements like clients do. It knows all Members that are in the EID.
 It cannot create any Evolvement.
-For more context, see section [Concepts – Transcript](01_evolving_identity.md#transcript).
+For more context, see section [Concepts – Transcript](evolving_identity.md#transcript).
 
 ```rust,no_run,noplayground
 

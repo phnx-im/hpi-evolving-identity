@@ -11,6 +11,8 @@ The EID implementation fundamentally consists of two functional parts.
 
 For that we introduce the three main components of an EID implementation: _Client_, _Transcript_ and _Evolvement_.
 
+<div style="text-align:center">
+
 ```plantuml
 @startuml
 participant A order 1
@@ -35,7 +37,7 @@ The EID has two members, device A and B.
 Device A wants to change the state of the EID, for example an update of its key material.
 To do that, it creates an Evolvement and sends it to the Delivery Service (DS). 
 The DS first sends the Evolvement to the Transcript which verifies and applies the Evolvement.
-Since the Evolvement is valid A and B then also receive the Evolvement and apply it to their local states.
+A and B then also receive the Evolvement and apply it to their local states.
 </figcaption>
 
 ## Client and Evolvements

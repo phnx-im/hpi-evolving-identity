@@ -9,9 +9,12 @@ use eid::test_helpers::simulate_transfer;
 use eid_mls::eid_mls_backend::EidMlsBackend;
 use eid_mls::eid_mls_client::EidMlsClient;
 use eid_mls::eid_mls_evolvement::EidMlsEvolvement;
+use eid_mls::eid_mls_member::EidMlsMember;
 use eid_mls::eid_mls_transcript::EidMlsTranscript;
 use eid_mls::state::transcript_state::EidMlsExportedTranscriptState;
+use eid_traits::backend::EidBackend;
 use eid_traits::client::EidClient;
+use eid_traits::member::Member;
 use eid_traits::transcript::{EidExportedTranscriptState, EidTranscript};
 
 pub fn create_backend() {
@@ -25,78 +28,57 @@ pub fn create_backend() {
     let _backend = backend;
 }
 
-pub fn generate_credential(
+pub fn generate_member(
     identity: Vec<u8>,
-    credential_type: CredentialType,
-    signature_algorithm: SignatureScheme,
-    backend: &impl OpenMlsCryptoProvider,
-) -> (CredentialWithKey, SignatureKeyPair) {
-    // ANCHOR: create_basic_credential
-    let credential = Credential::new(identity, credential_type).unwrap();
-    // ANCHOR_END: create_basic_credential
-    // ANCHOR: create_credential_keys
-    let signature_keys = SignatureKeyPair::new(signature_algorithm).unwrap();
-    signature_keys.store(backend.key_store()).unwrap();
-    // ANCHOR_END: create_credential_keys
-
-    (
-        CredentialWithKey {
-            credential,
-            signature_key: signature_keys.to_public_vec().into(),
-        },
-        signature_keys,
+    backend: &EidMlsBackend,
+) -> (EidMlsMember, SignatureKeyPair) {
+    // ANCHOR: create_member
+    let ciphersuite = backend.ciphersuite;
+    let (cred_with_key, keypair) = EidMlsClient::create_store_credential(
+        identity,
+        CredentialType::Basic,
+        ciphersuite.signature_algorithm(),
+        backend,
     )
-}
+    .expect("Failed to create credential");
 
-pub fn generate_key_package(
-    ciphersuite: Ciphersuite,
-    credential_with_key: CredentialWithKey,
-    extensions: Extensions,
-    backend: &impl OpenMlsCryptoProvider,
-    signer: &impl Signer,
-) -> KeyPackage {
-    // ANCHOR: create_key_package
-    // Create the key package
-    KeyPackage::builder()
-        .key_package_extensions(extensions)
-        .build(
-            CryptoConfig::with_default_version(ciphersuite),
-            backend,
-            signer,
-            credential_with_key,
-        )
-        .unwrap()
-    // ANCHOR_END: create_key_package
+    let key_package = EidMlsClient::create_store_key_package(
+        ciphersuite,
+        cred_with_key.clone(),
+        backend,
+        &keypair,
+    )
+    .expect("Failed to create key package");
+
+    let member = EidMlsMember::new((key_package, cred_with_key));
+    // ANCHOR_END: create_member
+    (member, keypair)
 }
 
 /// This function simulates various group operations like Add, Update, Remove in a
 /// small group
-///  - Alice creates a group
+///  - Alice creates an EID
 ///  - Alice adds Bob
 ///  - Alice updates key material
 ///  - Bob removes Alice
 fn book_operations() {
+    // ANCHOR: full_example
     let backend = &EidMlsBackend::default();
-    let (alice, alice_signature_keys) = EidMlsClient::generate_member("Alice".into(), backend);
-    let (bob, bob_signature_keys) = EidMlsClient::generate_member("Bob".into(), backend);
+    let (alice, alice_signature_keys) = generate_member("Alice".into(), backend);
+    let (bob, bob_signature_keys) = generate_member("Bob".into(), backend);
 
     // ANCHOR: alice_create_eid
-    let mut alice_client = EidMlsClient::create_eid(&alice, alice_signature_keys, backend)
-        .expect("Could not create EID");
+    let mut alice_client = EidMlsClient::create_eid(&alice, alice_signature_keys, backend).unwrap();
     // ANCHOR_END: alice_create_eid
 
     // ANCHOR: create_transcript
-    let exported_state = alice_client
-        .export_transcript_state(backend)
-        .expect("Failed to export state");
+    let exported_state = alice_client.export_transcript_state(backend).unwrap();
 
     // exported state is sent over the wire
     let imported_state: EidMlsExportedTranscriptState = simulate_transfer(&exported_state);
 
     // validate the state and create a trusted state from it
-    let trusted_state = imported_state
-        .into_transcript_state(backend)
-        .expect("failed to create trusted state");
+    let trusted_state = imported_state.into_transcript_state(backend).unwrap();
     let mut transcript = EidMlsTranscript::new(trusted_state, vec![], backend).unwrap();
     // ANCHOR_END: create_transcript
 
@@ -131,7 +113,7 @@ fn book_operations() {
     // ANCHOR: bob_joins_with_invitation
     let mut bob_client =
         EidMlsClient::create_from_invitation(add_bob_evolvement_in, bob_signature_keys, backend)
-            .expect("Error creating client from Invitation");
+            .unwrap();
 
     // Bob hasn't cross signed yet, member list is unchanged
     assert_eq!(transcript.get_members().len(), 1);
@@ -160,9 +142,7 @@ fn book_operations() {
     // ANCHOR_END: bob_joins_with_invitation
 
     // ANCHOR: alice_update_self
-    let alice_update_evolvement_out = alice_client
-        .update(backend)
-        .expect("Alice could not update");
+    let alice_update_evolvement_out = alice_client.update(backend).unwrap();
 
     let alice_update_evolvement_in: EidMlsEvolvement =
         simulate_transfer(&alice_update_evolvement_out);
@@ -206,6 +186,7 @@ fn book_operations() {
     assert_eq!(bob_client.get_members().len(), 1);
 
     // ANCHOR_END: bob_removes_alice
+    // ANCHOR_END: full_example
 }
 
 fn main() {
