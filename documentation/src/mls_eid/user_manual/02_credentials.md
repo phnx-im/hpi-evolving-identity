@@ -18,14 +18,14 @@ credentials per group.
 The binding between a given credential and owning client's identity is, in turn, authenticated by the Authentication
 Service, an abstract authentication layer defined by
 the [MLS architecture document](https://github.com/mlswg/mls-architecture).
-Note that the implementation of the Authentication Service and, thus, the details of how the binding is authenticated
+Note that the implementation of the Authentication Service and the details of how the binding is authenticated
 are not specified by MLS.
 
 ## Creating and using credentials
 
 OpenMLS allows clients to create `Credentials`.
 A `BasicCredential`, currently the only credential type supported by OpenMLS, consists only of the `identity`.
-Thus, to create a fresh `Credential`, the following inputs are required:
+To create a fresh `Credential`, the following inputs are required:
 
 - `identity: Vec<u8>`: An octet string that uniquely identifies the client.
 - `credential_type: CredentialType`: The type of the credential, in this case `CredentialType::Basic`.

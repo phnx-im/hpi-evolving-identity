@@ -73,16 +73,8 @@ pub fn generate_key_package(
 /// small group
 ///  - Alice creates a group
 ///  - Alice adds Bob
-///  - Alice sends a message to Bob
-///  - Bob updates and commits
-///  - Alice updates and commits
-///  - Bob adds Charlie
-///  - Charlie sends a message to the group
-///  - Charlie updates and commits
-///  - Charlie removes Bob
-///  - Alice removes Charlie and adds Bob
-///  - Bob leaves
-///  - Test saving the group state
+///  - Alice updates key material
+///  - Bob removes Alice
 fn book_operations() {
     let backend = &EidMlsBackend::default();
     let (alice, alice_signature_keys) = EidMlsClient::generate_member("Alice".into(), backend);
@@ -168,7 +160,7 @@ fn book_operations() {
     // ANCHOR_END: bob_joins_with_invitation
 
     // ANCHOR: alice_update_self
-    let alice_update_evolvement = alice_client
+    let alice_update_evolvement_out = alice_client
         .update(backend)
         .expect("Alice could not update");
 

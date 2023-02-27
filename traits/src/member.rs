@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-/// An EID Member representing a client in the EID. A member can be added or removed from the EID.
+/// An EID Member representing a member in the EID. A member can be added or removed from the EID.
 pub trait Member: PartialEq + Debug + Clone {
     /// Type that can be used to identify a member
     type CredentialProvider;
