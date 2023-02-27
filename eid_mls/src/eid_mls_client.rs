@@ -204,17 +204,13 @@ impl EidClient for EidMlsClient {
             id,
             CredentialType::Basic,
             ciphersuite.signature_algorithm(),
-            &backend.mls_backend,
+            &backend,
         )
         .expect("Failed to create credential");
 
-        let key_package = Self::create_store_key_package(
-            ciphersuite,
-            cred_with_key.clone(),
-            &backend.mls_backend,
-            &keypair,
-        )
-        .expect("Failed to create key package");
+        let key_package =
+            Self::create_store_key_package(ciphersuite, cred_with_key.clone(), &backend, &keypair)
+                .expect("Failed to create key package");
 
         (
             EidMlsMember {
@@ -246,14 +242,14 @@ impl EidMlsClient {
         identity: Vec<u8>,
         credential_type: CredentialType,
         signature_algorithm: SignatureScheme,
-        backend: &impl OpenMlsCryptoProvider,
+        backend: &EidMlsBackend,
     ) -> Result<(CredentialWithKey, SignatureKeyPair), EidError> {
         let credential = Credential::new(identity, credential_type)
             .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
         let signature_keys = SignatureKeyPair::new(signature_algorithm)
             .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
         signature_keys
-            .store(backend.key_store())
+            .store(backend.mls_backend.key_store())
             .map_err(|e| EidError::CreateCredentialError(e.to_string()))?;
 
         Ok((
@@ -268,14 +264,14 @@ impl EidMlsClient {
     pub fn create_store_key_package(
         ciphersuite: Ciphersuite,
         credential_with_key: CredentialWithKey,
-        backend: &impl OpenMlsCryptoProvider,
+        backend: &EidMlsBackend,
         signer: &impl Signer,
     ) -> Result<KeyPackage, EidError> {
         let key_package = KeyPackage::builder()
             //.key_package_extensions(extensions)
             .build(
                 CryptoConfig::with_default_version(ciphersuite),
-                backend,
+                &backend.mls_backend,
                 signer,
                 credential_with_key,
             )
