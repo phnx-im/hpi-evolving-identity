@@ -204,12 +204,12 @@ impl EidClient for EidMlsClient {
             id,
             CredentialType::Basic,
             ciphersuite.signature_algorithm(),
-            &backend,
+            backend,
         )
         .expect("Failed to create credential");
 
         let key_package =
-            Self::create_store_key_package(ciphersuite, cred_with_key.clone(), &backend, &keypair)
+            Self::create_store_key_package(ciphersuite, cred_with_key.clone(), backend, &keypair)
                 .expect("Failed to create key package");
 
         (
