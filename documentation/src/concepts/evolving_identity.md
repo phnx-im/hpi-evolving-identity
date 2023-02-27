@@ -1,6 +1,6 @@
 # Evolving Identity Concepts
 
-An _Evolving Idendity_ (EID) is a group of _Clients_ that represent a single identity.
+An _Evolving Identity_ (EID) is a group of _Clients_ that represent a single identity.
 For instance, the devices of a user of an instant messaging service.
 Further, an EID allows non-members to verify a membership of a Client.
 
@@ -23,7 +23,6 @@ participant Transcript order 4
 A -> DeliveryService : Evolvement
 DeliveryService --> Transcript: Evolvement
 Transcript -> Transcript: evolve
-Transcript -> DeliveryService: verified Evolvement
 DeliveryService --> A: Evolvement
 A -> A : evolve
 DeliveryService --> B: Evolvement
@@ -31,6 +30,8 @@ B -> B: evolve
 
 @enduml
 ```
+
+</div>
 
 <figcaption id="fig1" style="transform: scale(0.8)"><em>Figure 1. A sample scenario of an application using the EID.</em>
 The EID has two members, device A and B. 
