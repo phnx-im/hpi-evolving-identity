@@ -1,0 +1,30 @@
+[workspace]
+
+[package]
+name = "eid_mls_example"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+eid = { version = "0.1.0", path = "../../../eid", features = ["test"] }
+eid_traits = { version = "0.1.0", path = "../../../traits", features = ["test"] }
+eid_mls = { version = "0.1.0", path = "../../../eid_mls", features = ["test"] }
+openmls = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
+openmls_basic_credential = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
+openmls_rust_crypto = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
+openmls_traits = { git = "https://github.com/openmls/openmls.git", rev = "3f3be68588d1272dd75545b46339a751dfca4f15" }
+# Patching unreleased crates
+[patch.crates-io.tls_codec]
+git = "https://github.com/RustCrypto/formats.git"
+
+[patch.crates-io.hpke-rs]
+git = "https://github.com/franziskuskiefer/hpke-rs.git"
+
+[patch.crates-io.hpke-rs-crypto]
+git = "https://github.com/franziskuskiefer/hpke-rs.git"
+
+
+[patch.crates-io.hpke-rs-rust-crypto]
+git = "https://github.com/franziskuskiefer/hpke-rs.git"

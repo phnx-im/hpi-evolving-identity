@@ -13,7 +13,7 @@ use crate::eid_mls_client::EidMlsClient;
 pub struct EidMlsBackend {
     pub(crate) mls_backend: OpenMlsRustCrypto,
     #[cfg(feature = "test")]
-    pub(crate) ciphersuite: Ciphersuite,
+    pub ciphersuite: Ciphersuite,
 }
 
 #[cfg(feature = "test")]

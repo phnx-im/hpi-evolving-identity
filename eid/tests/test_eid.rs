@@ -1,6 +1,7 @@
 pub use rstest::*;
 pub use rstest_reuse::{self, *};
 
+use eid::test_helpers;
 use eid_dummy::eid_dummy_backend::EidDummyBackend;
 pub use eid_dummy::eid_dummy_client::EidDummyClient;
 use eid_mls::eid_mls_backend::EidMlsBackend;
@@ -9,9 +10,7 @@ use eid_traits::client::EidClient;
 use eid_traits::member::Member;
 use eid_traits::transcript::EidTranscript;
 use eid_traits::types::EidError;
-use helpers::helpers::{add_and_cross_sign, build_transcript, cross_sign, simulate_transfer};
-
-pub mod helpers;
+use test_helpers::{add_and_cross_sign, build_transcript, cross_sign, simulate_transfer};
 
 #[template]
 #[rstest(backend,
@@ -58,7 +57,7 @@ fn add<B: EidBackend>(backend: &B) {
     assert!(matches!(error, EidError::InvalidEvolvementError(..)));
 
     let error = transcript
-        .evolve(add_alice_evolvement_in.clone(), backend)
+        .evolve(add_alice_evolvement_in, backend)
         .expect_err("Evolving with same evolvement twice");
     assert!(matches!(error, EidError::InvalidEvolvementError(..)));
 
@@ -129,7 +128,7 @@ fn remove<B: EidBackend>(backend: &B) {
         .evolve(evolvement_remove_in.clone(), backend)
         .expect("Failed to apply remove on client state");
     transcript
-        .evolve(evolvement_remove_in.clone(), backend)
+        .evolve(evolvement_remove_in, backend)
         .expect("Failed to evolve transcript");
 
     assert_eq!(transcript.get_members(), client.get_members());
@@ -172,7 +171,7 @@ fn update<B: EidBackend>(backend: &B) {
         .evolve(update_evolvement_1_in.clone(), backend)
         .expect("Failed to apply update on client state");
     transcript
-        .evolve(update_evolvement_1_in.clone(), backend)
+        .evolve(update_evolvement_1_in, backend)
         .expect("Failed to evolve transcript");
 
     assert_eq!(transcript.get_members(), client.get_members());
@@ -194,7 +193,7 @@ fn update<B: EidBackend>(backend: &B) {
         .expect("Failed to apply update on client state");
 
     transcript
-        .evolve(update_evolvement_2_in.clone(), backend)
+        .evolve(update_evolvement_2_in, backend)
         .expect("Failed to add evolvement");
     assert_eq!(transcript.get_members(), client.get_members());
 

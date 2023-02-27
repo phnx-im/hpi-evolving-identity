@@ -1,0 +1,20 @@
+# Summary
+
+- [Introduction](introduction.md)
+- [Evolving Identity Concepts](concepts/evolving_identity.md)
+- [Traits](concepts/traits.md)
+- [Dummy Evolving Identity](dummy_eid.md)
+- [MLS Evolving Identity](mls_eid.md)
+  - [Create a Backend](mls_eid/create_backend.md)
+  - [Create an EID Member](mls_eid/create_eid_member.md)
+  - [Create a Client](mls_eid/create_client/create_client.md)
+    - [Create Initial Client](mls_eid/create_client/04_create_initial_client.md)
+    - [Create from Invitation](mls_eid/create_client/06_join_from_invitation.md)
+  - [Create a Transcript](mls_eid/create_transcript.md)
+  - [Process Evolvements](mls_eid/evolve.md)
+  - [Add Members](mls_eid/add.md)
+  - [Remove Members](mls_eid/remove.md)
+  - [Update Keys](mls_eid/update.md)
+  - [Summarizing Example](mls_eid/example.md)
+
+[//]: # (  - [Example Scenario])

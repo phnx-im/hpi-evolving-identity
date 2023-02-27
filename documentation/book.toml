@@ -1,0 +1,8 @@
+[book]
+authors = ["Karla Friedrichs", "Konrad Lux", "Thure Nebendahl", "Florian Sold", "Simon Thormeyer", "Felix Werner"]
+multilingual = false
+src = "src"
+title = "Evolving Identities (EID) with openmls"
+
+[preprocessor.plantuml]
+plantuml-cmd="https://www.plantuml.com/plantuml"

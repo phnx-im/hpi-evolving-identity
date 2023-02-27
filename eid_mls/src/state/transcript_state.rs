@@ -80,10 +80,12 @@ impl EidState for EidMlsTranscriptState {
 impl EidMlsTranscriptState {
     fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
         let leaf_nodes = self.get_leaf_nodes();
-        let index = member.index;
-        let leaf_node: &LeafNode = leaf_nodes.get(index.u32() as usize).ok_or_else(|| {
-            EidError::InvalidMemberError("Member index doesn't have a matching node".into())
-        })?;
+        let leaf_node: &LeafNode = leaf_nodes
+            .iter()
+            .find(|&node| node.signature_key().as_slice().to_vec() == member.signature_key)
+            .ok_or_else(|| {
+                EidError::InvalidMemberError("Member index doesn't have a matching node".into())
+            })?;
         Ok(leaf_node.parent_hash().is_some())
     }
 

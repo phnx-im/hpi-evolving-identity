@@ -130,12 +130,13 @@ impl EidMlsClientState {
     /// returns: [Result]<bool, [EidError]>
     fn has_member(&self, member: &MlsMember) -> Result<bool, EidError> {
         let leaf_nodes = self.get_leaf_nodes();
-
-        let leaf_node: &LeafNode =
-            leaf_nodes.get(member.index.u32() as usize).ok_or_else(|| {
+        let leaf_node: &LeafNode = leaf_nodes
+            .iter()
+            .find(|&node| node.signature_key().as_slice().to_vec() == member.signature_key)
+            .ok_or_else(|| {
                 EidError::InvalidMemberError("Member index doesn't have a matching node".into())
             })?;
-
-        Ok(leaf_node.parent_hash().is_some())
+        let parent_hash = leaf_node.parent_hash();
+        Ok(parent_hash.is_some())
     }
 }
