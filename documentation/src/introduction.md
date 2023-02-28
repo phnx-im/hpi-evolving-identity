@@ -1,7 +1,7 @@
 # Evolving Identity
 
 The library is implemented in the Rust programming language.
-The full source code is provided on [GitHub](https://github.com/phnx-im/hpi-master-project).
+The full source code is provided on [GitHub](https://github.com/phnx-im/hpi-evolving-identity).
 
 The core of the library is a generic interface for the EID protocol with generic tests.
 This hides complexity and guides any (also possible future) implementations of the EID API.
